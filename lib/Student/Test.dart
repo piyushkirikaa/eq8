@@ -46,52 +46,39 @@ class _TestState extends State<Test> {
   @override
   Widget build(BuildContext context) {
     globalScaffoldContext = context;
-    return WillPopScope(
-      onWillPop: () async {
-        return await _showExitConfirmationDialog(context);
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F7FB),
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF2D3142)),
-            onPressed: () async {
-              final shouldExit = await _showExitConfirmationDialog(context);
-              if (shouldExit) {
-                Navigator.of(context).pop();
-              }
-            },
-          ),
-          title: Text(
-            'Online Examination',
-            style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600, color: const Color(0xFF2D3142)),
-          ),
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 16),
-              child: Row(
-                children: [
-                  const Icon(Icons.timer_outlined, color: Color(0xFF2D3142)),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${(_questions.length - _questionIndex)} remaining',
-                    style: GoogleFonts.poppins(
-                        color: const Color(0xFF2D3142),
-                        fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-          ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text(
+          'Online Examination',
+          style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600, color: const Color(0xFF2D3142)),
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 5),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            child: Row(
+              children: [
+                const Icon(Icons.timer_outlined, color: Color(0xFF2D3142)),
+                const SizedBox(width: 4),
+                Text(
+                  '${(_questions.length - _questionIndex)} remaining',
+                  style: GoogleFonts.poppins(
+                      color: const Color(0xFF2D3142),
+                      fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -358,62 +345,6 @@ class _TestState extends State<Test> {
 
   void hideLoadingIndicator() {
     globalScaffoldContext.loaderOverlay.hide();
-  }
-
-  Future<bool> _showExitConfirmationDialog(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.warning_amber_rounded,
-                    color: Colors.orange.shade700, size: 28),
-                const SizedBox(width: 12),
-                Text(
-                  'Exit Exam?',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                  ),
-                ),
-              ],
-            ),
-            content: Text(
-              'Are you sure you want to exit? Your progress will be lost and the exam will not be submitted.',
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                color: const Color(0xFF5D5F6F),
-                height: 1.4,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  'CONTINUE EXAM',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4D7CFE),
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(
-                  'EXIT',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red.shade600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ) ??
-        false;
   }
 }
 
