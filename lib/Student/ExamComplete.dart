@@ -135,7 +135,9 @@ class _ExamComplete extends State<ExamComplete> {
     final isPassed = examStatus['exam_status'] == "Pass";
 
     // Calculate percentage correctly
-    final percentage = (rightAnswers / passingMarks) * 100;
+    final percentage = number_of_questions > 0
+        ? (rightAnswers / number_of_questions) * 100
+        : 0.0;
 
     return Container(
       width: double.infinity,

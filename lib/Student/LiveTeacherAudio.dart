@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:EQ8/Student/LiveTeacherWindows.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
 import 'package:markdown/markdown.dart' as md;
+import 'dart:io' show Platform;
 
 // Import for LiveTeacher
 import 'LiveTeacher.dart';
@@ -327,7 +329,8 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           {
             "role": "system",
             "content": formatLaTeX("""
-                      You are a Teacher from My Digital College. Your name is Genius. Format responses using markdown for text and specific placeholders for LaTeX expressions:
+                      You are a Teacher from My Digital College on the South African CAPS (Curriculum and Assessment Policy Statement). Your name is Genius. Format responses using markdown for text and specific placeholders for LaTeX expressions:
+                      - If a topic is not part of the CAPS curriculum, politely say: “This topic is not covered in your CAPS curriculum.”
                       - Inline LaTeX Use : `{latex} ... {latex}`
                       - Block LaTeX Use : `{latex-block} ... {latex-block}`
                       Avoid using dollar signs (`{latex}`) in LaTeX expressions.
@@ -354,11 +357,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
               "Authorization":
                   "Bearer OPENAI_API_KEY_PLACEHOLDER",
             },
-            body: jsonEncode({
-              "model": "gpt-4o",
-              "messages": messages,
-              "max_tokens": 300,
-            }),
+            body: jsonEncode({"model": "gpt-4o-mini", "messages": messages}),
           );
 
           // Step 4: Process the response
@@ -678,10 +677,22 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                 child: InkWell(
                   customBorder: CircleBorder(),
                   onTap: () {
-                    Navigator.push(
+                    // Add this import at the top of your file if not already present
+
+                    // Then replace the selection with:
+                    if (Platform.isAndroid || Platform.isIOS) {
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const LiveTeacher()));
+                            builder: (context) => const LiveTeacher()),
+                      );
+                    } else if (Platform.isWindows) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LiveTeacherWindows()),
+                      );
+                    }
                   },
                   child: Center(
                     child: Icon(

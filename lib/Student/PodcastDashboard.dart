@@ -448,7 +448,7 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
           }
           courses.add(Course(
               title: course["name"],
-              description: "Podcust ${course["tutorial_count"]} Episodes",
+              description: "Podcast ${course["tutorial_count"]} Episodes",
               progress: completionPercentage.toInt(),
               id: course["id"]));
         }

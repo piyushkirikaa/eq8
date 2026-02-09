@@ -172,7 +172,7 @@ class _ExamReportState extends State<ExamReport>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, -3),
                             ),
@@ -211,19 +211,19 @@ class _ExamReportState extends State<ExamReport>
 
                                   return AnimatedContainer(
                                     duration: const Duration(milliseconds: 200),
-                                    margin: EdgeInsets.symmetric(
+                                    margin: const EdgeInsets.symmetric(
                                       horizontal: 16.0,
                                       vertical: 4.0,
                                     ),
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? color.withOpacity(0.1)
+                                          ? color.withValues(alpha: 0.1)
                                           : Colors.white,
                                       borderRadius: BorderRadius.circular(8),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(
-                                              isSelected ? 0.08 : 0.04),
+                                          color: Colors.black.withValues(
+                                              alpha: isSelected ? 0.08 : 0.04),
                                           blurRadius: isSelected ? 4 : 2,
                                           offset: const Offset(0, 1),
                                         ),
@@ -264,11 +264,13 @@ class _ExamReportState extends State<ExamReport>
                                               CrossAxisAlignment.end,
                                           children: [
                                             Text(
-                                              'Avg: ${subject['average_number'].toStringAsFixed(1)}',
+                                              'Avg: ${(subject['average_number'] as num).toStringAsFixed(1)}',
                                               style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 color: getScoreColor(
-                                                    subject['average_number']),
+                                                    (subject['average_number']
+                                                            as num)
+                                                        .toDouble()),
                                               ),
                                             ),
                                             const SizedBox(height: 4),
@@ -279,17 +281,21 @@ class _ExamReportState extends State<ExamReport>
                                                 borderRadius:
                                                     BorderRadius.circular(3),
                                                 child: LinearProgressIndicator(
-                                                  value: subject[
-                                                          'average_number'] /
-                                                      10,
+                                                  value:
+                                                      (subject['average_number']
+                                                                  as num)
+                                                              .toDouble() /
+                                                          10,
                                                   backgroundColor:
                                                       Colors.grey[200] ??
                                                           Colors.grey.shade200,
                                                   valueColor:
                                                       AlwaysStoppedAnimation<
                                                           Color>(
-                                                    getScoreColor(subject[
-                                                        'average_number']),
+                                                    getScoreColor((subject[
+                                                                'average_number']
+                                                            as num)
+                                                        .toDouble()),
                                                   ),
                                                 ),
                                               ),
@@ -346,8 +352,8 @@ class _ExamReportState extends State<ExamReport>
   }
 
   List<PieChartSectionData> showingSections(List<dynamic> data) {
-    final double total =
-        data.fold(0, (sum, item) => sum + (item['average_number'] as double));
+    final double total = data.fold(
+        0.0, (sum, item) => sum + (item['average_number'] as num).toDouble());
 
     return List.generate(data.length, (i) {
       final subject = data[i];
@@ -358,7 +364,7 @@ class _ExamReportState extends State<ExamReport>
       final color = chartColors[i % chartColors.length];
 
       // Calculate a value for the pie chart segment
-      final value = subject['average_number'] as double;
+      final value = (subject['average_number'] as num).toDouble();
 
       // Calculate the percentage for display
       final percentage = ((value / total) * 100).toStringAsFixed(1);
@@ -374,7 +380,7 @@ class _ExamReportState extends State<ExamReport>
           color: Colors.white,
           shadows: [
             Shadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 2,
             ),
           ],
@@ -397,12 +403,12 @@ class _ExamReportState extends State<ExamReport>
           borderRadius: BorderRadius.circular(4),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
           ],
-          border: Border.all(color: color.withOpacity(0.5), width: 1),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -589,9 +595,11 @@ class _ExamReportState extends State<ExamReport>
   void logout() async {
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SignIn()),
-    );
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignIn()),
+      );
+    }
   }
 }

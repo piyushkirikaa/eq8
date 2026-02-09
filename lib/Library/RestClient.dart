@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,30 +64,65 @@ class RestClient {
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     };
-    print(headers);
     // Check if there's an internet connection
     var isConnected = await checkInternetConnection();
     if (isConnected) {
       // If there's an internet connection, send a live request
-      var response = await sendLiveRequest(endpoint, headers);
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        // Cache the response
-        await cacheResponse(endpoint, responseBody);
-        return jsonDecode(responseBody);
-      } else {
-        print(response.reasonPhrase ?? 'Request failed');
+      try {
+        var response = await sendLiveRequest(endpoint, headers);
+        if (response.statusCode == 200) {
+          final responseBody = await response.stream.bytesToString();
+
+          // Cache the response
+          await cacheResponse(endpoint, responseBody);
+
+          // Validate JSON before parsing
+          if (responseBody.trim().startsWith('{') ||
+              responseBody.trim().startsWith('[')) {
+            try {
+              return jsonDecode(responseBody);
+            } catch (e) {
+              print('JSON decode error: $e');
+              return null;
+            }
+          } else {
+            print('Response is not valid JSON (likely HTML error page)');
+            return null;
+          }
+        } else {
+          print(
+              'HTTP ${response.statusCode}: ${response.reasonPhrase ?? 'Request failed'}');
+          return null;
+        }
+      } catch (e) {
+        print('Network request error: $e');
+        // Fallback to cached data if available
+        final cachedData = await getCachedResponse(endpoint);
+        if (cachedData != null) {
+          try {
+            return jsonDecode(cachedData);
+          } catch (e) {
+            print('Cached JSON decode error: $e');
+            return null;
+          }
+        }
+        return null;
       }
     } else {
       // If there's no internet connection, try to access cached data
       final cachedData = await getCachedResponse(endpoint);
       if (cachedData != null) {
-        return jsonDecode(cachedData);
+        try {
+          return jsonDecode(cachedData);
+        } catch (e) {
+          print('Cached JSON decode error: $e');
+          return null;
+        }
       } else {
         print('No cached data available');
+        return null;
       }
     }
-    return null;
   }
 
   // Function to send a live request
@@ -100,8 +136,13 @@ class RestClient {
 
   // Function to cache the response
   Future<void> cacheResponse(String endpoint, String responseBody) async {
-    final file = await DefaultCacheManager().putFile(
-        "$baseUrl$endpoint", Uint8List.fromList(utf8.encode(responseBody)));
+    try {
+      await DefaultCacheManager().putFile(
+          "$baseUrl$endpoint", Uint8List.fromList(utf8.encode(responseBody)));
+      print('Response cached successfully for $endpoint');
+    } catch (e) {
+      print('Error caching response: $e');
+    }
   }
 
   // Function to get cached response
@@ -120,15 +161,37 @@ class RestClient {
 
   // Function to check internet connection
   Future<bool> checkInternetConnection() async {
-    final List<ConnectivityResult> connectivityResult =
-        await (Connectivity().checkConnectivity());
-    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+    try {
+      final List<ConnectivityResult> connectivityResult =
+          await (Connectivity().checkConnectivity());
+
+      // Check for any type of connection (mobile, wifi, ethernet, etc.)
+      if (connectivityResult.contains(ConnectivityResult.mobile) ||
+          connectivityResult.contains(ConnectivityResult.wifi) ||
+          connectivityResult.contains(ConnectivityResult.ethernet) ||
+          connectivityResult.contains(ConnectivityResult.other)) {
+        // Additional check: Try to make a simple HTTP request to verify actual internet access
+        try {
+          final response = await http.get(
+            Uri.parse('https://www.google.com'),
+            headers: {'Accept': 'text/html'},
+          ).timeout(const Duration(seconds: 5));
+
+          return response.statusCode == 200;
+        } catch (e) {
+          print('Internet connectivity test failed: $e');
+          // If the connectivity test fails but we have a connection, return true anyway
+          // as the issue might be with the test URL rather than actual connectivity
+          return true;
+        }
+      } else {
+        // No network available
+        return false;
+      }
+    } catch (e) {
+      print('Error checking connectivity: $e');
+      // If connectivity check fails, assume we have internet and let the actual requests fail gracefully
       return true;
-    } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
-      return true;
-    } else {
-      // No network available
-      return false;
     }
   }
 

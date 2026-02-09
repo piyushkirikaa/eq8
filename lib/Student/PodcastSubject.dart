@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import '../../Service/Analytics.dart';
+import '../../Service/AudioPlayerInterface.dart';
+import '../../Service/AudioPlayerFactory.dart';
 import '../Library/RestClient.dart';
 import '../Widgets/Course.dart';
 import 'dart:async';
@@ -23,7 +24,7 @@ class PodcastSubject extends StatefulWidget {
 
 class _PodcastSubjectState extends State<PodcastSubject> {
   var currentTutorial;
-  late AudioPlayer _audioPlayer;
+  late AudioPlayerInterface _audioPlayer;
   bool isAudioSet = false;
   late List<dynamic> subjectList = [];
   int selectedIndex = -1;
@@ -40,7 +41,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
+    _audioPlayer = AudioPlayerFactory.createAudioPlayer();
 
     // Set volume to full (1.0)
     _audioPlayer.setVolume(1.0);
@@ -49,9 +50,9 @@ class _PodcastSubjectState extends State<PodcastSubject> {
     _subjectListFuture = getSubjectList();
 
     // Listen to audio player states
-    _audioPlayer.playerStateStream.listen((state) {
+    _audioPlayer.playingStream.listen((playing) {
       setState(() {
-        isPlaying = state.playing;
+        isPlaying = playing;
       });
     });
 
@@ -458,22 +459,6 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                         ? Colors.purple.shade700
                         : Colors.grey.shade700,
                   ),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isSelected)
-                      Icon(isPlaying ? Icons.pause_circle : Icons.play_circle,
-                          color: Colors.purple, size: 28),
-                    IconButton(
-                      icon: const Icon(Icons.more_vert),
-                      onPressed: () {
-                        currentTutorial = tutorial;
-                        audioOption(
-                            tutorial['audio_url'].toString(), tutorial['id']);
-                      },
-                    ),
-                  ],
                 ),
                 selected: isSelected,
                 selectedTileColor: Colors.purple.shade50.withOpacity(0.3),

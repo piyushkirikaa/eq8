@@ -227,30 +227,55 @@ class _DashboardState extends State<Dashboard> {
 
   Future<List<Course>> getSubjectList() async {
     courses = [];
-    final response = await RestClient().authGet('/student/subject-list', {});
-    if (response["status"] == 'success') {
-      final courseList = response["data"];
-      courses = [];
-      for (var course in courseList) {
-        int tutorialCount = course["tutorial_count"];
-        int examCount = course["exam_count"];
-        double completionPercentage = 0;
-        if (tutorialCount == 0 && examCount == 0) {
-          completionPercentage = 0;
-        } else {
-          completionPercentage = (examCount / tutorialCount) * 100;
-        }
-        courses.add(Course(
-            title: course["name"],
-            description:
-                "Tutorial ${course["tutorial_count"]} | Exam ${course["exam_count"]}",
-            progress: completionPercentage.toInt(),
-            id: course["id"]));
+    try {
+      final response = await RestClient().authGet('/student/subject-list', {});
+      print('API Response: $response');
+
+      // Check if response is null
+      if (response == null) {
+        RestClient().error(
+            "Unable to connect to server. Please check your internet connection.");
+        return [];
       }
-      return courses;
-    } else {
-      RestClient().error(response["data"]);
-      return []; // Return an empty list in case of an error
+
+      // Check if response has the expected structure
+      if (response is Map<String, dynamic> && response.containsKey("status")) {
+        if (response["status"] == 'success') {
+          final courseList = response["data"];
+          courses = [];
+
+          if (courseList != null && courseList is List) {
+            for (var course in courseList) {
+              int tutorialCount = course["tutorial_count"] ?? 0;
+              int examCount = course["exam_count"] ?? 0;
+              double completionPercentage = 0;
+              if (tutorialCount == 0 && examCount == 0) {
+                completionPercentage = 0;
+              } else {
+                completionPercentage = (examCount / tutorialCount) * 100;
+              }
+              courses.add(Course(
+                  title: course["name"] ?? "Unknown Course",
+                  description:
+                      "Tutorial ${course["tutorial_count"] ?? 0} | Exam ${course["exam_count"] ?? 0}",
+                  progress: completionPercentage.toInt(),
+                  id: course["id"] ?? 0));
+            }
+          }
+          return courses;
+        } else {
+          String errorMessage = response["data"] ?? "Unknown error occurred";
+          RestClient().error(errorMessage);
+          return [];
+        }
+      } else {
+        RestClient().error("Invalid response format received from server");
+        return [];
+      }
+    } catch (e) {
+      print('Error in getSubjectList: $e');
+      RestClient().error("Failed to load subjects. Please try again.");
+      return [];
     }
   }
 

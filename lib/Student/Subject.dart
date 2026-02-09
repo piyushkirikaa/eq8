@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import '../../Service/Analytics.dart';
 import '../../Student/FeedbackController.dart';
 import '../../Student/StartYourExam.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'dart:io';
 import '../Library/RestClient.dart';
 import '../Widgets/Course.dart';
 import 'ExamHistory.dart';
@@ -12,6 +12,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+// Platform-specific imports
 import 'package:flick_video_player/flick_video_player.dart';
 import 'PDFScreen.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -67,25 +68,41 @@ class Subject extends StatefulWidget {
 
 class _SubjectState extends State<Subject> {
   var currentTutorial;
-  late VideoPlayerController _controller;
   bool isVideoSet = false;
   late List<dynamic> subjectList;
-  late File _videoFile;
   late BuildContext globalScaffoldContext;
-  late FlickManager flickManager;
+
+  // Platform-specific video controllers
+  FlickManager? flickManager; // For Android
+  VideoPlayerController? winVideoController; // For Windows
+
   bool isSavingVideo = false;
   // Track the ID of the currently playing video
   String? currentlyPlayingId;
   // Store the fetched subject list to avoid reloading
   List<dynamic>? cachedSubjectList;
 
+  // Windows video player controls state
+  bool _showControls = true;
+  bool _isFullScreen = false;
+  double _currentVolume = 1.0;
+  Timer? _controlsTimer;
+
   @override
   void initState() {
     super.initState();
-    flickManager = FlickManager(
-      videoPlayerController: VideoPlayerController.networkUrl(Uri.parse(
-          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')),
-    );
+
+    // Initialize platform-specific video players
+    if (Platform.isWindows) {
+      // For Windows, we'll initialize the controller when needed
+      winVideoController = null;
+    } else {
+      // For Android and other platforms, use FlickManager
+      flickManager = FlickManager(
+        videoPlayerController: VideoPlayerController.networkUrl(Uri.parse(
+            'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')),
+      );
+    }
   }
 
   @override
@@ -407,7 +424,8 @@ class _SubjectState extends State<Subject> {
             if (tutorial['isCached'])
               Padding(
                 padding: const EdgeInsets.only(right: 4.0),
-                child: Icon(Icons.offline_pin, color: Colors.green, size: 16),
+                child: Icon(Icons.download_for_offline,
+                    color: Colors.green, size: 30),
               ),
             // Only show options menu for currently playing video
             if (isCurrentlyPlaying)
@@ -522,24 +540,43 @@ class _SubjectState extends State<Subject> {
   }
 
   void changeVideo(String videoUrl) {
-    flickManager.handleChangeVideo(
-      VideoPlayerController.network(videoUrl),
-    );
-    // Set volume to maximum when video loads
-    if (flickManager.flickControlManager != null) {
-      // Use unmute instead of setting mute property directly
-      flickManager.flickControlManager!.unmute();
-    }
-    // Set volume to maximum (1.0)
-    flickManager.flickVideoManager?.videoPlayerController?.setVolume(1.0);
+    if (Platform.isWindows) {
+      // For Windows platform
+      winVideoController?.dispose();
+      winVideoController =
+          VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+      winVideoController!.initialize().then((_) {
+        _currentVolume = 1.0;
+        winVideoController!.setVolume(_currentVolume);
 
-    setState(() {
-      isVideoSet = true;
-      // Update currently playing ID if we have current tutorial
-      if (currentTutorial != null && currentTutorial['id'] != null) {
-        currentlyPlayingId = currentTutorial['id'].toString();
+        setState(() {
+          isVideoSet = true;
+          if (currentTutorial != null && currentTutorial['id'] != null) {
+            currentlyPlayingId = currentTutorial['id'].toString();
+          }
+        });
+      });
+    } else {
+      // For Android and other platforms
+      flickManager?.handleChangeVideo(
+        VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
+      );
+      // Set volume to maximum when video loads
+      if (flickManager?.flickControlManager != null) {
+        // Use unmute instead of setting mute property directly
+        flickManager!.flickControlManager!.unmute();
       }
-    });
+      // Set volume to maximum (1.0)
+      flickManager?.flickVideoManager?.videoPlayerController?.setVolume(1.0);
+
+      setState(() {
+        isVideoSet = true;
+        // Update currently playing ID if we have current tutorial
+        if (currentTutorial != null && currentTutorial['id'] != null) {
+          currentlyPlayingId = currentTutorial['id'].toString();
+        }
+      });
+    }
   }
 
   videoOption(videoURL, tutorialID) async {
@@ -812,6 +849,7 @@ class _SubjectState extends State<Subject> {
           Navigator.pop(context);
           RestClient().success(
               'We are saving your video offline, We will notify you when complete.');
+
           DefaultCacheManager().getSingleFile(videoURL).then((file) {
             RestClient().success('Video saved is now available offline');
             setState(() {});
@@ -856,12 +894,9 @@ class _SubjectState extends State<Subject> {
           children: [
             SizedBox(
               height: playerHeight,
-              child: FlickVideoPlayer(
-                flickManager: flickManager,
-                flickVideoWithControls: const FlickVideoWithControls(
-                  controls: FlickPortraitControls(),
-                ),
-              ),
+              child: Platform.isWindows
+                  ? _buildWindowsVideoPlayer()
+                  : _buildAndroidVideoPlayer(),
             ),
             // Only show the Start Exam button if is_exam is 1
             if (currentTutorial != null && currentTutorial['is_exam'] == 1)
@@ -904,6 +939,503 @@ class _SubjectState extends State<Subject> {
     }
   }
 
+  Widget _buildWindowsVideoPlayer() {
+    if (winVideoController != null && winVideoController!.value.isInitialized) {
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            _showControls = !_showControls;
+          });
+          // Cancel existing timer
+          _controlsTimer?.cancel();
+          // Hide controls after 3 seconds if they're visible
+          if (_showControls) {
+            _controlsTimer = Timer(const Duration(seconds: 3), () {
+              if (mounted) {
+                setState(() {
+                  _showControls = false;
+                });
+              }
+            });
+          }
+        },
+        child: Container(
+          color: Colors.black,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Video player
+              Center(
+                child: AspectRatio(
+                  aspectRatio: winVideoController!.value.aspectRatio,
+                  child: VideoPlayer(winVideoController!),
+                ),
+              ),
+              // Loading indicator
+              if (winVideoController!.value.isBuffering)
+                const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              // Center play button when paused
+              if (!winVideoController!.value.isPlaying && _showControls)
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      iconSize: 64,
+                      icon: const Icon(Icons.play_arrow, color: Colors.white),
+                      onPressed: () {
+                        winVideoController!.play();
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ),
+              // YouTube-style bottom controls
+              if (_showControls)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildYouTubeStyleControls(),
+                ),
+              // Fullscreen toggle (top-right)
+              if (_showControls)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        _isFullScreen
+                            ? Icons.fullscreen_exit
+                            : Icons.fullscreen,
+                        color: Colors.white,
+                      ),
+                      onPressed: _toggleFullScreen,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+  }
+
+  Widget _buildAndroidVideoPlayer() {
+    if (flickManager != null) {
+      return FlickVideoPlayer(
+        flickManager: flickManager!,
+        flickVideoWithControls: const FlickVideoWithControls(
+          controls: FlickPortraitControls(),
+        ),
+      );
+    } else {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+  }
+
+  Widget _buildYouTubeStyleControls() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Colors.black.withOpacity(0.8),
+            Colors.black.withOpacity(0.4),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Progress indicator
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: VideoProgressIndicator(
+              winVideoController!,
+              allowScrubbing: true,
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              colors: const VideoProgressColors(
+                playedColor: Colors.red,
+                bufferedColor: Colors.white54,
+                backgroundColor: Colors.white24,
+              ),
+            ),
+          ),
+          // Control buttons row
+          Row(
+            children: [
+              // Play/Pause button
+              IconButton(
+                icon: Icon(
+                  winVideoController!.value.isPlaying
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 28,
+                ),
+                onPressed: () {
+                  if (winVideoController!.value.isPlaying) {
+                    winVideoController!.pause();
+                  } else {
+                    winVideoController!.play();
+                  }
+                  setState(() {}); // Only setState on user interaction
+                },
+              ),
+              const SizedBox(width: 8),
+              // Current time
+              Text(
+                _formatDuration(winVideoController!.value.position),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              const Text(
+                ' / ',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              Text(
+                _formatDuration(winVideoController!.value.duration),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              const Spacer(),
+              // Volume control
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _currentVolume > 0.5
+                          ? Icons.volume_up
+                          : _currentVolume > 0
+                              ? Icons.volume_down
+                              : Icons.volume_off,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (_currentVolume > 0) {
+                          _currentVolume = 0;
+                        } else {
+                          _currentVolume = 1.0;
+                        }
+                        winVideoController!.setVolume(_currentVolume);
+                      });
+                    },
+                  ),
+                  Container(
+                    width: 60,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: Colors.white,
+                        inactiveTrackColor: Colors.white54,
+                        thumbColor: Colors.white,
+                        thumbShape:
+                            const RoundSliderThumbShape(enabledThumbRadius: 6),
+                        trackHeight: 2,
+                      ),
+                      child: Slider(
+                        value: _currentVolume,
+                        min: 0.0,
+                        max: 1.0,
+                        onChanged: (value) {
+                          setState(() {
+                            _currentVolume = value;
+                            winVideoController!.setVolume(value);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              // Fullscreen button
+              IconButton(
+                icon: Icon(
+                  _isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: _toggleFullScreen,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toggleFullScreen() {
+    setState(() {
+      _isFullScreen = !_isFullScreen;
+    });
+
+    if (_isFullScreen) {
+      // Enter fullscreen mode
+      Navigator.of(context)
+          .push(
+        MaterialPageRoute(
+          builder: (context) => _buildFullScreenPlayer(),
+          settings: const RouteSettings(name: '/fullscreen'),
+        ),
+      )
+          .then((_) {
+        setState(() {
+          _isFullScreen = false;
+        });
+      });
+    }
+  }
+
+  Widget _buildFullScreenPlayer() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              _showControls = !_showControls;
+            });
+            // Cancel existing timer
+            _controlsTimer?.cancel();
+            // Hide controls after 3 seconds if they're visible
+            if (_showControls) {
+              _controlsTimer = Timer(const Duration(seconds: 3), () {
+                if (mounted) {
+                  setState(() {
+                    _showControls = false;
+                  });
+                }
+              });
+            }
+          },
+          child: Stack(
+            children: [
+              // Fullscreen video player
+              Center(
+                child: AspectRatio(
+                  aspectRatio: winVideoController!.value.aspectRatio,
+                  child: VideoPlayer(winVideoController!),
+                ),
+              ),
+              // Loading indicator
+              if (winVideoController!.value.isBuffering)
+                const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              // Center play button when paused
+              if (!winVideoController!.value.isPlaying && _showControls)
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      iconSize: 64,
+                      icon: const Icon(Icons.play_arrow, color: Colors.white),
+                      onPressed: () {
+                        winVideoController!.play();
+                        setState(() {}); // Only setState on user interaction
+                      },
+                    ),
+                  ),
+                ),
+              // Fullscreen controls
+              if (_showControls)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildFullScreenControls(),
+                ),
+              // Exit fullscreen button
+              if (_showControls)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFullScreenControls() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Colors.black.withOpacity(0.8),
+            Colors.black.withOpacity(0.4),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Progress indicator
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: VideoProgressIndicator(
+              winVideoController!,
+              allowScrubbing: true,
+              padding: const EdgeInsets.symmetric(horizontal: 0),
+              colors: const VideoProgressColors(
+                playedColor: Colors.red,
+                bufferedColor: Colors.white54,
+                backgroundColor: Colors.white24,
+              ),
+            ),
+          ),
+          // Control buttons row
+          Row(
+            children: [
+              // Play/Pause button
+              IconButton(
+                icon: Icon(
+                  winVideoController!.value.isPlaying
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 32,
+                ),
+                onPressed: () {
+                  if (winVideoController!.value.isPlaying) {
+                    winVideoController!.pause();
+                  } else {
+                    winVideoController!.play();
+                  }
+                  setState(() {}); // Only setState on user interaction
+                },
+              ),
+              const SizedBox(width: 16),
+              // Current time
+              Text(
+                _formatDuration(winVideoController!.value.position),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              const Text(
+                ' / ',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              Text(
+                _formatDuration(winVideoController!.value.duration),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              const Spacer(),
+              // Volume control
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      _currentVolume > 0.5
+                          ? Icons.volume_up
+                          : _currentVolume > 0
+                              ? Icons.volume_down
+                              : Icons.volume_off,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        if (_currentVolume > 0) {
+                          _currentVolume = 0;
+                        } else {
+                          _currentVolume = 1.0;
+                        }
+                        winVideoController!.setVolume(_currentVolume);
+                      });
+                    },
+                  ),
+                  Container(
+                    width: 100,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: Colors.white,
+                        inactiveTrackColor: Colors.white54,
+                        thumbColor: Colors.white,
+                        thumbShape:
+                            const RoundSliderThumbShape(enabledThumbRadius: 8),
+                        trackHeight: 3,
+                      ),
+                      child: Slider(
+                        value: _currentVolume,
+                        min: 0.0,
+                        max: 1.0,
+                        onChanged: (value) {
+                          setState(() {
+                            _currentVolume = value;
+                            winVideoController!.setVolume(value);
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              // Exit fullscreen button
+              IconButton(
+                icon: const Icon(Icons.fullscreen_exit,
+                    color: Colors.white, size: 28),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+
+    if (hours > 0) {
+      return '$hours:${twoDigits(minutes)}:${twoDigits(seconds)}';
+    } else {
+      return '${twoDigits(minutes)}:${twoDigits(seconds)}';
+    }
+  }
+
   Future<bool> isUrlCached(String url) async {
     try {
       FileInfo? fileInfo = await DefaultCacheManager().getFileFromCache(url);
@@ -920,8 +1452,12 @@ class _SubjectState extends State<Subject> {
     });
 
     // Pause the video before navigating to the exam page
-    if (flickManager.flickVideoManager?.videoPlayerController != null) {
-      flickManager.flickVideoManager!.videoPlayerController!.pause();
+    if (Platform.isWindows) {
+      winVideoController?.pause();
+    } else {
+      if (flickManager?.flickVideoManager?.videoPlayerController != null) {
+        flickManager!.flickVideoManager!.videoPlayerController!.pause();
+      }
     }
 
     Navigator.push(
@@ -932,8 +1468,12 @@ class _SubjectState extends State<Subject> {
               )),
     ).then((_) {
       // Resume the video when returning from the exam page
-      if (flickManager.flickVideoManager?.videoPlayerController != null) {
-        flickManager.flickVideoManager!.videoPlayerController!.play();
+      if (Platform.isWindows) {
+        winVideoController?.play();
+      } else {
+        if (flickManager?.flickVideoManager?.videoPlayerController != null) {
+          flickManager!.flickVideoManager!.videoPlayerController!.play();
+        }
       }
     });
   }
@@ -969,6 +1509,13 @@ class _SubjectState extends State<Subject> {
   @override
   void dispose() {
     super.dispose();
-    flickManager.dispose();
+    // Cancel timer
+    _controlsTimer?.cancel();
+    // Dispose platform-specific controllers
+    if (Platform.isWindows) {
+      winVideoController?.dispose();
+    } else {
+      flickManager?.dispose();
+    }
   }
 }
