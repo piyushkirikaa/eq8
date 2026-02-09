@@ -708,10 +708,20 @@ class _SubjectState extends State<Subject> {
                     "video": currentTutorial['title'].toString()
                   });
                   final document = currentTutorial['document_url'].toString();
+                  debugPrint('=== VIDEO AID ===');
+                  debugPrint('Document URL: $document');
                   if (document != "null") {
                     Navigator.pop(context);
-                    final file = await createFileOfPdfUrl(document);
-                    viewPDF(file.path);
+                    try {
+                      final file = await createFileOfPdfUrl(document);
+                      debugPrint('Video AID file created: ${file.path}');
+                      debugPrint('File exists: ${await file.exists()}');
+                      debugPrint('File size: ${await file.length()} bytes');
+                      viewPDF(file.path);
+                    } catch (e) {
+                      debugPrint('Error with Video AID: $e');
+                      RestClient().error('Error loading document: $e');
+                    }
                   } else {
                     RestClient().error('No document found');
                   }
@@ -733,10 +743,20 @@ class _SubjectState extends State<Subject> {
                     });
                     final document =
                         currentTutorial['resource_guide'].toString();
+                    debugPrint('=== RESOURCE GUIDE ===');
+                    debugPrint('Document URL: $document');
                     if (document != "null") {
                       Navigator.pop(context);
-                      final file = await createFileOfPdfUrl(document);
-                      viewPDF(file.path);
+                      try {
+                        final file = await createFileOfPdfUrl(document);
+                        debugPrint('Resource Guide file created: ${file.path}');
+                        debugPrint('File exists: ${await file.exists()}');
+                        debugPrint('File size: ${await file.length()} bytes');
+                        viewPDF(file.path);
+                      } catch (e) {
+                        debugPrint('Error with Resource Guide: $e');
+                        RestClient().error('Error loading document: $e');
+                      }
                     } else {
                       RestClient().error('No resource guide found');
                     }
@@ -827,6 +847,7 @@ class _SubjectState extends State<Subject> {
   }
 
   viewPDF(url) async {
+    debugPrint('viewPDF called with URL: $url');
     return await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1489,17 +1510,32 @@ class _SubjectState extends State<Subject> {
   Future<File> createFileOfPdfUrl(String prdUrl) async {
     Completer<File> completer = Completer<File>();
     try {
+      debugPrint('createFileOfPdfUrl: Starting download from: $prdUrl');
       final url = prdUrl;
       Uri uri = Uri.parse(url);
       String fileName = uri.pathSegments.last;
-      var request = await HttpClient().getUrl(uri); // Corrected line
+      debugPrint('createFileOfPdfUrl: Filename: $fileName');
+
+      var request = await HttpClient().getUrl(uri);
+      debugPrint('createFileOfPdfUrl: Request sent');
+
       var response = await request.close();
+      debugPrint(
+          'createFileOfPdfUrl: Response received, status: ${response.statusCode}');
+
       var bytes = await consolidateHttpClientResponseBytes(response);
+      debugPrint('createFileOfPdfUrl: Downloaded ${bytes.length} bytes');
+
       var dir = await getApplicationDocumentsDirectory();
       File file = File("${dir.path}/$fileName");
+      debugPrint('createFileOfPdfUrl: Saving to: ${file.path}');
+
       await file.writeAsBytes(bytes, flush: true);
+      debugPrint('createFileOfPdfUrl: File saved successfully');
+
       completer.complete(file);
     } catch (e) {
+      debugPrint('createFileOfPdfUrl ERROR: $e');
       completer.completeError(e);
       throw Exception('Error parsing asset file!');
     }

@@ -180,6 +180,31 @@
             return false;
         };
 
+        // Helper function to send logs to Flutter
+        function flutterLog(message) {
+            if (window.FlutterLog) {
+                window.FlutterLog.postMessage(message);
+            } else {
+                console.log(message);
+            }
+        }
+
+        // Override console methods to also send to Flutter
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            const message = args.join(' ');
+            originalConsoleLog.apply(console, args);
+            flutterLog('[LOG] ' + message);
+        };
+        
+        console.error = function(...args) {
+            const message = args.join(' ');
+            originalConsoleError.apply(console, args);
+            flutterLog('[ERROR] ' + message);
+        };
+
         // PDF.js configuration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -199,23 +224,48 @@
             const errorMessage = document.getElementById('error-message');
             const pdfUrl = getPdfUrl();
 
+            console.log('=== loadPDF called ===');
+            console.log('pdfUrl exists:', !!pdfUrl);
+            
             if (!pdfUrl) {
+                console.error('No PDF URL provided');
                 errorMessage.textContent = 'No PDF file specified';
                 errorMessage.style.display = 'block';
                 return;
             }
 
+            console.log('PDF URL type:', pdfUrl.startsWith('data:') ? 'base64 data URL' : 'regular URL');
+            console.log('PDF URL length:', pdfUrl.length, 'characters');
+            if (pdfUrl.startsWith('data:')) {
+                const base64Length = pdfUrl.split(',')[1]?.length || 0;
+                const estimatedSize = (base64Length * 3 / 4 / 1024 / 1024).toFixed(2);
+                console.log('Estimated PDF size:', estimatedSize, 'MB');
+            }
+
             loading.style.display = 'block';
 
             try {
+                console.log('Calling pdfjsLib.getDocument...');
                 const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                
+                loadingTask.onProgress = function(progress) {
+                    const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                    console.log('PDF loading progress:', percent + '%', '(' + progress.loaded + '/' + progress.total + ')');
+                };
+                
+                console.log('Waiting for PDF document...');
                 pdfDoc = await loadingTask.promise;
+                console.log('PDF loaded successfully!');
+                
                 totalPages = pdfDoc.numPages;
+                console.log('Total pages:', totalPages);
 
                 loading.style.display = 'none';
 
                 // Render all pages
+                console.log('Starting to render pages...');
                 await renderAllPages();
+                console.log('All pages rendered successfully!');
 
                 // Show controls if more than one page
                 if (totalPages > 1) {
@@ -223,10 +273,14 @@
                     updatePageInfo();
                 }
             } catch (error) {
+                console.error('=== PDF Loading Error ===');
+                console.error('Error type:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                
                 loading.style.display = 'none';
                 errorMessage.textContent = 'Error loading PDF: ' + error.message;
                 errorMessage.style.display = 'block';
-                console.error('Error loading PDF:', error);
             }
         }
 

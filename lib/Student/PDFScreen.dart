@@ -26,7 +26,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   String errorMessage = '';
 
   // Android WebView variables
-  late final WebViewController _webController;
+  WebViewController? _webController;
 
   // Windows WebView variables
   final WebviewController _windowsController = WebviewController();
@@ -34,6 +34,10 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    debugPrint('========== PDFScreen initState ==========');
+    debugPrint('PDF Path: ${widget.path}');
+    debugPrint('Platform: ${Platform.operatingSystem}');
+
     if (Platform.isWindows) {
       _initializeWindowsWebView();
     } else {
@@ -42,25 +46,71 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   }
 
   Future<String> _getCustomHtmlViewer() async {
-    // Load the custom HTML viewer template
-    String htmlContent =
-        await rootBundle.loadString('assets/html/pdf_viewer.html');
+    try {
+      // Load the custom HTML viewer template
+      String htmlContent =
+          await rootBundle.loadString('assets/html/pdf_viewer.html');
 
-    // Prepare PDF URL
-    String pdfUrl = widget.path!;
-    if (!Platform.isWindows && !pdfUrl.startsWith('http')) {
-      // For local files on Android
-      pdfUrl = 'file://$pdfUrl';
-    } else if (Platform.isWindows && !pdfUrl.startsWith('http')) {
-      // For local files on Windows
-      pdfUrl = 'file:///${pdfUrl.replaceAll(r'\', '/')}';
+      debugPrint('HTML template loaded successfully');
+
+      String pdfUrl;
+
+      // Check if it's a remote URL or local file
+      if (widget.path!.startsWith('http')) {
+        // Remote URL - use as is
+        pdfUrl = widget.path!;
+        debugPrint('Using remote PDF URL: $pdfUrl');
+      } else {
+        // Local file - convert to base64 data URL to avoid CORS issues
+        try {
+          final file = File(widget.path!);
+          debugPrint('Checking if file exists: ${widget.path}');
+
+          if (!await file.exists()) {
+            debugPrint('ERROR: File does not exist!');
+            throw Exception('File not found: ${widget.path!}');
+          }
+
+          debugPrint('File exists, reading bytes...');
+          final bytes = await file.readAsBytes();
+          debugPrint(
+              'PDF file size: ${bytes.length} bytes (${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB)');
+
+          // Check if file is too large for base64 encoding (>50MB could cause issues)
+          if (bytes.length > 50 * 1024 * 1024) {
+            debugPrint(
+                'WARNING: PDF file is very large (>${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB), this might cause issues');
+          }
+
+          debugPrint('Converting to base64...');
+          final base64Pdf = base64Encode(bytes);
+          debugPrint('Base64 length: ${base64Pdf.length} characters');
+
+          pdfUrl = 'data:application/pdf;base64,$base64Pdf';
+          debugPrint('PDF converted to base64 successfully');
+        } catch (e) {
+          debugPrint('Error reading PDF file: $e');
+          // Fallback to file URL (might not work but we try)
+          if (Platform.isWindows) {
+            pdfUrl = 'file:///${widget.path!.replaceAll(r'\', '/')}';
+          } else {
+            pdfUrl = 'file://${widget.path!}';
+          }
+          debugPrint('Using fallback file URL: $pdfUrl');
+        }
+      }
+
+      // Replace the getPdfUrl function to return our PDF URL directly
+      // Use a more robust replacement that handles special characters
+      htmlContent = htmlContent.replaceAll(
+          'const pdfUrl = getPdfUrl();', 'const pdfUrl = `$pdfUrl`;');
+
+      debugPrint('HTML content prepared, total length: ${htmlContent.length}');
+      return htmlContent;
+    } catch (e) {
+      debugPrint('ERROR in _getCustomHtmlViewer: $e');
+      rethrow;
     }
-
-    // Replace the getPdfUrl function to return our PDF URL directly
-    htmlContent = htmlContent.replaceAll(
-        'const pdfUrl = getPdfUrl();', 'const pdfUrl = "$pdfUrl";');
-
-    return htmlContent;
   }
 
   Future<void> _initializeWindowsWebView() async {
@@ -107,38 +157,102 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   }
 
   void _initializeAndroidWebView() async {
-    _webController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar if needed
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {
-            setState(() {
-              isReady = true;
-            });
-          },
-          onWebResourceError: (WebResourceError error) {
-            setState(() {
-              errorMessage = error.description;
-            });
-          },
-        ),
-      );
-
-    // Get custom HTML viewer with PDF URL embedded
     try {
+      _webController = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..addJavaScriptChannel(
+          'FlutterLog',
+          onMessageReceived: (JavaScriptMessage message) {
+            debugPrint('JS >>> ${message.message}');
+          },
+        )
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onProgress: (int progress) {
+              debugPrint('WebView loading progress: $progress%');
+            },
+            onPageStarted: (String url) {
+              debugPrint('WebView page started: $url');
+            },
+            onPageFinished: (String url) {
+              debugPrint('WebView page finished: $url');
+
+              // Inject JavaScript to capture console logs and errors
+              _webController!.runJavaScript('''
+                // Capture console logs
+                const originalLog = console.log;
+                const originalError = console.error;
+                
+                console.log = function(...args) {
+                  originalLog.apply(console, args);
+                  window.flutter_log = args.join(' ');
+                };
+                
+                console.error = function(...args) {
+                  originalError.apply(console, args);
+                  window.flutter_error = args.join(' ');
+                };
+                
+                // Log PDF URL length for debugging
+                if (typeof pdfUrl !== 'undefined') {
+                  console.log('PDF URL type: ' + (pdfUrl.startsWith('data:') ? 'base64' : 'url'));
+                  console.log('PDF URL length: ' + pdfUrl.length);
+                }
+              ''');
+
+              // Set up periodic check to retrieve JavaScript console logs
+              Future.delayed(const Duration(seconds: 2), () {
+                _webController!
+                    .runJavaScriptReturningResult('window.flutter_log || ""')
+                    .then((log) {
+                  if (log.toString().isNotEmpty && log.toString() != '""') {
+                    debugPrint('JS Log: $log');
+                  }
+                });
+                _webController!
+                    .runJavaScriptReturningResult('window.flutter_error || ""')
+                    .then((error) {
+                  if (error.toString().isNotEmpty && error.toString() != '""') {
+                    debugPrint('JS Error: $error');
+                  }
+                });
+              });
+
+              setState(() {
+                isReady = true;
+              });
+            },
+            onWebResourceError: (WebResourceError error) {
+              debugPrint('WebView error: ${error.description}');
+              debugPrint('WebView error type: ${error.errorType}');
+              debugPrint('WebView error code: ${error.errorCode}');
+              setState(() {
+                errorMessage = error.description;
+              });
+            },
+          ),
+        )
+        ..enableZoom(true);
+
+      debugPrint('Loading PDF from: ${widget.path}');
+
+      // Get custom HTML viewer with PDF URL embedded
       String htmlContent = await _getCustomHtmlViewer();
+
+      debugPrint('HTML content length: ${htmlContent.length}');
 
       // Convert HTML to base64 data URL for Android WebView
       final String contentBase64 =
           base64Encode(const Utf8Encoder().convert(htmlContent));
       final String dataUrl = 'data:text/html;base64,$contentBase64';
 
-      _webController.loadRequest(Uri.parse(dataUrl));
+      await _webController!.loadRequest(Uri.parse(dataUrl));
+
+      // Trigger UI update to show WebView
+      if (mounted) {
+        setState(() {});
+      }
     } catch (e) {
       debugPrint('Error loading custom PDF viewer: $e');
       setState(() {
@@ -152,11 +266,8 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Document"),
-        // Removed share button to prevent document sharing
       ),
       body: Platform.isWindows ? _buildWindowsView() : _buildAndroidView(),
-      floatingActionButton:
-          Platform.isWindows ? null : _buildFloatingActionButton(),
     );
   }
 
@@ -200,12 +311,8 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildAndroidView() {
-    // Try to use native PDF viewer first, fallback to WebView
-    if (widget.path != null && !widget.path!.startsWith('http')) {
-      return _buildNativePDFView();
-    } else {
-      return _buildWebView();
-    }
+    // Always use our custom WebView with secure PDF viewer
+    return _buildWebView();
   }
 
   Widget _buildNativePDFView() {
@@ -282,16 +389,77 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildWebView() {
+    if (_webController == null) {
+      return Container(
+        color: Colors.white,
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Initializing PDF viewer...',
+                style: TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Stack(
       children: [
-        WebViewWidget(controller: _webController),
+        WebViewWidget(controller: _webController!),
         if (!isReady)
-          const Center(
-            child: CircularProgressIndicator(),
+          Container(
+            color: Colors.white,
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading PDF...',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
           ),
         if (errorMessage.isNotEmpty)
-          Center(
-            child: Text(errorMessage),
+          Container(
+            color: Colors.white,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline,
+                        size: 48, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      errorMessage,
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          errorMessage = '';
+                          isReady = false;
+                        });
+                        _initializeAndroidWebView();
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
       ],
     );
