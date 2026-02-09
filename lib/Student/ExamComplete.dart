@@ -307,8 +307,13 @@ class _ExamComplete extends State<ExamComplete> {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          // We only need to pop once now since Test.dart has already navigated back to Subject
-          Navigator.of(context).pop();
+          // Pop back through all exam screens to return to Subject
+          // This pops: ExamComplete -> Test -> StartYourExam -> back to Subject
+          // The .then() callback in Subject's startExam() will trigger and resume the video
+          Navigator.of(context).pop(); // Pop ExamComplete
+          Navigator.of(context).pop(); // Pop Test
+          Navigator.of(context)
+              .pop(); // Pop StartYourExam (triggers video resume in Subject)
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF4D7CFE),

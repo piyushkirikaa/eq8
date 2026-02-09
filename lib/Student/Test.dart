@@ -330,14 +330,9 @@ class _TestState extends State<Test> {
   }
 
   finishExam(response) {
-    // Instead of pushReplacement, let's replace all the routes back to Subject
-    // and then push ExamComplete, so when we pop, we go back to Subject
-
-    // First get back to Subject screen
-    Navigator.of(context).pop();
-    Navigator.of(context).pop();
-
-    // Now push the ExamComplete screen
+    // Navigate to ExamComplete without popping back to Subject
+    // This keeps the video paused while viewing results
+    // When user clicks "Continue Study", we'll pop back to Subject and resume video
     Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) => ExamComplete(examStatus: response)),
