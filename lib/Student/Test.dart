@@ -69,6 +69,12 @@ class _TestState extends State<Test> {
                       color: const Color(0xFF2D3142),
                       fontWeight: FontWeight.w500),
                 ),
+                const SizedBox(width: 16),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Color(0xFFE63946)),
+                  onPressed: _cancelExam,
+                  tooltip: 'Cancel Exam',
+                ),
               ],
             ),
           ),
@@ -316,7 +322,6 @@ class _TestState extends State<Test> {
         "wrong_answers": response['data']['wrong_answers'].toString(),
         "exam_status": response['data']['exam_status'].toString(),
       });
-      print(response['data']);
       finishExam(response['data']);
     } else {
       hideLoadingIndicator();
@@ -345,6 +350,68 @@ class _TestState extends State<Test> {
 
   void hideLoadingIndicator() {
     globalScaffoldContext.loaderOverlay.hide();
+  }
+
+  void _cancelExam() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            'Cancel Exam?',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF2D3142),
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to cancel this exam? Your progress will not be saved.',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: const Color(0xFF8C8FA5),
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text(
+                'CONTINUE EXAM',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF4D7CFE),
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Exit exam screen
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE63946),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'YES, CANCEL',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
