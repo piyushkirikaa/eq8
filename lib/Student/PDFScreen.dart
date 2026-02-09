@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_windows/webview_windows.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:flutter/services.dart';
 
 class PDFScreen extends StatefulWidget {
@@ -28,9 +28,6 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   // Android WebView variables
   WebViewController? _webController;
 
-  // Windows WebView variables
-  final WebviewController _windowsController = WebviewController();
-
   @override
   void initState() {
     super.initState();
@@ -38,13 +35,12 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
     debugPrint('PDF Path: ${widget.path}');
     debugPrint('Platform: ${Platform.operatingSystem}');
 
-    if (Platform.isWindows) {
-      _initializeWindowsWebView();
-    } else {
+    if (!Platform.isWindows) {
       _initializeAndroidWebView();
     }
   }
 
+  // For Android, we use custom WebView with secure PDF viewer
   Future<String> _getCustomHtmlViewer() async {
     try {
       // Load the custom HTML viewer template
@@ -61,101 +57,52 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
         pdfUrl = widget.path!;
         debugPrint('Using remote PDF URL: $pdfUrl');
       } else {
-        // Local file handling - different strategy per platform
-        if (Platform.isWindows) {
-          // Windows: Use file:// URL directly (no base64 needed - WebView can handle it)
-          pdfUrl = 'file:///${widget.path!.replaceAll(r'\', '/')}';
-          debugPrint('Windows: Using direct file URL (no base64): $pdfUrl');
-        } else {
-          // Android/iOS: Must use base64 data URL to avoid CORS issues
-          try {
-            final file = File(widget.path!);
-            debugPrint('Checking if file exists: ${widget.path}');
+        // Local file - convert to base64 data URL to avoid CORS issues
+        try {
+          final file = File(widget.path!);
+          debugPrint('Checking if file exists: ${widget.path}');
 
-            if (!await file.exists()) {
-              debugPrint('ERROR: File does not exist!');
-              throw Exception('File not found: ${widget.path!}');
-            }
-
-            debugPrint('File exists, reading bytes...');
-            final bytes = await file.readAsBytes();
-            debugPrint(
-                'PDF file size: ${bytes.length} bytes (${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB)');
-
-            // Check if file is too large for base64 encoding (>50MB could cause issues)
-            if (bytes.length > 50 * 1024 * 1024) {
-              debugPrint(
-                  'WARNING: PDF file is very large (>${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB), this might cause issues');
-            }
-
-            debugPrint('Converting to base64...');
-            final base64Pdf = base64Encode(bytes);
-            debugPrint('Base64 length: ${base64Pdf.length} characters');
-
-            pdfUrl = 'data:application/pdf;base64,$base64Pdf';
-            debugPrint('PDF converted to base64 successfully');
-          } catch (e) {
-            debugPrint('Error reading PDF file: $e');
-            // Fallback to file URL
-            pdfUrl = 'file://${widget.path!}';
-            debugPrint('Using fallback file URL: $pdfUrl');
+          if (!await file.exists()) {
+            debugPrint('ERROR: File does not exist!');
+            throw Exception('File not found: ${widget.path!}');
           }
+
+          debugPrint('File exists, reading bytes...');
+          final bytes = await file.readAsBytes();
+          debugPrint(
+              'PDF file size: ${bytes.length} bytes (${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB)');
+
+          debugPrint('Converting to base64...');
+          final base64Pdf = base64Encode(bytes);
+          debugPrint('Base64 length: ${base64Pdf.length} characters');
+
+          pdfUrl = 'data:application/pdf;base64,$base64Pdf';
+          debugPrint('PDF converted to base64 successfully');
+        } catch (e) {
+          debugPrint('Error reading PDF file: $e');
+          throw Exception('Failed to load PDF: $e');
         }
       }
 
       // Replace the getPdfUrl function to return our PDF URL directly
-      // Use a more robust replacement that handles special characters
+      // Properly escape the string for JavaScript
+      final escapedPdfUrl = pdfUrl
+          .replaceAll(r'\', r'\\')
+          .replaceAll("'", r"\'")
+          .replaceAll('\n', r'\n')
+          .replaceAll('\r', r'\r')
+          .replaceAll('\t', r'\t');
+
       htmlContent = htmlContent.replaceAll(
-          'const pdfUrl = getPdfUrl();', 'const pdfUrl = `$pdfUrl`;');
+          'const pdfUrl = getPdfUrl();', "const pdfUrl = '$escapedPdfUrl';");
 
       debugPrint('HTML content prepared, total length: ${htmlContent.length}');
+      debugPrint(
+          'PDF URL embedded successfully (first 100 chars): ${pdfUrl.substring(0, pdfUrl.length > 100 ? 100 : pdfUrl.length)}');
       return htmlContent;
     } catch (e) {
       debugPrint('ERROR in _getCustomHtmlViewer: $e');
       rethrow;
-    }
-  }
-
-  Future<void> _initializeWindowsWebView() async {
-    try {
-      await _windowsController.initialize();
-      await _windowsController.setBackgroundColor(Colors.transparent);
-      await _windowsController
-          .setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
-
-      // Get custom HTML viewer with PDF URL embedded
-      String htmlContent = await _getCustomHtmlViewer();
-
-      // Load the HTML content directly
-      await _windowsController.loadStringContent(htmlContent);
-
-      if (!mounted) return;
-      setState(() {});
-    } on PlatformException catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Error'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Code: ${e.code}'),
-                Text('Message: ${e.message}'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                child: const Text('Continue'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          ),
-        );
-      }
     }
   }
 
@@ -296,20 +243,55 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildWindowsView() {
-    return Center(
-      child: _windowsController.value.isInitialized
-          ? Webview(_windowsController)
-          : const Column(
+    // Use pdfrx for Windows - native, fast, no WebView needed
+    if (widget.path == null || widget.path!.isEmpty) {
+      return const Center(
+        child: Text('No PDF file specified'),
+      );
+    }
+
+    return PdfViewer.file(
+      widget.path!,
+      params: PdfViewerParams(
+        enableTextSelection: false,
+        backgroundColor: const Color(0xFF525659),
+        loadingBannerBuilder: (context, bytesDownloaded, totalBytes) {
+          return const Center(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
+                CircularProgressIndicator(color: Colors.white),
                 SizedBox(height: 16),
                 Text(
                   'Loading PDF...',
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],
             ),
+          );
+        },
+        errorBannerBuilder: (context, error, stackTrace, docRef) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load PDF',
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -470,9 +452,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    if (Platform.isWindows) {
-      _windowsController.dispose();
-    }
+    // pdfrx and WebView handle cleanup automatically
     super.dispose();
   }
 }

@@ -49,7 +49,9 @@
             transform: translate(-50%, -50%);
             color: white;
             font-size: 18px;
-            display: none;
+            display: block;
+            text-align: center;
+            z-index: 1000;
         }
 
         .spinner {
@@ -72,11 +74,15 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
+            color: #ff6b6b;
+            background: rgba(0, 0, 0, 0.9);
             font-size: 16px;
             text-align: center;
             padding: 20px;
+            border-radius: 8px;
+            max-width: 80%;
             display: none;
+            z-index: 2000;
         }
 
         /* Navigation controls */
@@ -121,6 +127,12 @@
     </style>
 </head>
 <body>
+    <script>
+        // Early initialization check
+        console.log('=== HTML Body Loaded ===');
+        console.log('Current time:', new Date().toISOString());
+    </script>
+    
     <div id="loading">
         <div class="spinner"></div>
         <div>Loading PDF...</div>
@@ -138,6 +150,9 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
+        console.log('=== SCRIPT TAG EXECUTING ===');
+        console.log('PDF.js loaded:', typeof pdfjsLib !== 'undefined');
+        
         // Disable all save/print shortcuts
         document.addEventListener('keydown', function(e) {
             // Prevent Ctrl+S (Save)
@@ -182,9 +197,15 @@
 
         // Helper function to send logs to Flutter
         function flutterLog(message) {
+            // Android WebView
             if (window.FlutterLog) {
                 window.FlutterLog.postMessage(message);
-            } else {
+            } 
+            // Windows WebView
+            else if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage(message);
+            } 
+            else {
                 console.log(message);
             }
         }
@@ -225,10 +246,14 @@
             const pdfUrl = getPdfUrl();
 
             console.log('=== loadPDF called ===');
+            console.log('pdfUrl type:', typeof pdfUrl);
             console.log('pdfUrl exists:', !!pdfUrl);
+            console.log('pdfUrl is string:', typeof pdfUrl === 'string');
+            console.log('pdfUrl length:', pdfUrl ? pdfUrl.length : 0);
             
-            if (!pdfUrl) {
-                console.error('No PDF URL provided');
+            if (!pdfUrl || pdfUrl === 'undefined' || pdfUrl === 'null') {
+                console.error('No PDF URL provided or invalid');
+                console.error('pdfUrl value:', pdfUrl);
                 errorMessage.textContent = 'No PDF file specified';
                 errorMessage.style.display = 'block';
                 return;
@@ -372,9 +397,17 @@
 
         // Initialize
         window.addEventListener('load', () => {
+            console.log('=== Window loaded, starting PDF initialization ===');
+            console.log('PDF.js library loaded:', typeof pdfjsLib !== 'undefined');
+            
             adjustScale();
             loadPDF().then(() => {
                 observePages();
+            }).catch(error => {
+                console.error('Error in loadPDF:', error);
+                document.getElementById('error-message').textContent = 'Failed to load PDF: ' + error.message;
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
             });
         });
 

@@ -1023,27 +1023,6 @@ class _SubjectState extends State<Subject> {
                   right: 0,
                   child: _buildYouTubeStyleControls(),
                 ),
-              // Fullscreen toggle (top-right)
-              if (_showControls)
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: IconButton(
-                      icon: Icon(
-                        _isFullScreen
-                            ? Icons.fullscreen_exit
-                            : Icons.fullscreen,
-                        color: Colors.white,
-                      ),
-                      onPressed: _toggleFullScreen,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
