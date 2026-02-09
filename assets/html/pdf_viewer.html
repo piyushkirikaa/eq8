@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secure PDF Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #525659;
+            overflow: hidden;
+        }
+
+        #pdf-container {
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #525659;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .pdf-page {
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            background: white;
+            max-width: 100%;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #9575CD;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        /* Navigation controls */
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        #controls button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        #controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #controls button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        #page-info {
+            color: white;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>Loading PDF...</div>
+    </div>
+
+    <div id="error-message"></div>
+
+    <div id="pdf-container"></div>
+
+    <div id="controls">
+        <button id="prev-page" onclick="changePage(-1)">◀</button>
+        <span id="page-info">Page 1 of 1</span>
+        <button id="next-page" onclick="changePage(1)">▶</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Disable all save/print shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Prevent Ctrl+S (Save)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                return false;
+            }
+            // Prevent Ctrl+P (Print)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                return false;
+            }
+            // Prevent F12 (DevTools)
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable right-click
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Disable text selection and copying
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        document.addEventListener('copy', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Override print function
+        window.print = function() {
+            console.log('Print disabled');
+            return false;
+        };
+
+        // PDF.js configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let currentPage = 1;
+        let totalPages = 0;
+        let scale = 1.5;
+
+        // Get PDF URL from query parameter
+        function getPdfUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('file');
+        }
+
+        async function loadPDF() {
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+            const pdfUrl = getPdfUrl();
+
+            if (!pdfUrl) {
+                errorMessage.textContent = 'No PDF file specified';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            loading.style.display = 'block';
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                pdfDoc = await loadingTask.promise;
+                totalPages = pdfDoc.numPages;
+
+                loading.style.display = 'none';
+
+                // Render all pages
+                await renderAllPages();
+
+                // Show controls if more than one page
+                if (totalPages > 1) {
+                    document.getElementById('controls').style.display = 'flex';
+                    updatePageInfo();
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                errorMessage.textContent = 'Error loading PDF: ' + error.message;
+                errorMessage.style.display = 'block';
+                console.error('Error loading PDF:', error);
+            }
+        }
+
+        async function renderAllPages() {
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '';
+
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pdf-page';
+                canvas.id = `page-${pageNum}`;
+                container.appendChild(canvas);
+
+                await renderPage(pageNum, canvas);
+            }
+        }
+
+        async function renderPage(pageNum, canvas) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: scale });
+
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            // Disable image smoothing for better quality
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+
+            const renderContext = {
+                canvasContext: context,
+                viewport: viewport
+            };
+
+            await page.render(renderContext).promise;
+        }
+
+        function changePage(delta) {
+            const newPage = currentPage + delta;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                scrollToPage(currentPage);
+                updatePageInfo();
+            }
+        }
+
+        function scrollToPage(pageNum) {
+            const pageElement = document.getElementById(`page-${pageNum}`);
+            if (pageElement) {
+                pageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function updatePageInfo() {
+            document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('prev-page').disabled = currentPage <= 1;
+            document.getElementById('next-page').disabled = currentPage >= totalPages;
+        }
+
+        // Detect which page is currently in view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const pageNum = parseInt(entry.target.id.split('-')[1]);
+                    if (pageNum !== currentPage) {
+                        currentPage = pageNum;
+                        updatePageInfo();
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        // Observe all pages after they're rendered
+        function observePages() {
+            document.querySelectorAll('.pdf-page').forEach(page => {
+                observer.observe(page);
+            });
+        }
+
+        // Adjust scale based on screen width
+        function adjustScale() {
+            const screenWidth = window.innerWidth;
+            if (screenWidth < 768) {
+                scale = screenWidth / 600; // Mobile
+            } else {
+                scale = 1.5; // Desktop
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            adjustScale();
+            loadPDF().then(() => {
+                observePages();
+            });
+        });
+
+        // Reload on orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                adjustScale();
+                renderAllPages().then(() => {
+                    observePages();
+                });
+            }, 200);
+        });
+    </script>
+</body>
+</html>

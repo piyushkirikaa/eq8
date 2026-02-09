@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_windows/webview_windows.dart';
 import 'package:flutter/services.dart';
@@ -40,6 +41,28 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
     }
   }
 
+  Future<String> _getCustomHtmlViewer() async {
+    // Load the custom HTML viewer template
+    String htmlContent =
+        await rootBundle.loadString('assets/html/pdf_viewer.html');
+
+    // Prepare PDF URL
+    String pdfUrl = widget.path!;
+    if (!Platform.isWindows && !pdfUrl.startsWith('http')) {
+      // For local files on Android
+      pdfUrl = 'file://$pdfUrl';
+    } else if (Platform.isWindows && !pdfUrl.startsWith('http')) {
+      // For local files on Windows
+      pdfUrl = 'file:///${pdfUrl.replaceAll(r'\', '/')}';
+    }
+
+    // Replace the getPdfUrl function to return our PDF URL directly
+    htmlContent = htmlContent.replaceAll(
+        'const pdfUrl = getPdfUrl();', 'const pdfUrl = "$pdfUrl";');
+
+    return htmlContent;
+  }
+
   Future<void> _initializeWindowsWebView() async {
     try {
       await _windowsController.initialize();
@@ -47,17 +70,11 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
       await _windowsController
           .setPopupWindowPolicy(WebviewPopupWindowPolicy.deny);
 
-      // Load PDF using Google Docs viewer or file:// protocol
-      String url;
-      if (widget.path!.startsWith('http')) {
-        url =
-            'https://docs.google.com/viewer?url=${Uri.encodeComponent(widget.path!)}';
-      } else {
-        // Convert local file path to file:// URL
-        url = 'file:///${widget.path!.replaceAll('\\', '/')}';
-      }
+      // Get custom HTML viewer with PDF URL embedded
+      String htmlContent = await _getCustomHtmlViewer();
 
-      await _windowsController.loadUrl(url);
+      // Load the HTML content directly
+      await _windowsController.loadStringContent(htmlContent);
 
       if (!mounted) return;
       setState(() {});
@@ -89,7 +106,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
     }
   }
 
-  void _initializeAndroidWebView() {
+  void _initializeAndroidWebView() async {
     _webController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -112,19 +129,22 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
         ),
       );
 
-    // Load PDF using Google Docs viewer
-    String url;
-    if (widget.path!.startsWith('http')) {
-      url =
-          'https://docs.google.com/viewer?url=${Uri.encodeComponent(widget.path!)}';
-    } else {
-      // For local files, we'll use Google Docs viewer with a publicly accessible URL
-      // or you can implement a local file server
-      url =
-          'https://docs.google.com/viewer?url=${Uri.encodeComponent(widget.path!)}';
-    }
+    // Get custom HTML viewer with PDF URL embedded
+    try {
+      String htmlContent = await _getCustomHtmlViewer();
 
-    _webController.loadRequest(Uri.parse(url));
+      // Convert HTML to base64 data URL for Android WebView
+      final String contentBase64 =
+          base64Encode(const Utf8Encoder().convert(htmlContent));
+      final String dataUrl = 'data:text/html;base64,$contentBase64';
+
+      _webController.loadRequest(Uri.parse(dataUrl));
+    } catch (e) {
+      debugPrint('Error loading custom PDF viewer: $e');
+      setState(() {
+        errorMessage = 'Error loading PDF viewer: $e';
+      });
+    }
   }
 
   @override
@@ -132,12 +152,7 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Document"),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {},
-          ),
-        ],
+        // Removed share button to prevent document sharing
       ),
       body: Platform.isWindows ? _buildWindowsView() : _buildAndroidView(),
       floatingActionButton:
