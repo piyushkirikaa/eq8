@@ -61,42 +61,45 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
         pdfUrl = widget.path!;
         debugPrint('Using remote PDF URL: $pdfUrl');
       } else {
-        // Local file - convert to base64 data URL to avoid CORS issues
-        try {
-          final file = File(widget.path!);
-          debugPrint('Checking if file exists: ${widget.path}');
+        // Local file handling - different strategy per platform
+        if (Platform.isWindows) {
+          // Windows: Use file:// URL directly (no base64 needed - WebView can handle it)
+          pdfUrl = 'file:///${widget.path!.replaceAll(r'\', '/')}';
+          debugPrint('Windows: Using direct file URL (no base64): $pdfUrl');
+        } else {
+          // Android/iOS: Must use base64 data URL to avoid CORS issues
+          try {
+            final file = File(widget.path!);
+            debugPrint('Checking if file exists: ${widget.path}');
 
-          if (!await file.exists()) {
-            debugPrint('ERROR: File does not exist!');
-            throw Exception('File not found: ${widget.path!}');
-          }
+            if (!await file.exists()) {
+              debugPrint('ERROR: File does not exist!');
+              throw Exception('File not found: ${widget.path!}');
+            }
 
-          debugPrint('File exists, reading bytes...');
-          final bytes = await file.readAsBytes();
-          debugPrint(
-              'PDF file size: ${bytes.length} bytes (${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB)');
-
-          // Check if file is too large for base64 encoding (>50MB could cause issues)
-          if (bytes.length > 50 * 1024 * 1024) {
+            debugPrint('File exists, reading bytes...');
+            final bytes = await file.readAsBytes();
             debugPrint(
-                'WARNING: PDF file is very large (>${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB), this might cause issues');
-          }
+                'PDF file size: ${bytes.length} bytes (${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB)');
 
-          debugPrint('Converting to base64...');
-          final base64Pdf = base64Encode(bytes);
-          debugPrint('Base64 length: ${base64Pdf.length} characters');
+            // Check if file is too large for base64 encoding (>50MB could cause issues)
+            if (bytes.length > 50 * 1024 * 1024) {
+              debugPrint(
+                  'WARNING: PDF file is very large (>${(bytes.length / 1024 / 1024).toStringAsFixed(2)} MB), this might cause issues');
+            }
 
-          pdfUrl = 'data:application/pdf;base64,$base64Pdf';
-          debugPrint('PDF converted to base64 successfully');
-        } catch (e) {
-          debugPrint('Error reading PDF file: $e');
-          // Fallback to file URL (might not work but we try)
-          if (Platform.isWindows) {
-            pdfUrl = 'file:///${widget.path!.replaceAll(r'\', '/')}';
-          } else {
+            debugPrint('Converting to base64...');
+            final base64Pdf = base64Encode(bytes);
+            debugPrint('Base64 length: ${base64Pdf.length} characters');
+
+            pdfUrl = 'data:application/pdf;base64,$base64Pdf';
+            debugPrint('PDF converted to base64 successfully');
+          } catch (e) {
+            debugPrint('Error reading PDF file: $e');
+            // Fallback to file URL
             pdfUrl = 'file://${widget.path!}';
+            debugPrint('Using fallback file URL: $pdfUrl');
           }
-          debugPrint('Using fallback file URL: $pdfUrl');
         }
       }
 
