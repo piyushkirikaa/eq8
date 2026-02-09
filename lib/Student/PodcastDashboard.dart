@@ -100,25 +100,11 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'No Podcasts Found',
+                            'Thank you for your patience , something special is coming soon…',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 40),
-                            child: Text(
-                              '${snapshot.error}'
-                                  .replaceAll('Exception:', '')
-                                  .trim(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black54,
-                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
