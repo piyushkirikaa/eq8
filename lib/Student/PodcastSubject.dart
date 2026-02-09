@@ -721,6 +721,10 @@ class _PodcastSubjectState extends State<PodcastSubject> {
       "subject_name": currentTutorial['subject_name'].toString(),
       "audio": currentTutorial['title'].toString()
     });
+
+    // Pause audio before starting the exam
+    _audioPlayer.pause();
+
     Navigator.push(
       context,
       MaterialPageRoute(
