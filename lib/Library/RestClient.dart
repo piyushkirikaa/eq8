@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -196,6 +197,11 @@ class RestClient {
   }
 
   success(message) async {
+    // Fluttertoast doesn't support Windows, so just print for Windows
+    if (Platform.isWindows) {
+      print('SUCCESS: $message');
+      return;
+    }
     return Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
@@ -207,6 +213,11 @@ class RestClient {
   }
 
   error(message) async {
+    // Fluttertoast doesn't support Windows, so just print for Windows
+    if (Platform.isWindows) {
+      print('ERROR: $message');
+      return;
+    }
     return Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,

@@ -23,8 +23,8 @@ class PDFScreenTest extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               Platform.isWindows
-                  ? 'Using webview_windows for PDF display'
-                  : 'Using flutter_pdfview (native) or webview_flutter (fallback)',
+                  ? 'Using pdfrx for PDF display'
+                  : 'Using webview_flutter with PDF.js',
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),

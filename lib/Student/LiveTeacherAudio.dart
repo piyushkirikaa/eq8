@@ -87,12 +87,14 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
   String _response = "";
   final List<Map<String, dynamic>> _messages = [];
   bool _isTyping = false;
+  bool _isSpeaking = false;
 
   @override
   void initState() {
     super.initState();
     _initializeChatGPT();
     _initializeAnimations();
+    _initializeTTS();
 
     // Add a welcome message
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -129,6 +131,26 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           _micAnimationController.forward();
         }
       }
+    });
+  }
+
+  void _initializeTTS() {
+    _flutterTts.setStartHandler(() {
+      setState(() {
+        _isSpeaking = true;
+      });
+    });
+
+    _flutterTts.setCompletionHandler(() {
+      setState(() {
+        _isSpeaking = false;
+      });
+    });
+
+    _flutterTts.setErrorHandler((msg) {
+      setState(() {
+        _isSpeaking = false;
+      });
     });
   }
 
@@ -252,6 +274,13 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
     await _flutterTts.setLanguage("en-US");
     await _flutterTts.setPitch(1.0);
     await _flutterTts.speak(text);
+  }
+
+  Future<void> _stopSpeaking() async {
+    await _flutterTts.stop();
+    setState(() {
+      _isSpeaking = false;
+    });
   }
 
   Future<void> _pickImageWithQuery(String query) async {
@@ -435,6 +464,15 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           style: TeacherTheme.appBarTextStyle,
         ),
         actions: [
+          if (_isSpeaking)
+            IconButton(
+              icon: Icon(
+                Icons.stop_circle,
+                color: Colors.redAccent,
+              ),
+              tooltip: 'Stop speaking',
+              onPressed: _stopSpeaking,
+            ),
           AnimatedBuilder(
             animation: _micAnimation,
             builder: (context, child) {
@@ -639,72 +677,6 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
             ],
           ),
           // 3D icon in top right corner
-          Positioned(
-            top: 20, // Position below app bar
-            right: 16,
-            child: Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.purple,
-                boxShadow: [
-                  // Inner shadow for 3D effect
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    offset: Offset(2, 2),
-                    blurRadius: 2,
-                    spreadRadius: 0,
-                  ),
-                  // Outer glow shadow
-                  BoxShadow(
-                    color: Colors.purple.withOpacity(0.4),
-                    offset: Offset(0, 0),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                  // Highlight for 3D effect
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.4),
-                    offset: Offset(-1, -1),
-                    blurRadius: 2,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  customBorder: CircleBorder(),
-                  onTap: () {
-                    // Add this import at the top of your file if not already present
-
-                    // Then replace the selection with:
-                    if (Platform.isAndroid || Platform.isIOS) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LiveTeacher()),
-                      );
-                    } else if (Platform.isWindows) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LiveTeacherWindows()),
-                      );
-                    }
-                  },
-                  child: Center(
-                    child: Icon(
-                      Icons.supervised_user_circle,
-                      size: 32,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

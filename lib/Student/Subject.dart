@@ -710,7 +710,7 @@ class _SubjectState extends State<Subject> {
                   final document = currentTutorial['document_url'].toString();
                   debugPrint('=== VIDEO AID ===');
                   debugPrint('Document URL: $document');
-                  if (document != "null") {
+                  if (document != "null" && document.isNotEmpty) {
                     Navigator.pop(context);
                     try {
                       final file = await createFileOfPdfUrl(document);
@@ -723,7 +723,48 @@ class _SubjectState extends State<Subject> {
                       RestClient().error('Error loading document: $e');
                     }
                   } else {
-                    RestClient().error('No document found');
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        title: Row(
+                          children: [
+                            Icon(Icons.info_outline,
+                                color: AppTheme.primaryColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Video AID',
+                              style: GoogleFonts.lato(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        content: Text(
+                          'Supplementary materials are not available for this tutorial at this time. Please check back later or contact support if you believe this is an error.',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'UNDERSTOOD',
+                              style: GoogleFonts.lato(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
                   }
                 },
               ),
@@ -745,7 +786,7 @@ class _SubjectState extends State<Subject> {
                         currentTutorial['resource_guide'].toString();
                     debugPrint('=== RESOURCE GUIDE ===');
                     debugPrint('Document URL: $document');
-                    if (document != "null") {
+                    if (document != "null" && document.isNotEmpty) {
                       Navigator.pop(context);
                       try {
                         final file = await createFileOfPdfUrl(document);
@@ -758,7 +799,48 @@ class _SubjectState extends State<Subject> {
                         RestClient().error('Error loading document: $e');
                       }
                     } else {
-                      RestClient().error('No resource guide found');
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          title: Row(
+                            children: [
+                              Icon(Icons.info_outline,
+                                  color: AppTheme.primaryColor),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Resource Guide',
+                                style: GoogleFonts.lato(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textPrimaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          content: Text(
+                            'The resource guide is not available for this tutorial at this time. Please check back later or contact support if you need assistance.',
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
+                              color: AppTheme.textSecondaryColor,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(
+                                'UNDERSTOOD',
+                                style: GoogleFonts.lato(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }
                   },
                 ),
@@ -1446,6 +1528,51 @@ class _SubjectState extends State<Subject> {
   }
 
   startExam() {
+    // Check if exam is available for this tutorial
+    if (currentTutorial == null || currentTutorial['is_exam'] != 1) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: AppTheme.primaryColor),
+              const SizedBox(width: 8),
+              Text(
+                'Exam Not Available',
+                style: GoogleFonts.lato(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimaryColor,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'An exam is not available for this tutorial. Please continue watching the tutorial or explore other available content.',
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              color: AppTheme.textSecondaryColor,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'UNDERSTOOD',
+                style: GoogleFonts.lato(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     Analytics().logEvent("START_EXAM", {
       "subject_name": currentTutorial['subject_name'].toString(),
       "video": currentTutorial['title'].toString()

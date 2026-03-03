@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -17,11 +15,6 @@ class PDFScreen extends StatefulWidget {
 }
 
 class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
-  // Android PDF viewer variables
-  final Completer<PDFViewController> _pdfController =
-      Completer<PDFViewController>();
-  int? pages = 0;
-  int? currentPage = 0;
   bool isReady = false;
   String errorMessage = '';
 
@@ -221,27 +214,6 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget? _buildFloatingActionButton() {
-    // Only show floating action button for native PDF view
-    if (widget.path != null && !widget.path!.startsWith('http')) {
-      return FutureBuilder<PDFViewController>(
-        future: _pdfController.future,
-        builder: (context, AsyncSnapshot<PDFViewController> snapshot) {
-          if (snapshot.hasData && pages! > 0) {
-            return FloatingActionButton.extended(
-              label: Text("Go to ${pages! ~/ 2}"),
-              onPressed: () async {
-                await snapshot.data!.setPage(pages! ~/ 2);
-              },
-            );
-          }
-          return Container();
-        },
-      );
-    }
-    return null;
-  }
-
   Widget _buildWindowsView() {
     // Use pdfrx for Windows - native, fast, no WebView needed
     if (widget.path == null || widget.path!.isEmpty) {
@@ -298,79 +270,6 @@ class _PDFScreenState extends State<PDFScreen> with WidgetsBindingObserver {
   Widget _buildAndroidView() {
     // Always use our custom WebView with secure PDF viewer
     return _buildWebView();
-  }
-
-  Widget _buildNativePDFView() {
-    return Stack(
-      children: <Widget>[
-        PDFView(
-          filePath: widget.path,
-          enableSwipe: true,
-          swipeHorizontal: true,
-          autoSpacing: false,
-          pageFling: true,
-          pageSnap: true,
-          defaultPage: currentPage!,
-          fitPolicy: FitPolicy.BOTH,
-          preventLinkNavigation: false,
-          onRender: (pages) {
-            setState(() {
-              this.pages = pages;
-              isReady = true;
-            });
-          },
-          onError: (error) {
-            setState(() {
-              errorMessage = error.toString();
-            });
-            debugPrint('PDF Error: ${error.toString()}');
-          },
-          onPageError: (page, error) {
-            setState(() {
-              errorMessage = '$page: ${error.toString()}';
-            });
-            debugPrint('PDF Page Error: $page: ${error.toString()}');
-          },
-          onViewCreated: (PDFViewController pdfViewController) {
-            _pdfController.complete(pdfViewController);
-          },
-          onLinkHandler: (String? uri) {
-            debugPrint('PDF Link Handler: $uri');
-          },
-          onPageChanged: (int? page, int? total) {
-            debugPrint('PDF Page changed: $page/$total');
-            setState(() {
-              currentPage = page;
-            });
-          },
-        ),
-        errorMessage.isEmpty
-            ? !isReady
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : Container()
-            : Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(errorMessage),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          errorMessage = '';
-                          isReady = false;
-                        });
-                        _initializeAndroidWebView();
-                      },
-                      child: const Text('Try WebView'),
-                    ),
-                  ],
-                ),
-              )
-      ],
-    );
   }
 
   Widget _buildWebView() {

@@ -54,18 +54,22 @@ class _MainNavState extends State<MainNav> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: currentPageIndex,
-        children: const <Widget>[
-          Dashboard(),
-          PodcastDashboard(),
-          LiveTeacherAudio(),
-          //VoiceAssistant(),
-          ExamReport(),
-          //LiveTeacher(),
-          //LiveTeacherWindows()
-        ],
-      ),
+      body: _buildCurrentPage(),
     );
+  }
+
+  Widget _buildCurrentPage() {
+    switch (currentPageIndex) {
+      case 0:
+        return const Dashboard();
+      case 1:
+        return const PodcastDashboard();
+      case 2:
+        return const LiveTeacherAudio();
+      case 3:
+        return const ExamReport();
+      default:
+        return const Dashboard();
+    }
   }
 }

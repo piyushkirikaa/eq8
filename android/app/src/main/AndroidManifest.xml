@@ -3,6 +3,8 @@
         android:label="MDA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Declare 16KB page size support -->
+        <property android:name="android.app.16kb_page_size" android:value="true"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

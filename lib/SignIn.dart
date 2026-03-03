@@ -237,48 +237,102 @@ class _SignInState extends State<SignIn> {
 
   Future<void> login() async {
     if (_email.isEmpty) {
-      RestClient().error("Please enter email");
+      showErrorMessage("Please enter your email address or student ID.");
       return;
     } else if (_password.isEmpty) {
-      RestClient().error("Please enter password");
+      showErrorMessage("Please enter your password.");
       return;
     }
 
     showLoadingIndicator();
 
-    final deviceInfoPlugin = DeviceInfoPlugin();
-    String deviceId = '';
+    try {
+      final deviceInfoPlugin = DeviceInfoPlugin();
+      String deviceId = '';
 
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfoPlugin.androidInfo;
-      deviceId = androidInfo.id; // Android ID
-    } else if (Platform.isIOS) {
-      final iosInfo = await deviceInfoPlugin.iosInfo;
-      deviceId = iosInfo.identifierForVendor ?? '';
-    } else {
-      deviceId = 'unknown';
-    }
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        deviceId = androidInfo.id; // Android ID
+      } else if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        deviceId = iosInfo.identifierForVendor ?? '';
+      } else {
+        deviceId = 'unknown';
+      }
 
-    final response = await RestClient().guestPost('/sign-in', {
-      'email': _email,
-      'password': _password,
-      'env': 'android',
-      'device_id': deviceId
-    });
-    if (response["status"] == 'success') {
-      final role = response["data"]["role"].toString();
-      final token = response["data"]["api_token"].toString();
-      final email = response["data"]["email"].toString();
-      final userId = response["data"]["user_id"].toString();
-      // store the user information
-      await RestClient().storeUser(email, userId, token, role);
-      await Analytics().logEvent('login', {});
-      navigateToDashboard(role);
-    } else {
-      // Login failed, show error message
-      RestClient().error(response["data"]);
+      final response = await RestClient().guestPost('/sign-in', {
+        'email': _email,
+        'password': _password,
+        'env': 'android',
+        'device_id': deviceId
+      });
+      if (response["status"] == 'success') {
+        final role = response["data"]["role"].toString();
+        final token = response["data"]["api_token"].toString();
+        final email = response["data"]["email"].toString();
+        final userId = response["data"]["user_id"].toString();
+        // store the user information
+        await RestClient().storeUser(email, userId, token, role);
+        await Analytics().logEvent('login', {});
+        navigateToDashboard(role);
+      } else {
+        // Login failed, show error message
+        String errorMessage = response["data"].toString();
+        // Make server error messages more user-friendly
+        if (errorMessage.toLowerCase().contains('invalid username password')) {
+          errorMessage =
+              'The email/ID or password you entered is incorrect. Please try again.';
+        }
+        showErrorMessage(errorMessage);
+      }
+    } catch (e) {
+      // Handle any errors during login
+      showErrorMessage(
+          "We encountered an issue while signing you in. Please check your internet connection and try again.");
+    } finally {
+      hideLoadingIndicator();
     }
-    hideLoadingIndicator();
+  }
+
+  void showErrorMessage(String message) {
+    if (Platform.isWindows) {
+      // Show dialog on Windows since Fluttertoast doesn't support it
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red[700]),
+                const SizedBox(width: 10),
+                const Text('Authentication Error'),
+              ],
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(fontSize: 16),
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue[700],
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Use toast for Android/iOS
+      RestClient().error(message);
+    }
   }
 
   void showLoadingIndicator() {
