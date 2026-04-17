@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../veryfy.dart';
-import 'package:lottie/lottie.dart';
+import 'dart:io' show Platform;
+import 'Library/RestClient.dart';
+import 'Library/StyleConfig.dart';
+import 'package:loader_overlay/loader_overlay.dart';
+import 'SignIn.dart';
 
 class forgot extends StatefulWidget {
   const forgot({super.key});
@@ -10,128 +13,332 @@ class forgot extends StatefulWidget {
 }
 
 class _forgotState extends State<forgot> {
+  final TextEditingController _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  // Email validation
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  // Send password reset link
+  Future<void> _sendResetLink() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    showLoadingIndicator();
+
+    try {
+      final response = await RestClient().guestPost(
+        '/forgot-password',
+        {'email': _emailController.text.trim()},
+      );
+
+      if (!mounted) return;
+
+      hideLoadingIndicator();
+
+      if (response != null && response["status"] == 'success') {
+        _showSuccessDialog();
+      } else {
+        final errorMessage = response?["message"] ??
+            'Failed to send reset link. Please try again.';
+        showErrorMessage(errorMessage);
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      hideLoadingIndicator();
+      showErrorMessage('Network error. Please check your connection.');
+    }
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green[600], size: 30),
+            const SizedBox(width: 10),
+            const Text('Email Sent!'),
+          ],
+        ),
+        content: Text(
+          'A password reset link has been sent to ${_emailController.text}.\n\nPlease check your inbox and follow the instructions.',
+          style: const TextStyle(fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext); // Close dialog
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const SignIn()),
+              ); // Go back to sign in page
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.purple,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+            ),
+            child: const Text('OK'),
+          ),
+        ],
+        actionsAlignment: MainAxisAlignment.center,
+      ),
+    );
+  }
+
+  void showErrorMessage(String message) {
+    if (Platform.isWindows) {
+      // Show dialog on Windows since Fluttertoast doesn't support it
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red[700]),
+                const SizedBox(width: 10),
+                const Text('Error'),
+              ],
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(fontSize: 15),
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.purple,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+            actionsAlignment: MainAxisAlignment.center,
+          );
+        },
+      );
+    } else {
+      // Use toast for Android/iOS
+      RestClient().error(message);
+    }
+  }
+
+  void showLoadingIndicator() {
+    context.loaderOverlay.show();
+  }
+
+  void hideLoadingIndicator() {
+    context.loaderOverlay.hide();
+  }
+
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width,
-              child: Lottie.asset("assets/Data/dataSignin2.json"),
-            ),
+            logo(width),
             Container(
-              height: 60,
-              width: 400,
-              margin: const EdgeInsets.only(left: 35,right: 15),
-              child: const Text('VERIFY YOUR EMAIL',
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 27,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-            Container(
-              height: 40,
-              width: 340,
-              margin: const EdgeInsets.only(left: 15,right: 15),
-              child: TextField(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(0),
-                  prefixIcon:  const Icon(Icons.email_outlined),
-                  hintText: "Enter your email",
-                  hintStyle: const TextStyle(),
-                  filled: true,
-                  focusColor: Colors.black,
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(7),
-                      borderSide: const BorderSide(width: 2)
-                  ),
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(7),
-                    borderSide:  const BorderSide(style: BorderStyle.solid),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ),
-            Container(
-              height: 20,
-            ),
-            // Container(
-            //   height: 40,
-            //   width: 340,
-            //   margin: EdgeInsets.only(left: 15,right: 15),
-            //   child: TextField(
-            //     decoration: InputDecoration(
-            //       contentPadding: EdgeInsets.all(0),
-            //       prefixIcon:  Icon(Icons.password_outlined),
-            //       hintText: "Password",
-            //       focusColor: Colors.white,
-            //       enabledBorder: OutlineInputBorder(
-            //           borderRadius: BorderRadius.circular(7),
-            //           borderSide: BorderSide(width: 2)
-            //
-            //       ),
-            //       fillColor: Colors.white,
-            //       filled: true,
-            //       border: OutlineInputBorder(
-            //         borderRadius: BorderRadius.circular(7),
-            //         borderSide:  BorderSide(style: BorderStyle.solid,width: 90,color: Colors.black),
-            //       ),
-            //     ),
-            //     keyboardType: TextInputType.number,
-            //   ),
-            // ),
-            // Container(
-            //   height: 60,
-            //   width: 340,
-            //   margin: EdgeInsets.only(left: 15,right: 15),
-            //   child: Row(
-            //     children: [
-            //       Checkbox(
-            //         value: _checkbox,
-            //         onChanged: (value) {
-            //           setState(() {
-            //             _checkbox = value!;
-            //
-            //           });
-            //         },
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            Container(
+              padding: const EdgeInsets.only(left: 10, right: 10),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Title
+                    SizedBox(
+                      height: 60,
+                      width: width,
+                      child: Center(
+                        child: Text(
+                          'Forgot Password?'.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
 
-              width: MediaQuery.of(context).size.width,
-              margin: const EdgeInsets.only(left: 35, right: 35),
-              child: OutlinedButton(
-                onPressed:(){} ,
-                style:  OutlinedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  shape:RoundedRectangleBorder(
-                    borderRadius:
-                    BorderRadius.circular(10),
-                  ),
+                    // Subtitle
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        'Enter your email address and we\'ll send you a link to reset your password',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // Email Input Field
+                    Container(
+                      height: 40,
+                      width: width,
+                      margin: const EdgeInsets.only(left: 15, right: 15),
+                      child: TextFormField(
+                        controller: _emailController,
+                        validator: _validateEmail,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.all(0),
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          hintText: "Enter your email address",
+                          hintStyle: const TextStyle(),
+                          filled: true,
+                          focusColor: Colors.blueAccent,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: const BorderSide(width: 1),
+                          ),
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide: const BorderSide(
+                                width: 1, style: BorderStyle.solid),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide:
+                                BorderSide(color: Colors.red[400]!, width: 1),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            borderSide:
+                                BorderSide(color: Colors.red[600]!, width: 1.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Send Reset Link Button
+                    Container(
+                      width: width,
+                      margin: const EdgeInsets.only(left: 35, right: 35),
+                      child: OutlinedButton(
+                        onPressed: _sendResetLink,
+                        style: StyleConfig.actionButtonStyle,
+                        child: const Text(
+                          "SEND RESET LINK",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Back to Sign In
+                    SizedBox(
+                      height: 40,
+                      width: width,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Remember your password? ',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: const Text(
+                              'Sign In',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                child: GestureDetector(
-                  onTap: (){
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const veryfy()),
-                    );
-                  },
-                  child: const Text("verify ",
-                      style: TextStyle(
-                      color: Colors.white))),
               ),
             ),
+            const SizedBox(height: 50),
           ],
         ),
       ),
     );
+  }
+
+  Widget logo(width) {
+    if (Platform.isWindows) {
+      return Container(
+        margin: const EdgeInsets.only(top: 50, bottom: 20),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: hexToColor("#0c132f"),
+          border: Border.all(
+            color: Colors.white,
+          ),
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+        ),
+        width: 150,
+        child: Image.asset(
+          'assets/Images/logo.png',
+          fit: BoxFit.fill,
+        ),
+      );
+    } else {
+      return SizedBox(
+        width: width,
+        child: Image.asset(
+          'assets/Images/BG/bg_login.png',
+          fit: BoxFit.fill,
+        ),
+      );
+    }
+  }
+
+  Color hexToColor(String code) {
+    return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
 }
