@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import '../../Service/Analytics.dart';
 import '../../Service/AudioPlayerInterface.dart';
 import '../../Service/AudioPlayerFactory.dart';
@@ -567,8 +568,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     final document = currentTutorial['document_url'].toString();
                     if (document != "null") {
                       Navigator.pop(context);
-                      final file = await createFileOfPdfUrl(document);
-                      viewPDF(file.path);
+                      globalScaffoldContext.loaderOverlay.show();
+                      try {
+                        final file = await createFileOfPdfUrl(document);
+                        globalScaffoldContext.loaderOverlay.hide();
+                        viewPDF(file.path);
+                      } catch (e) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                        RestClient().error('Error loading document: $e');
+                      }
                     } else {
                       RestClient().error('No document found');
                     }
@@ -590,8 +598,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                         currentTutorial['resource_guide'].toString();
                     if (document != "null") {
                       Navigator.pop(context);
-                      final file = await createFileOfPdfUrl(document);
-                      viewPDF(file.path);
+                      globalScaffoldContext.loaderOverlay.show();
+                      try {
+                        final file = await createFileOfPdfUrl(document);
+                        globalScaffoldContext.loaderOverlay.hide();
+                        viewPDF(file.path);
+                      } catch (e) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                        RestClient().error('Error loading document: $e');
+                      }
                     } else {
                       RestClient().error('No resource guide found');
                     }
@@ -613,8 +628,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                         currentTutorial['previous_exam'].toString();
                     if (document != "null") {
                       Navigator.pop(context);
-                      final file = await createFileOfPdfUrl(document);
-                      viewPDF(file.path);
+                      globalScaffoldContext.loaderOverlay.show();
+                      try {
+                        final file = await createFileOfPdfUrl(document);
+                        globalScaffoldContext.loaderOverlay.hide();
+                        viewPDF(file.path);
+                      } catch (e) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                        RestClient().error('Error loading document: $e');
+                      }
                     } else {
                       RestClient().error('No past paper found');
                     }

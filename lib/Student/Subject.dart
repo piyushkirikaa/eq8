@@ -81,6 +81,7 @@ class _SubjectState extends State<Subject> {
   String? currentlyPlayingId;
   // Store the fetched subject list to avoid reloading
   List<dynamic>? cachedSubjectList;
+  bool _isOnline = true;
 
   // Windows video player controls state
   bool _showControls = true;
@@ -186,6 +187,33 @@ class _SubjectState extends State<Subject> {
                       if (snapshot.hasData) {
                         final data = snapshot.data;
                         final dataLength = snapshot.data?.length;
+
+                        final bool hasDownloadedVideos = data != null && data.any((video) => video['isCached'] == true);
+
+                        if (!_isOnline && !hasDownloadedVideos) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.wifi_off_outlined,
+                                      size: 64, color: Colors.grey),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Video unavailable, please connect to the internet to continue learning.',
+                                    style: GoogleFonts.lato(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textSecondaryColor,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
 
                         if (dataLength == 0) {
                           return Center(
@@ -503,6 +531,7 @@ class _SubjectState extends State<Subject> {
   }
 
   getSubjectList() async {
+    _isOnline = await RestClient().checkInternetConnection();
     // Return cached list if available to prevent reloading
     if (cachedSubjectList != null) {
       return cachedSubjectList;
@@ -545,7 +574,7 @@ class _SubjectState extends State<Subject> {
         changeVideo(fileInfo.file.path);
       } else {
         RestClient().error(
-            "This video is not saved offline. Connect to the internet to play.");
+            "Video unavailable, please connect to the internet to continue learning.");
       }
     }
   }
@@ -741,13 +770,16 @@ class _SubjectState extends State<Subject> {
                   debugPrint('Document URL: $document');
                   if (document != "null" && document.isNotEmpty) {
                     Navigator.pop(context);
+                    globalScaffoldContext.loaderOverlay.show();
                     try {
                       final file = await createFileOfPdfUrl(document);
+                      globalScaffoldContext.loaderOverlay.hide();
                       debugPrint('Video AID file created: ${file.path}');
                       debugPrint('File exists: ${await file.exists()}');
                       debugPrint('File size: ${await file.length()} bytes');
                       viewPDF(file.path);
                     } catch (e) {
+                      globalScaffoldContext.loaderOverlay.hide();
                       debugPrint('Error with Video AID: $e');
                       RestClient().error('Error loading document: $e');
                     }
@@ -817,13 +849,16 @@ class _SubjectState extends State<Subject> {
                     debugPrint('Document URL: $document');
                     if (document != "null" && document.isNotEmpty) {
                       Navigator.pop(context);
+                      globalScaffoldContext.loaderOverlay.show();
                       try {
                         final file = await createFileOfPdfUrl(document);
+                        globalScaffoldContext.loaderOverlay.hide();
                         debugPrint('Resource Guide file created: ${file.path}');
                         debugPrint('File exists: ${await file.exists()}');
                         debugPrint('File size: ${await file.length()} bytes');
                         viewPDF(file.path);
                       } catch (e) {
+                        globalScaffoldContext.loaderOverlay.hide();
                         debugPrint('Error with Resource Guide: $e');
                         RestClient().error('Error loading document: $e');
                       }
