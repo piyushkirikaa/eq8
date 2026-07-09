@@ -205,7 +205,7 @@ class _SubjectState extends State<Subject> {
                         return ListView.builder(
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.only(
-                                left: 16, right: 16, top: 8, bottom: 80),
+                                left: 16, right: 16, top: 8, bottom: 140),
                             itemCount: dataLength,
                             itemBuilder: (context, index) {
                               final tutorial = data![index];
