@@ -4,6 +4,7 @@ import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../SignIn.dart';
 import 'StudentProfile.dart';
+import '../Widgets/DeviceStatusSheet.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -276,159 +277,8 @@ class _ExamHistoryState extends State<ExamHistory> {
   _checkDeviceStatus() async {
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Container(
-          height: 220,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Column(
-            children: <Widget>[
-              // Header
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Device Status',
-                      style: GoogleFonts.lato(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
-                    )
-                  ],
-                ),
-              ),
-
-              // Status content
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        deviceStatusWidget(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget deviceStatusWidget() {
-    return FutureBuilder(
-      future: RestClient().checkInternetConnection(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Column(
-            children: [
-              const SizedBox(height: 10),
-              const CircularProgressIndicator(),
-              const SizedBox(height: 20),
-              Text(
-                "Checking connection status...",
-                style: GoogleFonts.lato(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          );
-        } else if (snapshot.hasError) {
-          return Column(
-            children: [
-              const Icon(Icons.error_outline, size: 50, color: Colors.orange),
-              const SizedBox(height: 20),
-              Text(
-                "Unable to check device status",
-                style: GoogleFonts.lato(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          );
-        } else {
-          if (snapshot.data) {
-            return Column(
-              children: [
-                const Icon(Icons.check_circle, size: 50, color: Colors.green),
-                const SizedBox(height: 20),
-                Text(
-                  "Connected!",
-                  style: GoogleFonts.lato(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "You're online and all systems are ready to go.",
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            );
-          } else {
-            return Column(
-              children: [
-                const Icon(Icons.wifi_off, size: 50, color: Colors.redAccent),
-                const SizedBox(height: 20),
-                Text(
-                  "Offline",
-                  style: GoogleFonts.lato(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.redAccent,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "Please check your connection and try again.",
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            );
-          }
-        }
+        return DeviceStatusSheet(backgroundColor: Theme.of(context).primaryColor);
       },
     );
   }

@@ -9,6 +9,7 @@ import '../Widgets/Course.dart';
 import '../Widgets/CourseCard.dart';
 import '../Widgets/ListViewItemAnimation.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import '../Widgets/DeviceStatusSheet.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -151,62 +152,7 @@ class _DashboardState extends State<Dashboard> {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          height: 200,
-          color: Colors.blue,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Device Status'.toUpperCase(),
-                    style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-                Container(
-                    margin: const EdgeInsets.all(15),
-                    child: Center(child: deviceStatusWidget())),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget deviceStatusWidget() {
-    return FutureBuilder(
-      future: RestClient().checkInternetConnection(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text("Checking...",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white));
-        } else if (snapshot.hasError) {
-          return const Text("We are unable to check device status.",
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white));
-        } else {
-          if (snapshot.data) {
-            return const Text("Awesome! You're connected. All system go!. ",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white));
-          } else {
-            return const Text(
-                "Oops! Looks like you're offline. Check your connection, and let's get back on track.",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red));
-          }
-        }
+        return const DeviceStatusSheet();
       },
     );
   }
