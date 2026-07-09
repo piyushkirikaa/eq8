@@ -1229,7 +1229,7 @@ class _SubjectState extends State<Subject> {
       return Theme(
         data: Theme.of(context).copyWith(
           iconTheme: const IconThemeData(
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
         child: FlickVideoPlayer(
@@ -1237,13 +1237,13 @@ class _SubjectState extends State<Subject> {
           flickVideoWithControls: FlickVideoWithControls(
             videoFit: BoxFit.contain,
             controls: DefaultTextStyle(
-              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               child: FlickPortraitControls(
                 progressBarSettings: FlickProgressBarSettings(
                   playedColor: AppTheme.primaryColor,
                   handleColor: AppTheme.primaryColor,
-                  bufferedColor: Colors.black26,
-                  backgroundColor: Colors.black12,
+                  bufferedColor: Colors.white54,
+                  backgroundColor: Colors.white24,
                 ),
               ),
             ),
