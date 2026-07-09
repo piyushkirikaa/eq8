@@ -531,20 +531,31 @@ class _SubjectState extends State<Subject> {
 
   playVideo(video) async {
     if (await RestClient().checkInternetConnection()) {
-      changeVideo(video);
+      final fileInfo = await DefaultCacheManager().getFileFromCache(video);
+      if (fileInfo != null) {
+        changeVideo(fileInfo.file.path);
+      } else {
+        changeVideo(video);
+      }
     } else {
-      DefaultCacheManager().getSingleFile(video).then((file) {
-        changeVideo(file.path);
-      });
+      final fileInfo = await DefaultCacheManager().getFileFromCache(video);
+      if (fileInfo != null) {
+        changeVideo(fileInfo.file.path);
+      } else {
+        RestClient().error(
+            "This video is not saved offline. Connect to the internet to play.");
+      }
     }
   }
 
   void changeVideo(String videoUrl) {
+    final bool isLocalFile = !videoUrl.startsWith('http');
     if (Platform.isWindows) {
       // For Windows platform
       winVideoController?.dispose();
-      winVideoController =
-          VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+      winVideoController = isLocalFile
+          ? VideoPlayerController.file(File(videoUrl))
+          : VideoPlayerController.networkUrl(Uri.parse(videoUrl));
       winVideoController!.initialize().then((_) {
         _currentVolume = 1.0;
         winVideoController!.setVolume(_currentVolume);
@@ -559,7 +570,9 @@ class _SubjectState extends State<Subject> {
     } else {
       // For Android and other platforms
       flickManager?.handleChangeVideo(
-        VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
+        isLocalFile
+            ? VideoPlayerController.file(File(videoUrl))
+            : VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
       );
       // Set volume to maximum when video loads
       if (flickManager?.flickControlManager != null) {
