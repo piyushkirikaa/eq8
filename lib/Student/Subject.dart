@@ -1222,15 +1222,25 @@ class _SubjectState extends State<Subject> {
 
   Widget _buildAndroidVideoPlayer() {
     if (flickManager != null) {
-      return FlickVideoPlayer(
-        flickManager: flickManager!,
-        flickVideoWithControls: FlickVideoWithControls(
-          controls: FlickPortraitControls(
-            progressBarSettings: FlickProgressBarSettings(
-              playedColor: Colors.yellow[700]!, // Added '!' at the end
-              handleColor: Colors.yellow[700]!, // Added '!' at the end
-              bufferedColor: Colors.white54,
-              backgroundColor: Colors.white24,
+      return Theme(
+        data: Theme.of(context).copyWith(
+          iconTheme: const IconThemeData(
+            color: Colors.black87,
+          ),
+        ),
+        child: FlickVideoPlayer(
+          flickManager: flickManager!,
+          flickVideoWithControls: FlickVideoWithControls(
+            controls: DefaultTextStyle(
+              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+              child: FlickPortraitControls(
+                progressBarSettings: FlickProgressBarSettings(
+                  playedColor: AppTheme.primaryColor,
+                  handleColor: AppTheme.primaryColor,
+                  bufferedColor: Colors.black26,
+                  backgroundColor: Colors.black12,
+                ),
+              ),
             ),
           ),
         ),
