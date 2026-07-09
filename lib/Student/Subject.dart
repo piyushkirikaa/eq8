@@ -1173,9 +1173,13 @@ class _SubjectState extends State<Subject> {
             children: [
               // Video player
               Center(
-                child: AspectRatio(
-                  aspectRatio: winVideoController!.value.aspectRatio,
-                  child: VideoPlayer(winVideoController!),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: SizedBox(
+                    width: winVideoController!.value.size.width > 0 ? winVideoController!.value.size.width : 1600,
+                    height: winVideoController!.value.size.height > 0 ? winVideoController!.value.size.height : 900,
+                    child: VideoPlayer(winVideoController!),
+                  ),
                 ),
               ),
               // Loading indicator
@@ -1231,6 +1235,7 @@ class _SubjectState extends State<Subject> {
         child: FlickVideoPlayer(
           flickManager: flickManager!,
           flickVideoWithControls: FlickVideoWithControls(
+            videoFit: BoxFit.contain,
             controls: DefaultTextStyle(
               style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
               child: FlickPortraitControls(
@@ -1435,9 +1440,13 @@ class _SubjectState extends State<Subject> {
             children: [
               // Fullscreen video player
               Center(
-                child: AspectRatio(
-                  aspectRatio: winVideoController!.value.aspectRatio,
-                  child: VideoPlayer(winVideoController!),
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: SizedBox(
+                    width: winVideoController!.value.size.width > 0 ? winVideoController!.value.size.width : 1600,
+                    height: winVideoController!.value.size.height > 0 ? winVideoController!.value.size.height : 900,
+                    child: VideoPlayer(winVideoController!),
+                  ),
                 ),
               ),
               // Loading indicator
