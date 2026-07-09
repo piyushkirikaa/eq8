@@ -25,14 +25,16 @@ class _ListViewItemAnimationState extends State<ListViewItemAnimation>
       duration: const Duration(milliseconds: 700),
     );
 
-    // Staggered timing based on item index
-    final double delay = 0.2 * widget.index;
+    // Staggered timing based on item index. Clamp to keep Interval within [0, 1].
+    final double delay = (0.2 * widget.index).clamp(0.0, 0.8);
+    final double fadeEnd = (delay + 0.4).clamp(0.0, 1.0);
+    final double slideEnd = (delay + 0.5).clamp(0.0, 1.0);
     final curve = Curves.easeOutQuint;
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: Interval(delay, delay + 0.4, curve: curve),
+        curve: Interval(delay, fadeEnd, curve: curve),
       ),
     );
 
@@ -42,7 +44,7 @@ class _ListViewItemAnimationState extends State<ListViewItemAnimation>
     ).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: Interval(delay, delay + 0.5, curve: curve),
+        curve: Interval(delay, slideEnd, curve: curve),
       ),
     );
 

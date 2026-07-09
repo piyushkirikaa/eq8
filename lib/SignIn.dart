@@ -143,7 +143,7 @@ class _SignInState extends State<SignIn> {
                         const Spacer(),
                         GestureDetector(
                             onTap: () {
-                              Navigator.pushReplacement(
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const forgot()),

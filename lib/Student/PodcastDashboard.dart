@@ -430,7 +430,7 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
           if (tutorialCount == 0 && examCount == 0) {
             completionPercentage = 0;
           } else {
-            completionPercentage = (examCount / tutorialCount) * 100;
+            completionPercentage = ((examCount / tutorialCount) * 100).clamp(0, 100);
           }
           courses.add(Course(
               title: course["name"],

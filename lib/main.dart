@@ -8,6 +8,7 @@ import 'package:window_manager/window_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = true;
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);

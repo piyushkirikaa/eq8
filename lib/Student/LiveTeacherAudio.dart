@@ -301,15 +301,17 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                   await _getImage(ImageSource.gallery, query);
                 },
               ),
-              ListTile(
-                leading:
-                    Icon(Icons.camera_alt, color: TeacherTheme.primaryColor),
-                title: Text('Camera'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await _getImage(ImageSource.camera, query);
-                },
-              ),
+              // Camera option only for Android and iOS, not for macOS
+              if (!Platform.isMacOS)
+                ListTile(
+                  leading:
+                      Icon(Icons.camera_alt, color: TeacherTheme.primaryColor),
+                  title: Text('Camera'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _getImage(ImageSource.camera, query);
+                  },
+                ),
             ],
           ),
         );
