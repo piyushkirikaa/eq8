@@ -284,7 +284,13 @@ class _forgotState extends State<forgot> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () => Navigator.of(context).pop(),
+                            onTap: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const SignIn()),
+                              );
+                            },
                             child: const Text(
                               'Sign In',
                               style: TextStyle(
