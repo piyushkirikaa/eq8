@@ -150,7 +150,7 @@ class _SignInState extends State<SignIn> {
                               );
                             },
                             child: const Text(
-                              'Forgot password',
+                              'Forgot Password?',
                               style: TextStyle(),
                             )),
                       ],
