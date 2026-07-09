@@ -36,11 +36,23 @@ class _ExamReportState extends State<ExamReport>
   int touchedIndex = -1;
   double _chartAnimationValue = 0;
 
+  // Future cache to prevent rebuild reloading
+  late Future<List<dynamic>> _examScoresFuture;
+
+  // Scroll tracking for pie chart scaling
+  late ScrollController _scrollController;
+  bool _isScrolledDown = false;
+
   @override
   void initState() {
     super.initState();
     // Initialize analytics
     Analytics().logEvent('exam_report_viewed', {});
+
+    _examScoresFuture = getExamAverageScores();
+
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
 
     // Set up the animation controller for pie chart animation
     _animationController = AnimationController(
@@ -63,8 +75,24 @@ class _ExamReportState extends State<ExamReport>
     _animationController.forward();
   }
 
+  void _scrollListener() {
+    if (_scrollController.hasClients) {
+      if (_scrollController.offset > 10 && !_isScrolledDown) {
+        setState(() {
+          _isScrolledDown = true;
+        });
+      } else if (_scrollController.offset <= 10 && _isScrolledDown) {
+        setState(() {
+          _isScrolledDown = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -100,8 +128,8 @@ class _ExamReportState extends State<ExamReport>
           ),
         ],
       ),
-      body: FutureBuilder(
-          future: getExamAverageScores(),
+      body: FutureBuilder<List<dynamic>>(
+          future: _examScoresFuture,
           builder: (context, AsyncSnapshot<dynamic> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: RestClient().loader());
@@ -109,12 +137,21 @@ class _ExamReportState extends State<ExamReport>
               return Center(child: Text('Error: ${snapshot.error}'));
             } else {
               if (snapshot.hasData && snapshot.data.length > 0) {
-                final data = snapshot.data;
+                final List<dynamic> data = List.from(snapshot.data);
+                data.sort((a, b) {
+                  final aAvg = (a['average_number'] as num).toDouble();
+                  final bAvg = (b['average_number'] as num).toDouble();
+                  return bAvg.compareTo(aAvg);
+                });
                 return Column(
                   children: [
-                    Container(
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: MediaQuery.of(context).size.height * 0.45,
+                      height: _isScrolledDown
+                          ? MediaQuery.of(context).size.height * 0.225
+                          : MediaQuery.of(context).size.height * 0.45,
                       child: Column(
                         children: [
                           const SizedBox(height: 16),
@@ -128,36 +165,41 @@ class _ExamReportState extends State<ExamReport>
                           ),
                           const SizedBox(height: 8),
                           Expanded(
-                            child: AspectRatio(
-                              aspectRatio: 1.3,
-                              child: PieChart(
-                                PieChartData(
-                                  pieTouchData: PieTouchData(
-                                    touchCallback:
-                                        (FlTouchEvent event, pieTouchResponse) {
-                                      setState(() {
-                                        if (!event
-                                                .isInterestedForInteractions ||
-                                            pieTouchResponse == null ||
-                                            pieTouchResponse.touchedSection ==
-                                                null) {
-                                          touchedIndex = -1;
-                                          return;
-                                        }
-                                        touchedIndex = pieTouchResponse
-                                            .touchedSection!
-                                            .touchedSectionIndex;
-                                      });
-                                    },
+                            child: AnimatedScale(
+                              scale: _isScrolledDown ? 0.5 : 1.0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                              child: AspectRatio(
+                                aspectRatio: 1.3,
+                                child: PieChart(
+                                  PieChartData(
+                                    pieTouchData: PieTouchData(
+                                      touchCallback:
+                                          (FlTouchEvent event, pieTouchResponse) {
+                                        setState(() {
+                                          if (!event
+                                                  .isInterestedForInteractions ||
+                                              pieTouchResponse == null ||
+                                              pieTouchResponse.touchedSection ==
+                                                  null) {
+                                            touchedIndex = -1;
+                                            return;
+                                          }
+                                          touchedIndex = pieTouchResponse
+                                              .touchedSection!
+                                              .touchedSectionIndex;
+                                        });
+                                      },
+                                    ),
+                                    startDegreeOffset: 180,
+                                    borderData: FlBorderData(show: false),
+                                    sectionsSpace: 1,
+                                    centerSpaceRadius: 30 * _chartAnimationValue,
+                                    sections: showingSections(data),
                                   ),
-                                  startDegreeOffset: 180,
-                                  borderData: FlBorderData(show: false),
-                                  sectionsSpace: 1,
-                                  centerSpaceRadius: 40 * _chartAnimationValue,
-                                  sections: showingSections(data),
+                                  swapAnimationDuration:
+                                      const Duration(milliseconds: 400),
                                 ),
-                                swapAnimationDuration:
-                                    const Duration(milliseconds: 400),
                               ),
                             ),
                           ),
@@ -203,6 +245,7 @@ class _ExamReportState extends State<ExamReport>
                             ),
                             Expanded(
                               child: ListView.builder(
+                                controller: _scrollController,
                                 padding: const EdgeInsets.only(bottom: 16),
                                 itemCount: data.length,
                                 itemBuilder: (context, index) {
@@ -362,7 +405,7 @@ class _ExamReportState extends State<ExamReport>
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 14.0 : 12.0;
       final radius =
-          isTouched ? 90.0 * _chartAnimationValue : 80.0 * _chartAnimationValue;
+          isTouched ? 70.0 * _chartAnimationValue : 60.0 * _chartAnimationValue;
       final color = chartColors[i % chartColors.length];
 
       // Calculate a value for the pie chart segment
