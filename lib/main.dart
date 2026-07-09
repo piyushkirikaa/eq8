@@ -31,6 +31,7 @@ Future<void> main() async {
 
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -56,12 +57,12 @@ class MyApp extends StatelessWidget {
           primaryColor: Colors.blueAccent,
           iconButtonTheme: const IconButtonThemeData(
             style: ButtonStyle(
-              foregroundColor: MaterialStatePropertyAll<Color>(Colors.white),
+              foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
             ),
           ),
           navigationBarTheme: NavigationBarThemeData(
-            labelTextStyle: MaterialStateProperty.resolveWith((state) {
-              if (state.contains(MaterialState.selected)) {
+            labelTextStyle: WidgetStateProperty.resolveWith((state) {
+              if (state.contains(WidgetState.selected)) {
                 return const TextStyle(color: Colors.orange);
               }
               return const TextStyle(color: Colors.white);

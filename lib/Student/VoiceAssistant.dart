@@ -32,22 +32,22 @@ class SciFiTheme {
     color: cardColor,
     borderRadius: BorderRadius.circular(20),
     border: Border.all(
-      color: primaryColor.withOpacity(0.3),
+      color: primaryColor.withValues(alpha: 0.3),
       width: 1,
     ),
     boxShadow: [
       BoxShadow(
-        color: primaryColor.withOpacity(0.2),
+        color: primaryColor.withValues(alpha: 0.2),
         spreadRadius: 2,
         blurRadius: 15,
-        offset: Offset(0, 3),
+        offset: const Offset(0, 3),
       ),
     ],
   );
 }
 
 class VoiceAssistant extends StatefulWidget {
-  const VoiceAssistant({Key? key}) : super(key: key);
+  const VoiceAssistant({super.key});
 
   @override
   State<VoiceAssistant> createState() => _VoiceAssistantState();
@@ -80,7 +80,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
     _initializeChatGPT();
 
     // Delay speech initialization to prevent UI freeze
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       _startHandsFreeMode();
     });
   }
@@ -126,7 +126,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
         debugPrint("Speech status: $status");
         if (status == 'done' || status == 'notListening') {
           // Add delay before restarting to prevent rapid cycling
-          Future.delayed(Duration(milliseconds: 300), () {
+          Future.delayed(const Duration(milliseconds: 300), () {
             if (mounted && !_isProcessing) {
               _startListening();
             }
@@ -136,7 +136,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
       onError: (error) {
         debugPrint('Speech error: $error');
         // Recover from error by restarting after delay
-        Future.delayed(Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 2), () {
           if (mounted && !_isProcessing) {
             _startListening();
           }
@@ -174,9 +174,9 @@ class _VoiceAssistantState extends State<VoiceAssistant>
             }
           },
           listenMode: stt.ListenMode.confirmation,
-          pauseFor: Duration(seconds: 3),
+          pauseFor: const Duration(seconds: 3),
           partialResults: true,
-          listenFor: Duration(seconds: 10),
+          listenFor: const Duration(seconds: 10),
           cancelOnError: false,
         );
       }
@@ -185,7 +185,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
       _isListening = false;
 
       // Try to recover after delay
-      Future.delayed(Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) _startHandsFreeMode();
       });
     }
@@ -207,7 +207,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
       }
 
       // Restart listening after processing
-      Future.delayed(Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted && !_isProcessing) {
           _startListening();
         }
@@ -249,8 +249,8 @@ class _VoiceAssistantState extends State<VoiceAssistant>
     } catch (e) {
       debugPrint("ChatGPT error: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Connection error. Please try again.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: const Text('Connection error. Please try again.')));
       }
     }
   }
@@ -307,7 +307,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
                 child: CustomPaint(
                   painter: SimplePulsePainter(
                     animation: _pulseAnimation,
-                    color: SciFiTheme.accentColor.withOpacity(0.1),
+                    color: SciFiTheme.accentColor.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -319,25 +319,25 @@ class _VoiceAssistantState extends State<VoiceAssistant>
 
   Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: SciFiTheme.messageGradient,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.psychology_outlined,
               color: Colors.white,
               size: 32,
             ),
           ),
-          SizedBox(width: 16),
-          Text(
+          const SizedBox(width: 16),
+          const Text(
             'AI Assistant',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -351,8 +351,8 @@ class _VoiceAssistantState extends State<VoiceAssistant>
   Widget _buildAiMessage() {
     return Center(
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 24),
-        padding: EdgeInsets.all(24),
+        margin: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.all(24),
         decoration: SciFiTheme.messageDecoration,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -364,7 +364,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
                       TypewriterAnimatedText(
                         _lastAiMessage,
                         textStyle: SciFiTheme.messageTextStyle,
-                        speed: Duration(milliseconds: 40),
+                        speed: const Duration(milliseconds: 40),
                       ),
                     ],
                     totalRepeatCount: 1,
@@ -382,38 +382,38 @@ class _VoiceAssistantState extends State<VoiceAssistant>
 
   Widget _buildVoiceIndicator() {
     return Container(
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           if (_text.isNotEmpty)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              margin: EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: SciFiTheme.cardColor,
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                  color: SciFiTheme.primaryColor.withOpacity(0.3),
+                  color: SciFiTheme.primaryColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(
                 _text,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                 ),
               ),
             ),
           AnimatedContainer(
-            duration: Duration(milliseconds: 300),
-            padding: EdgeInsets.all(16),
+            duration: const Duration(milliseconds: 300),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: SciFiTheme.messageGradient,
               boxShadow: [
                 BoxShadow(
                   color: SciFiTheme.accentColor
-                      .withOpacity(_isListening ? 0.4 : 0.1),
+                      .withValues(alpha: _isListening ? 0.4 : 0.1),
                   spreadRadius: _isListening ? 4 : 1,
                   blurRadius: _isListening ? 12 : 5,
                 ),
@@ -436,11 +436,11 @@ class SimpleGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = SciFiTheme.primaryColor.withOpacity(0.05)
+      ..color = SciFiTheme.primaryColor.withValues(alpha: 0.05)
       ..strokeWidth = 0.5;
 
     // Draw fewer lines for better performance
-    final spacing = 50.0;
+    const spacing = 50.0;
     for (double i = 0; i < size.width; i += spacing) {
       canvas.drawLine(
         Offset(i, 0.0),

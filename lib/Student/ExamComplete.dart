@@ -64,13 +64,13 @@ class _ExamComplete extends State<ExamComplete> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isPassed
-            ? const Color(0xFF4CAF50).withOpacity(0.1)
-            : const Color(0xFFFFC107).withOpacity(0.1),
+            ? const Color(0xFF4CAF50).withValues(alpha: 0.1)
+            : const Color(0xFFFFC107).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isPassed
-              ? const Color(0xFF4CAF50).withOpacity(0.3)
-              : const Color(0xFFFFC107).withOpacity(0.3),
+              ? const Color(0xFF4CAF50).withValues(alpha: 0.3)
+              : const Color(0xFFFFC107).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -83,7 +83,7 @@ class _ExamComplete extends State<ExamComplete> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -127,7 +127,7 @@ class _ExamComplete extends State<ExamComplete> {
   }
 
   Widget resultCard() {
-    final number_of_questions = widget.examStatus['number_of_questions'];
+    final numberOfQuestions = widget.examStatus['number_of_questions'];
     final rightAnswers = widget.examStatus['right_answers'] ?? 0;
     final wrongAnswers = widget.examStatus['wrong_answers'] ?? 0;
     final passingMarks = widget.examStatus['passing_marks'];
@@ -135,9 +135,8 @@ class _ExamComplete extends State<ExamComplete> {
     final isPassed = examStatus['exam_status'] == "Pass";
 
     // Calculate percentage correctly
-    final percentage = number_of_questions > 0
-        ? (rightAnswers / number_of_questions) * 100
-        : 0.0;
+    final percentage =
+        numberOfQuestions > 0 ? (rightAnswers / numberOfQuestions) * 100 : 0.0;
 
     return Container(
       width: double.infinity,
@@ -147,7 +146,7 @@ class _ExamComplete extends State<ExamComplete> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -206,7 +205,7 @@ class _ExamComplete extends State<ExamComplete> {
             children: [
               _buildScoreStat(
                 "Total Questions",
-                "$number_of_questions",
+                "$numberOfQuestions",
                 const Color(0xFF4D7CFE),
               ),
               _buildScoreStat(
@@ -267,7 +266,7 @@ class _ExamComplete extends State<ExamComplete> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(

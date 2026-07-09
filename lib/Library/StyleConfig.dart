@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 class StyleConfig {
-
   static ButtonStyle actionButtonStyle = OutlinedButton.styleFrom(
-    side: BorderSide(width: 1, color: Colors.purple),
+    side: const BorderSide(width: 1, color: Colors.purple),
     backgroundColor: Colors.purple,
     elevation: 3,
     shape: RoundedRectangleBorder(
@@ -20,7 +19,7 @@ class StyleConfig {
     ),
   );
 
-  static inputStyle(String label, IconData icon){
+  static inputStyle(String label, IconData icon) {
     return InputDecoration(
       contentPadding: const EdgeInsets.all(0),
       prefixIcon: Icon(icon),
@@ -30,8 +29,7 @@ class StyleConfig {
       focusColor: Colors.blueAccent,
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(50),
-          borderSide: const BorderSide(width: 1)
-      ),
+          borderSide: const BorderSide(width: 1)),
       fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(50),
@@ -39,5 +37,4 @@ class StyleConfig {
       ),
     );
   }
-
 }

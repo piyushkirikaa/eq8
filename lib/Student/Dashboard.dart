@@ -72,6 +72,8 @@ class _DashboardState extends State<Dashboard> {
               duration: const Duration(milliseconds: 200),
               opacity: _shouldFade,
               child: Image.asset('assets/Images/dashboard_banner.png',
+                  height: 150,
+                  width: double.infinity,
                   fit: BoxFit.cover),
             ),
             const SizedBox(

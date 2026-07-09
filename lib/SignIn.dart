@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../Library/RestClient.dart';
 import '../../Parent/ParentDashboard.dart';
-import '../../Student/Dashboard.dart';
-import '../../Signup.dart';
 import '../../forgot.dart';
 import 'dart:async';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -318,7 +316,11 @@ class _SignInState extends State<SignIn> {
     } catch (e) {
       // Handle any errors during login
       debugPrint('Sign-in failed: $e');
-      showErrorMessage("Sign in failed. Please try again.");
+      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+        showErrorMessage("Sign in failed: $e");
+      } else {
+        showErrorMessage("Sign in failed. Please try again.");
+      }
     } finally {
       if (!loginSuccess) {
         hideLoadingIndicator();

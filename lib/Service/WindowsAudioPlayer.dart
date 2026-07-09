@@ -46,7 +46,7 @@ class WindowsAudioPlayer implements AudioPlayerInterface {
 
   void _startPositionTimer() {
     _stopPositionTimer();
-    _positionTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
+    _positionTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (_isPlaying) {
         _positionController.add(_position);
       }

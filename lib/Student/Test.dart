@@ -163,7 +163,7 @@ class _TestState extends State<Test> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 spreadRadius: 1,
                 blurRadius: 10,
                 offset: const Offset(0, 1),
@@ -176,7 +176,7 @@ class _TestState extends State<Test> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF4D7CFE).withOpacity(0.1),
+                color: const Color(0xFF4D7CFE).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -261,7 +261,7 @@ class _TestState extends State<Test> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1),
                 spreadRadius: 1,
                 blurRadius: 10,
                 offset: const Offset(0, 1),

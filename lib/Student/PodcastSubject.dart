@@ -86,7 +86,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Volume Control'),
+          title: const Text('Volume Control'),
           content: StatefulBuilder(
             builder: (context, setStateDialog) {
               return Column(
@@ -94,7 +94,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.volume_down),
+                      const Icon(Icons.volume_down),
                       Expanded(
                         child: Slider(
                           value: volume,
@@ -112,7 +112,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                           },
                         ),
                       ),
-                      Icon(Icons.volume_up),
+                      const Icon(Icons.volume_up),
                     ],
                   ),
                   ElevatedButton(
@@ -129,9 +129,9 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple,
                     ),
-                    child: Text(
+                    child: const Text(
                       'Maximum Volume',
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 ],
@@ -140,7 +140,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
           ),
           actions: [
             TextButton(
-              child: Text('Close'),
+              child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -326,7 +326,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                       borderRadius: BorderRadius.circular(35),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withOpacity(0.3),
+                          color: Colors.purple.withValues(alpha: 0.3),
                           spreadRadius: 2,
                           blurRadius: 4,
                           offset: const Offset(0, 2),
@@ -433,7 +433,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
+                              color: Colors.black.withValues(alpha: 0.2),
                               spreadRadius: 1,
                               blurRadius: 3,
                             )
@@ -462,7 +462,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                   ),
                 ),
                 selected: isSelected,
-                selectedTileColor: Colors.purple.shade50.withOpacity(0.3),
+                selectedTileColor: Colors.purple.shade50.withValues(alpha: 0.3),
                 onTap: () {
                   selectPodcast(index, tutorial);
                 },

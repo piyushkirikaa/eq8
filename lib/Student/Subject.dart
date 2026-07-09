@@ -51,7 +51,7 @@ class AppTheme {
     borderRadius: BorderRadius.circular(8),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.05),
+        color: Colors.black.withValues(alpha: 0.05),
         blurRadius: 4,
         offset: const Offset(0, 2),
       ),
@@ -109,9 +109,8 @@ class _SubjectState extends State<Subject> {
   @override
   Widget build(BuildContext context) {
     final pageHeight = MediaQuery.of(context).size.height;
-    final listHeight = (pageHeight * 57) / 100;
-    final playerHeight = (pageHeight * 30) / 100;
-    final controlBarHeight = (pageHeight * 5) / 100;
+    final playerHeight = (pageHeight * 0.30).clamp(180.0, 320.0);
+    final controlBarHeight = (pageHeight * 0.05).clamp(44.0, 56.0);
     globalScaffoldContext = context;
 
     return Scaffold(
@@ -137,124 +136,120 @@ class _SubjectState extends State<Subject> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            videoPlayer(playerHeight, controlBarHeight),
-            if (isVideoSet) _buildPlayingVideoDetails(),
-            if (!isVideoSet)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Text(
-                  'Available Tutorials',
-                  style: GoogleFonts.lato(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
-                  ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          videoPlayer(playerHeight, controlBarHeight),
+          if (isVideoSet) _buildPlayingVideoDetails(),
+          if (!isVideoSet)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Text(
+                'Available Tutorials',
+                style: GoogleFonts.lato(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
                 ),
               ),
-            SizedBox(
-              height: isVideoSet ? listHeight : pageHeight - 88,
-              child: FutureBuilder(
-                  future: getSubjectList(),
-                  builder: (context, AsyncSnapshot<dynamic> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
+            ),
+          Expanded(
+            child: FutureBuilder(
+              future: getSubjectList(),
+              builder: (context, AsyncSnapshot<dynamic> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: RestClient().loader(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error: ${snapshot.error}',
+                          style: AppTheme.bodyStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  if (snapshot.hasData) {
+                    final data = snapshot.data;
+                    final dataLength = snapshot.data?.length;
+
+                    final bool hasDownloadedVideos = data != null &&
+                        data.any((video) => video['isCached'] == true);
+
+                    if (!_isOnline && !hasDownloadedVideos) {
                       return Center(
-                        child: RestClient().loader(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.wifi_off_outlined,
+                                  size: 64, color: Colors.grey),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Video unavailable, please connect to the internet to continue learning.',
+                                style: GoogleFonts.lato(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.textSecondaryColor,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
                       );
-                    } else if (snapshot.hasError) {
+                    }
+
+                    if (dataLength == 0) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.error_outline,
-                                size: 48, color: Colors.red),
+                            const Icon(Icons.video_library_outlined,
+                                size: 48, color: Colors.grey),
                             const SizedBox(height: 16),
                             Text(
-                              'Error: ${snapshot.error}',
+                              'No tutorials available yet',
                               style: AppTheme.bodyStyle,
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       );
-                    } else {
-                      if (snapshot.hasData) {
-                        final data = snapshot.data;
-                        final dataLength = snapshot.data?.length;
-
-                        final bool hasDownloadedVideos = data != null &&
-                            data.any((video) => video['isCached'] == true);
-
-                        if (!_isOnline && !hasDownloadedVideos) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.wifi_off_outlined,
-                                      size: 64, color: Colors.grey),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Video unavailable, please connect to the internet to continue learning.',
-                                    style: GoogleFonts.lato(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppTheme.textSecondaryColor,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (dataLength == 0) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.video_library_outlined,
-                                    size: 48, color: Colors.grey),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No tutorials available yet',
-                                  style: AppTheme.bodyStyle,
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.only(
-                                left: 16, right: 16, top: 8, bottom: 140),
-                            itemCount: dataLength,
-                            itemBuilder: (context, index) {
-                              final tutorial = data![index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: _buildTutorialCard(tutorial),
-                              );
-                            });
-                      } else {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 50),
-                          child: RestClient().loader(),
-                        );
-                      }
                     }
-                  }),
-            )
-          ],
-        ),
+
+                    return ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, top: 8, bottom: 140),
+                        itemCount: dataLength,
+                        itemBuilder: (context, index) {
+                          final tutorial = data![index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _buildTutorialCard(tutorial),
+                          );
+                        });
+                  } else {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 50),
+                      child: RestClient().loader(),
+                    );
+                  }
+                }
+              },
+            ),
+          )
+        ],
       ),
     );
   }
@@ -274,7 +269,7 @@ class _SubjectState extends State<Subject> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: isCurrentlyPlaying
-            ? BorderSide(color: AppTheme.primaryColor, width: 2)
+            ? const BorderSide(color: AppTheme.primaryColor, width: 2)
             : tutorial['isCached']
                 ? const BorderSide(color: Colors.green, width: 1)
                 : BorderSide.none,
@@ -308,7 +303,7 @@ class _SubjectState extends State<Subject> {
                     fit: BoxFit.cover,
                     colorFilter: isLocked
                         ? ColorFilter.mode(
-                            Colors.grey.withOpacity(0.7),
+                            Colors.grey.withValues(alpha: 0.7),
                             BlendMode.darken,
                           )
                         : null,
@@ -321,10 +316,10 @@ class _SubjectState extends State<Subject> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isCurrentlyPlaying
-                          ? AppTheme.primaryColor.withOpacity(0.7)
+                          ? AppTheme.primaryColor.withValues(alpha: 0.7)
                           : isLocked
-                              ? Colors.grey.withOpacity(0.7)
-                              : Colors.black.withOpacity(0.5),
+                              ? Colors.grey.withValues(alpha: 0.7)
+                              : Colors.black.withValues(alpha: 0.5),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -345,9 +340,9 @@ class _SubjectState extends State<Subject> {
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppTheme.primaryColor,
-                      borderRadius: const BorderRadius.only(
+                      borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(8),
                         bottomRight: Radius.circular(8),
                       ),
@@ -428,7 +423,7 @@ class _SubjectState extends State<Subject> {
               color: isLocked
                   ? Colors.grey[500]
                   : isCurrentlyPlaying
-                      ? AppTheme.primaryColor.withOpacity(0.7)
+                      ? AppTheme.primaryColor.withValues(alpha: 0.7)
                       : AppTheme.textSecondaryColor,
               letterSpacing: 0.5,
             ),
@@ -442,7 +437,7 @@ class _SubjectState extends State<Subject> {
                 margin: const EdgeInsets.only(right: 8.0),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.2),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -452,15 +447,15 @@ class _SubjectState extends State<Subject> {
                 ),
               ),
             if (tutorial['isCached'])
-              Padding(
-                padding: const EdgeInsets.only(right: 4.0),
-                child: Icon(Icons.download_for_offline,
+              const Padding(
+                padding: EdgeInsets.only(right: 4.0),
+                child: const Icon(Icons.download_for_offline,
                     color: Colors.green, size: 30),
               ),
             // Only show options menu for currently playing video
             if (isCurrentlyPlaying)
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.more_vert,
                   color: AppTheme.primaryColor,
                 ),
@@ -661,11 +656,11 @@ class _SubjectState extends State<Subject> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppTheme.accentColor,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.video_library_outlined,
                         color: AppTheme.primaryColor,
                       ),
@@ -793,7 +788,7 @@ class _SubjectState extends State<Subject> {
                         ),
                         title: Row(
                           children: [
-                            Icon(Icons.info_outline,
+                            const Icon(Icons.info_outline,
                                 color: AppTheme.primaryColor),
                             const SizedBox(width: 8),
                             Text(
@@ -872,7 +867,7 @@ class _SubjectState extends State<Subject> {
                           ),
                           title: Row(
                             children: [
-                              Icon(Icons.info_outline,
+                              const Icon(Icons.info_outline,
                                   color: AppTheme.primaryColor),
                               const SizedBox(width: 8),
                               Text(
@@ -1060,22 +1055,27 @@ class _SubjectState extends State<Subject> {
   Widget _buildPlayingVideoDetails() {
     if (currentTutorial == null) return const SizedBox.shrink();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            currentTutorial!['title']?.toString() ?? '',
-            style: GoogleFonts.lato(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textPrimaryColor,
+    return Container(
+      width: double.infinity,
+      color: AppTheme.backgroundColor,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(color: AppTheme.backgroundColor),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              currentTutorial!['title']?.toString() ?? '',
+              style: GoogleFonts.lato(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textPrimaryColor,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1),
-        ],
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+          ],
+        ),
       ),
     );
   }
@@ -1083,12 +1083,12 @@ class _SubjectState extends State<Subject> {
   Widget videoPlayer(playerHeight, controlBarHeight) {
     if (isVideoSet) {
       return Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: Colors.black,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -1098,9 +1098,12 @@ class _SubjectState extends State<Subject> {
           children: [
             SizedBox(
               height: playerHeight,
-              child: Platform.isWindows
-                  ? _buildWindowsVideoPlayer()
-                  : _buildAndroidVideoPlayer(),
+              width: double.infinity,
+              child: ClipRect(
+                child: Platform.isWindows
+                    ? _buildWindowsVideoPlayer()
+                    : _buildAndroidVideoPlayer(),
+              ),
             ),
             // Only show the Start Exam button if is_exam is 1
             if (currentTutorial != null && currentTutorial['is_exam'] == 1)
@@ -1185,7 +1188,7 @@ class _SubjectState extends State<Subject> {
                 Center(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -1246,8 +1249,8 @@ class _SubjectState extends State<Subject> {
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Colors.black.withOpacity(0.8),
-            Colors.black.withOpacity(0.4),
+            Colors.black.withValues(alpha: 0.8),
+            Colors.black.withValues(alpha: 0.4),
             Colors.transparent,
           ],
         ),
@@ -1331,7 +1334,7 @@ class _SubjectState extends State<Subject> {
                       });
                     },
                   ),
-                  Container(
+                  SizedBox(
                     width: 60,
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
@@ -1437,7 +1440,7 @@ class _SubjectState extends State<Subject> {
                 Center(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -1465,7 +1468,7 @@ class _SubjectState extends State<Subject> {
                   left: 16,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: IconButton(
@@ -1488,8 +1491,8 @@ class _SubjectState extends State<Subject> {
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [
-            Colors.black.withOpacity(0.8),
-            Colors.black.withOpacity(0.4),
+            Colors.black.withValues(alpha: 0.8),
+            Colors.black.withValues(alpha: 0.4),
             Colors.transparent,
           ],
         ),
@@ -1573,7 +1576,7 @@ class _SubjectState extends State<Subject> {
                       });
                     },
                   ),
-                  Container(
+                  SizedBox(
                     width: 100,
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
@@ -1646,7 +1649,7 @@ class _SubjectState extends State<Subject> {
           ),
           title: Row(
             children: [
-              Icon(Icons.info_outline, color: AppTheme.primaryColor),
+              const Icon(Icons.info_outline, color: AppTheme.primaryColor),
               const SizedBox(width: 8),
               Text(
                 'Exam Not Available',

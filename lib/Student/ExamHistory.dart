@@ -167,7 +167,7 @@ class _ExamHistoryState extends State<ExamHistory> {
                     color: (tutorialID['status'] == 'Pass'
                             ? Colors.green
                             : Colors.redAccent)
-                        .withOpacity(0.1),
+                        .withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(child: statusImage(tutorialID['status'])),
@@ -543,7 +543,7 @@ class _ExamHistoryState extends State<ExamHistory> {
               ),
               Switch(
                 value: _showChart,
-                activeColor: Theme.of(context).primaryColor,
+                activeThumbColor: Theme.of(context).primaryColor,
                 onChanged: (value) {
                   setState(() {
                     _showChart = value;
@@ -566,7 +566,7 @@ class _ExamHistoryState extends State<ExamHistory> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -588,13 +588,13 @@ class _ExamHistoryState extends State<ExamHistory> {
             children: [
               _buildStatCard(
                 'Average Score',
-                '${_averageScore.toStringAsFixed(1)}',
+                _averageScore.toStringAsFixed(1),
                 Icons.trending_up,
                 Colors.blue,
               ),
               _buildStatCard(
                 'Highest Score',
-                '${_highestScore.toStringAsFixed(1)}',
+                _highestScore.toStringAsFixed(1),
                 Icons.emoji_events,
                 Colors.amber,
               ),
@@ -737,19 +737,19 @@ class _ExamHistoryState extends State<ExamHistory> {
 
     return LineChart(
       LineChartData(
-        gridData: FlGridData(show: true),
+        gridData: const FlGridData(show: true),
         titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
+          leftTitles: const AxisTitles(
+            sideTitles: const SideTitles(
               showTitles: true,
               reservedSize: 30,
             ),
           ),
-          rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+          rightTitles: const AxisTitles(
+            sideTitles: const SideTitles(showTitles: false),
           ),
-          topTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+          topTitles: const AxisTitles(
+            sideTitles: const SideTitles(showTitles: false),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -781,10 +781,10 @@ class _ExamHistoryState extends State<ExamHistory> {
             color: Theme.of(context).primaryColor,
             barWidth: 3,
             isStrokeCapRound: true,
-            dotData: FlDotData(show: true),
+            dotData: const FlDotData(show: true),
             belowBarData: BarAreaData(
               show: true,
-              color: Theme.of(context).primaryColor.withOpacity(0.2),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
             ),
           ),
         ],
@@ -872,7 +872,7 @@ class _ExamHistoryState extends State<ExamHistory> {
                   // Status icon
                   Container(
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(50),
                     ),
                     padding: const EdgeInsets.all(8),

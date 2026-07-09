@@ -14,7 +14,6 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-
   final bool _checkbox = false;
   String? _value;
 
@@ -29,8 +28,7 @@ class _SignUpState extends State<SignUp> {
 
   final outlineInputBorderStyle = OutlineInputBorder(
       borderRadius: BorderRadius.circular(50),
-      borderSide: const BorderSide(width: 1)
-  );
+      borderSide: const BorderSide(width: 1));
 
   final borderStyle = OutlineInputBorder(
     borderRadius: BorderRadius.circular(50),
@@ -48,7 +46,10 @@ class _SignUpState extends State<SignUp> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset("assets/Images/BG/bg_signup.png", fit: BoxFit.fill,),
+            Image.asset(
+              "assets/Images/BG/bg_signup.png",
+              fit: BoxFit.fill,
+            ),
             SizedBox(
               width: MediaQuery.of(context).size.width,
               child: Center(
@@ -69,7 +70,7 @@ class _SignUpState extends State<SignUp> {
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _firstName = value;
                   });
@@ -96,7 +97,7 @@ class _SignUpState extends State<SignUp> {
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _lastName = value;
                   });
@@ -123,7 +124,7 @@ class _SignUpState extends State<SignUp> {
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _email = value;
                   });
@@ -151,7 +152,7 @@ class _SignUpState extends State<SignUp> {
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
                 obscureText: true,
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _password = value;
                   });
@@ -179,8 +180,7 @@ class _SignUpState extends State<SignUp> {
                 child: Text(
                   'Contact Information'.toUpperCase(),
                   style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600),
+                      fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -188,7 +188,7 @@ class _SignUpState extends State<SignUp> {
               height: 40,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _mobile = value;
                   });
@@ -210,13 +210,12 @@ class _SignUpState extends State<SignUp> {
             Container(
               height: 10,
             ),
-
             Container(
               height: 40,
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _address = value;
                   });
@@ -243,7 +242,7 @@ class _SignUpState extends State<SignUp> {
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _city = value;
                   });
@@ -270,7 +269,7 @@ class _SignUpState extends State<SignUp> {
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
                     _zipCode = value;
                   });
@@ -316,7 +315,8 @@ class _SignUpState extends State<SignUp> {
               child: OutlinedButton(
                 onPressed: registerAccount,
                 style: StyleConfig.actionButtonStyle,
-                child: Text("Sign Up".toUpperCase(), style: const TextStyle(color: Colors.white)),
+                child: Text("Sign Up".toUpperCase(),
+                    style: const TextStyle(color: Colors.white)),
               ),
             ),
             Container(
@@ -327,48 +327,48 @@ class _SignUpState extends State<SignUp> {
       ),
     );
   }
-  
-  
-  Widget listOfCountry(){
+
+  Widget listOfCountry() {
     return FutureBuilder(
-      future: getCountryList(),
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        if (snapshot.hasData) {
-          return DropdownButtonFormField(
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.all(0),
-              prefixIcon: const Icon(Icons.language),
-              hintText: "Select your country",
-              hintStyle: const TextStyle(),
-              filled: true,
-              focusColor: Colors.blueAccent,
-              enabledBorder: outlineInputBorderStyle,
-              fillColor: Colors.white,
-              border: borderStyle,
-            ),
-            value: selectedCountry,
-            items: snapshot.data.map<DropdownMenuItem<String>>((value) => DropdownMenuItem<String>(
-              value: value["name"].toString(),
-              child: Text(value["name"].toString()),
-            )
-            ).toList(),
-            onChanged: (value) {
-              setState(() {
-                selectedCountry = value!;
-              });
-            },
-          );
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      }
-     );
+        future: getCountryList(),
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          if (snapshot.hasData) {
+            return DropdownButtonFormField(
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(0),
+                prefixIcon: const Icon(Icons.language),
+                hintText: "Select your country",
+                hintStyle: const TextStyle(),
+                filled: true,
+                focusColor: Colors.blueAccent,
+                enabledBorder: outlineInputBorderStyle,
+                fillColor: Colors.white,
+                border: borderStyle,
+              ),
+              initialValue: selectedCountry,
+              items: snapshot.data
+                  .map<DropdownMenuItem<String>>(
+                      (value) => DropdownMenuItem<String>(
+                            value: value["name"].toString(),
+                            child: Text(value["name"].toString()),
+                          ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedCountry = value!;
+                });
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
   }
 
-  Widget listOfState(){
-    if(selectedCountry == "Select your country"){
+  Widget listOfState() {
+    if (selectedCountry == "Select your country") {
       return const SizedBox();
     } else {
       return FutureBuilder(
@@ -387,12 +387,14 @@ class _SignUpState extends State<SignUp> {
                   fillColor: Colors.white,
                   border: borderStyle,
                 ),
-                value: selectedState,
-                items: snapshot.data.map<DropdownMenuItem<String>>((value) => DropdownMenuItem<String>(
-                  value: value["name"].toString(),
-                  child: Text(value["name"].toString()),
-                )
-                ).toList(),
+                initialValue: selectedState,
+                items: snapshot.data
+                    .map<DropdownMenuItem<String>>(
+                        (value) => DropdownMenuItem<String>(
+                              value: value["name"].toString(),
+                              child: Text(value["name"].toString()),
+                            ))
+                    .toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedState = value!;
@@ -404,42 +406,40 @@ class _SignUpState extends State<SignUp> {
                 child: CircularProgressIndicator(),
               );
             }
-          }
-      );
+          });
     }
   }
 
-
   Future registerAccount() async {
     showLoadingIndicator();
-    if(_email.isEmpty){
+    if (_email.isEmpty) {
       RestClient().error("Please enter your email");
       hideLoadingIndicator();
-    } else if (_password.isEmpty){
+    } else if (_password.isEmpty) {
       RestClient().error("Please enter your password");
       hideLoadingIndicator();
-    } else if (_mobile.isEmpty){
+    } else if (_mobile.isEmpty) {
       RestClient().error("Please enter your mobile number");
       hideLoadingIndicator();
-    } else if (_firstName.isEmpty){
+    } else if (_firstName.isEmpty) {
       RestClient().error("Please enter your first name");
       hideLoadingIndicator();
-    } else if (_lastName.isEmpty){
+    } else if (_lastName.isEmpty) {
       RestClient().error("Please enter your last name");
       hideLoadingIndicator();
-    } else if (_address.isEmpty){
+    } else if (_address.isEmpty) {
       RestClient().error("Please enter your address");
       hideLoadingIndicator();
-    } else if (_city.isEmpty){
+    } else if (_city.isEmpty) {
       RestClient().error("Please enter your city");
       hideLoadingIndicator();
-    } else if (_zipCode.isEmpty){
+    } else if (_zipCode.isEmpty) {
       RestClient().error("Please enter your zip code");
       hideLoadingIndicator();
-    } else if (selectedCountry == "Select your country"){
+    } else if (selectedCountry == "Select your country") {
       RestClient().error("Please select your country");
       hideLoadingIndicator();
-    } else if (selectedState == "Select your state"){
+    } else if (selectedState == "Select your state") {
       RestClient().error("Please select your state");
       hideLoadingIndicator();
     } else {
@@ -456,17 +456,14 @@ class _SignUpState extends State<SignUp> {
         "state": selectedState,
       };
       final result = await RestClient().guestPost("/sign-up", data);
-      if(result['status'] == "success"){
+      if (result['status'] == "success") {
         final role = result["data"]["role"].toString();
         final token = result["data"]["api_token"].toString();
         final email = result["data"]["email"].toString();
         final userId = result["data"]["user_id"].toString();
-        await RestClient().storeUser(email, userId, token,role);
-        Analytics().logEvent('register',{
-          "user_role" : "student",
-          "email" : email,
-          "user_id" : userId
-        });
+        await RestClient().storeUser(email, userId, token, role);
+        Analytics().logEvent('register',
+            {"user_role": "student", "email": email, "user_id": userId});
         hideLoadingIndicator();
         navigateToBuySubscription();
       } else {
@@ -493,7 +490,7 @@ class _SignUpState extends State<SignUp> {
 
   Future getCountryList() async {
     final response = await RestClient().guestGet("/get-country", {});
-    if(response['status'] == "success"){
+    if (response['status'] == "success") {
       var data = response['data'];
       data.add({"name": "Select your country"});
       return data;
@@ -504,8 +501,9 @@ class _SignUpState extends State<SignUp> {
   }
 
   Future getStateList() async {
-    final response = await RestClient().guestGet("/get-state/$selectedCountry", {});
-    if(response['status'] == "success"){
+    final response =
+        await RestClient().guestGet("/get-state/$selectedCountry", {});
+    if (response['status'] == "success") {
       var data = response['data'];
       data.add({"name": "Select your state"});
       return data;
@@ -514,6 +512,4 @@ class _SignUpState extends State<SignUp> {
       return <Map<String, dynamic>>[];
     }
   }
-  
-  
 }

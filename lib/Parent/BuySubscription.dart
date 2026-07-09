@@ -105,7 +105,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
               child: DropdownButtonFormField(
                 decoration: StyleConfig.inputStyle(
                     "Select student gender", Icons.accessibility_new_outlined),
-                value: _gender,
+                initialValue: _gender,
                 items: snapshot
                     .map<DropdownMenuItem<String>>(
                         (value) => DropdownMenuItem<String>(
@@ -283,7 +283,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
             return DropdownButtonFormField(
               decoration: StyleConfig.inputStyle(
                   "Select student grade", Icons.people_alt_rounded),
-              value: _selectedGrade,
+              initialValue: _selectedGrade,
               items: snapshot.data
                   .map<DropdownMenuItem<String>>(
                       (value) => DropdownMenuItem<String>(

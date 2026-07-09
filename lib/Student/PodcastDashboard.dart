@@ -95,15 +95,15 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.error_outline,
                             color: Colors.deepPurple,
                             size: 60,
                           ),
                           const SizedBox(height: 20),
-                          Text(
+                          const Text(
                             'Thank you for your patience , something special is coming soon…',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
@@ -134,28 +134,28 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
                   );
                 } else if (snapshot.data == null || snapshot.data!.isEmpty) {
                   // Handle case when data is empty
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 50),
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 50),
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.headphones_outlined,
                             color: Colors.deepPurple,
                             size: 60,
                           ),
-                          const SizedBox(height: 20),
-                          Text(
+                          SizedBox(height: 20),
+                          const Text(
                             'No Podcasts Available',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Padding(
+                          SizedBox(height: 10),
+                          Padding(
                             padding: EdgeInsets.symmetric(horizontal: 40),
                             child: Text(
                               'There are currently no podcasts available for you',
@@ -275,7 +275,8 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
           if (tutorialCount == 0 && examCount == 0) {
             completionPercentage = 0;
           } else {
-            completionPercentage = ((examCount / tutorialCount) * 100).clamp(0, 100);
+            completionPercentage =
+                ((examCount / tutorialCount) * 100).clamp(0, 100);
           }
           courses.add(Course(
               title: course["name"],

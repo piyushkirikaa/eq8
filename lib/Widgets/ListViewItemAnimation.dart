@@ -29,7 +29,7 @@ class _ListViewItemAnimationState extends State<ListViewItemAnimation>
     final double delay = (0.2 * widget.index).clamp(0.0, 0.8);
     final double fadeEnd = (delay + 0.4).clamp(0.0, 1.0);
     final double slideEnd = (delay + 0.5).clamp(0.0, 1.0);
-    final curve = Curves.easeOutQuint;
+    const curve = Curves.easeOutQuint;
 
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(

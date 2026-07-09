@@ -46,24 +46,28 @@ class TeacherTheme {
   static BoxDecoration bubbleDecoration(bool isUserMessage) => BoxDecoration(
         color: isUserMessage ? userBubbleColor : botBubbleColor,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-          bottomLeft: isUserMessage ? Radius.circular(16) : Radius.circular(4),
-          bottomRight: isUserMessage ? Radius.circular(4) : Radius.circular(16),
+          topLeft: const Radius.circular(16),
+          topRight: const Radius.circular(16),
+          bottomLeft: isUserMessage
+              ? const Radius.circular(16)
+              : const Radius.circular(4),
+          bottomRight: isUserMessage
+              ? const Radius.circular(4)
+              : const Radius.circular(16),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             spreadRadius: 1,
             blurRadius: 3,
-            offset: Offset(0, 1),
+            offset: const Offset(0, 1),
           ),
         ],
       );
 }
 
 class LiveTeacherAudio extends StatefulWidget {
-  const LiveTeacherAudio({Key? key}) : super(key: key);
+  const LiveTeacherAudio({super.key});
 
   @override
   State<LiveTeacherAudio> createState() => _LiveTeacherAudioState();
@@ -84,7 +88,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
 
   bool _isListening = false;
   String _text = "";
-  String _response = "";
+  final String _response = "";
   final List<Map<String, dynamic>> _messages = [];
   bool _isTyping = false;
   bool _isSpeaking = false;
@@ -193,7 +197,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
             }
           }),
           listenMode: stt.ListenMode.dictation,
-          pauseFor: Duration(seconds: 2),
+          pauseFor: const Duration(seconds: 2),
           partialResults: true,
         );
       }
@@ -262,8 +266,9 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
       _speak(responseText);
     } catch (e) {
       setState(() => _isTyping = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Error: Unable to get response. Please try again.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              const Text('Error: Unable to get response. Please try again.')));
 
       // Handle the error
       debugPrint("error: $e");
@@ -293,9 +298,9 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           child: Wrap(
             children: <Widget>[
               ListTile(
-                leading:
-                    Icon(Icons.photo_library, color: TeacherTheme.primaryColor),
-                title: Text('Photo Library'),
+                leading: const Icon(Icons.photo_library,
+                    color: TeacherTheme.primaryColor),
+                title: const Text('Photo Library'),
                 onTap: () async {
                   Navigator.pop(context);
                   await _getImage(ImageSource.gallery, query);
@@ -304,9 +309,9 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
               // Camera option only for Android and iOS, not for macOS
               if (!Platform.isMacOS)
                 ListTile(
-                  leading:
-                      Icon(Icons.camera_alt, color: TeacherTheme.primaryColor),
-                  title: Text('Camera'),
+                  leading: const Icon(Icons.camera_alt,
+                      color: TeacherTheme.primaryColor),
+                  title: const Text('Camera'),
                   onTap: () async {
                     Navigator.pop(context);
                     await _getImage(ImageSource.camera, query);
@@ -330,12 +335,12 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return Dialog(
+          return const Dialog(
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
+              padding: EdgeInsets.all(20.0),
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: const [
                   CircularProgressIndicator(color: TeacherTheme.primaryColor),
                   SizedBox(width: 20),
                   Text("Processing image..."),
@@ -450,25 +455,25 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
       appBar: AppBar(
         elevation: 0,
         flexibleSpace: Container(),
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Hero(
+        leading: const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: const Hero(
             tag: 'teacher_avatar',
-            child: CircleAvatar(
+            child: const CircleAvatar(
               radius: 30.0,
-              backgroundImage: AssetImage('assets/Images/teacher.png'),
+              backgroundImage: const AssetImage('assets/Images/teacher.png'),
               backgroundColor: Colors.transparent,
             ),
           ),
         ),
-        title: Text(
+        title: const Text(
           "Genius - Live Teacher",
           style: TeacherTheme.appBarTextStyle,
         ),
         actions: [
           if (_isSpeaking)
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.stop_circle,
                 color: Colors.redAccent,
               ),
@@ -481,11 +486,11 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
               return Transform.scale(
                 scale: _isListening ? _micAnimation.value : 1.0,
                 child: Container(
-                  margin: EdgeInsets.only(right: 8.0),
+                  margin: const EdgeInsets.only(right: 8.0),
                   decoration: _isListening
                       ? BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                         )
                       : null,
                   child: IconButton(
@@ -509,26 +514,27 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
             children: [
               // Typing indicator when bot is processing
               AnimatedContainer(
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 height: _isTyping ? 40 : 0,
                 color: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: _isTyping
-                    ? Row(
-                        children: [
+                    ? const Row(
+                        children: const [
                           SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(
+                            child: const CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
+                              valueColor: const AlwaysStoppedAnimation<Color>(
                                   TeacherTheme.primaryColor),
                             ),
                           ),
                           SizedBox(width: 8),
                           Text(
                             'Genius is typing...',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: TeacherTheme.secondaryColor,
                               fontStyle: FontStyle.italic,
                             ),
@@ -559,31 +565,31 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
               // Speech recognition indicator
               if (_isListening && _text.isNotEmpty)
                 Container(
-                  padding: EdgeInsets.all(8),
-                  margin: EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
-                        offset: Offset(0, 2),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.mic,
                         color: TeacherTheme.primaryColor,
                         size: 18,
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _text,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             fontStyle: FontStyle.italic,
                           ),
@@ -599,8 +605,8 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      offset: Offset(0, -2),
+                      color: Colors.black.withValues(alpha: 0.05),
+                      offset: const Offset(0, -2),
                       blurRadius: 5,
                     ),
                   ],
@@ -639,7 +645,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(Icons.attach_file),
+                                icon: const Icon(Icons.attach_file),
                                 color: TeacherTheme.secondaryColor,
                                 onPressed: () => _pickImageWithQuery(
                                     _textController.text.trim()),
@@ -648,16 +654,16 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                           ),
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       InkWell(
                         onTap: _sendText,
                         borderRadius: BorderRadius.circular(24),
                         child: Container(
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
+                            gradient: const LinearGradient(
+                              colors: const [
                                 TeacherTheme.primaryColor,
                                 TeacherTheme.accentColor
                               ],
@@ -665,7 +671,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                               end: Alignment.bottomRight,
                             ),
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.send_rounded,
                             color: Colors.white,
                             size: 24,
@@ -692,18 +698,18 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           Icon(
             Icons.school_rounded,
             size: 80,
-            color: TeacherTheme.primaryColor.withOpacity(0.5),
+            color: TeacherTheme.primaryColor.withValues(alpha: 0.5),
           ),
-          SizedBox(height: 16),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             "Welcome to Live Teacher",
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: TeacherTheme.primaryColor,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Text(
@@ -715,15 +721,15 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
               ),
             ),
           ),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           ElevatedButton.icon(
-            icon: Icon(Icons.mic),
-            label: Text("Start Speaking"),
+            icon: const Icon(Icons.mic),
+            label: const Text("Start Speaking"),
             style: ElevatedButton.styleFrom(
               backgroundColor: TeacherTheme.primaryColor,
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              textStyle: TextStyle(fontSize: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              textStyle: const TextStyle(fontSize: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -750,19 +756,20 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           children: [
             // Display the sender info
             if (!isUserMessage)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6.0),
-                child: Row(
+              const Padding(
+                padding: EdgeInsets.only(bottom: 6.0),
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
+                  children: const [
                     CircleAvatar(
                       radius: 10,
-                      backgroundImage: AssetImage('assets/Images/teacher.png'),
+                      backgroundImage:
+                          const AssetImage('assets/Images/teacher.png'),
                     ),
                     SizedBox(width: 6),
                     Text(
                       'Genius',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: TeacherTheme.primaryColor,
@@ -782,15 +789,15 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                     message['imageUrl'],
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         color: Colors.grey.shade200,
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
+                          children: const [
                             Icon(Icons.broken_image, color: Colors.grey),
                             SizedBox(width: 8),
                             Text('Failed to load image',
-                                style: TextStyle(color: Colors.grey)),
+                                style: const TextStyle(color: Colors.grey)),
                           ],
                         ),
                       );
@@ -798,14 +805,14 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         child: Center(
                           child: CircularProgressIndicator(
                             value: loadingProgress.expectedTotalBytes != null
                                 ? loadingProgress.cumulativeBytesLoaded /
                                     loadingProgress.expectedTotalBytes!
                                 : null,
-                            valueColor: AlwaysStoppedAnimation<Color>(
+                            valueColor: const AlwaysStoppedAnimation<Color>(
                                 TeacherTheme.primaryColor),
                           ),
                         ),
@@ -822,15 +829,15 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                 data: message['text'],
                 styleSheet: MarkdownStyleSheet(
                   p: TeacherTheme.messageTextStyle,
-                  h1: TextStyle(
+                  h1: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: TeacherTheme.primaryColor),
-                  h2: TextStyle(
+                  h2: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: TeacherTheme.primaryColor),
-                  h3: TextStyle(
+                  h3: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: TeacherTheme.primaryColor),

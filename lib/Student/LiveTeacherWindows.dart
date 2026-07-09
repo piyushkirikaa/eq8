@@ -13,9 +13,8 @@ class LiveTeacherWindows extends StatefulWidget {
 }
 
 class _LiveTeacherWindowsState extends State<LiveTeacherWindows> {
-
   final WebviewController _controller = WebviewController();
-  bool _isWebviewSuspended = false;
+  final bool _isWebviewSuspended = false;
 
   @override
   void initState() {
@@ -36,7 +35,7 @@ class _LiveTeacherWindowsState extends State<LiveTeacherWindows> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text('Error'),
+          title: const Text('Error'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +46,7 @@ class _LiveTeacherWindowsState extends State<LiveTeacherWindows> {
           ),
           actions: [
             TextButton(
-              child: Text('Continue'),
+              child: const Text('Continue'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -75,9 +74,9 @@ class _LiveTeacherWindowsState extends State<LiveTeacherWindows> {
         child: _controller.value.isInitialized
             ? Webview(_controller)
             : const Text(
-          'Not Initialized',
-          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w900),
-        ),
+                'Not Initialized',
+                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w900),
+              ),
       ),
     );
   }

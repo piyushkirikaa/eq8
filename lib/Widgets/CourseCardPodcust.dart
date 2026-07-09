@@ -16,7 +16,7 @@ class CourseCardPodcust extends StatelessWidget {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 3),
@@ -28,8 +28,8 @@ class CourseCardPodcust extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             baseColor,
-            baseColor.withOpacity(0.8),
-            baseColor.withOpacity(0.9),
+            baseColor.withValues(alpha: 0.8),
+            baseColor.withValues(alpha: 0.9),
           ],
         ),
       ),
@@ -74,7 +74,7 @@ class CourseCardPodcust extends StatelessWidget {
                           course.description,
                           style: TextStyle(
                             fontSize: 13.0,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -93,7 +93,7 @@ class CourseCardPodcust extends StatelessWidget {
                 height: 50,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(25),
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -110,14 +110,14 @@ class CourseCardPodcust extends StatelessWidget {
       height: 60,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withValues(alpha: 0.15),
         border: Border.all(
-          color: Colors.white.withOpacity(0.5),
+          color: Colors.white.withValues(alpha: 0.5),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 3,
           ),
