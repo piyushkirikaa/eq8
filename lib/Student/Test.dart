@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
@@ -25,6 +26,9 @@ class _TestState extends State<Test> {
   double completionPercentage = 0;
   final List<dynamic> _answers = [];
 
+  Timer? _examTimer;
+  int _secondsRemaining = 300;
+
   int get _displayQuestionNumber {
     if (_questions.isEmpty) return 0;
     return (_questionIndex + 1).clamp(1, _questions.length);
@@ -34,6 +38,33 @@ class _TestState extends State<Test> {
   void initState() {
     super.initState();
     _questions = widget.examConfig['questions'];
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _examTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_secondsRemaining > 0) {
+        setState(() {
+          _secondsRemaining--;
+        });
+      } else {
+        _examTimer?.cancel();
+        _examComplete(); // Auto-submit when time is up
+      }
+    });
+  }
+
+  String _formatTime(int totalSeconds) {
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  void dispose() {
+    _examTimer?.cancel();
+    super.dispose();
   }
 
   void _nextQuestion(obj) {
@@ -85,7 +116,7 @@ class _TestState extends State<Test> {
                 const Icon(Icons.timer_outlined, color: Color(0xFF2D3142)),
                 const SizedBox(width: 4),
                 Text(
-                  '${(_questions.length - _questionIndex)} remaining',
+                  '${_formatTime(_secondsRemaining)} remaining',
                   style: GoogleFonts.poppins(
                       color: const Color(0xFF2D3142),
                       fontWeight: FontWeight.w500),
@@ -323,6 +354,8 @@ class _TestState extends State<Test> {
   }
 
   _examComplete() async {
+    _examTimer?.cancel();
+    int timeTaken = 300 - _secondsRemaining;
     showLoadingIndicator();
     String jsonString = json.encode(_answers);
     final response = await RestClient().authPost('/student/exam/finish', {
@@ -339,20 +372,23 @@ class _TestState extends State<Test> {
         "wrong_answers": response['data']['wrong_answers'].toString(),
         "exam_status": response['data']['exam_status'].toString(),
       });
-      finishExam(response['data']);
+      finishExam(response['data'], timeTaken);
     } else {
       hideLoadingIndicator();
       RestClient().error(response['message'].toString());
     }
   }
 
-  finishExam(response) {
+  finishExam(response, int timeTaken) {
     // Navigate to ExamComplete without popping back to Subject
     // This keeps the video paused while viewing results
     // When user clicks "Continue Study", we'll pop back to Subject and resume video
     Navigator.of(context).push(
       MaterialPageRoute(
-          builder: (context) => ExamComplete(examStatus: response)),
+          builder: (context) => ExamComplete(
+                examStatus: response,
+                timeTakenSeconds: timeTaken,
+              )),
     );
   }
 

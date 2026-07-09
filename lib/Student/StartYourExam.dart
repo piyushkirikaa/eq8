@@ -100,8 +100,8 @@ class _StartYourExamState extends State<StartYourExam> {
                               color: Colors.black),
                           title: const Text('Time allowed',
                               style: TextStyle(color: Colors.grey)),
-                          trailing: Text(tutorial['allowed_time'].toString(),
-                              style: const TextStyle(
+                          trailing: const Text('5',
+                              style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 17)),

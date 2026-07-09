@@ -72,8 +72,11 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
             AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: _shouldFade,
-              child: Image.asset('assets/Images/dashboard_banner.png',
-                  fit: BoxFit.cover),
+              child: FractionallySizedBox(
+                widthFactor: 0.67,
+                child: Image.asset('assets/Images/dashboard_banner.png',
+                    fit: BoxFit.contain),
+              ),
             ),
             const SizedBox(
               height: 10,

@@ -6,12 +6,18 @@ import 'package:google_fonts/google_fonts.dart';
 
 class ExamComplete extends StatefulWidget {
   final examStatus;
-  const ExamComplete({super.key, required this.examStatus});
+  final int timeTakenSeconds;
+  const ExamComplete({super.key, required this.examStatus, required this.timeTakenSeconds});
   @override
   State<ExamComplete> createState() => _ExamComplete();
 }
 
 class _ExamComplete extends State<ExamComplete> {
+  String _formatTimeTaken(int totalSeconds) {
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,43 +160,87 @@ class _ExamComplete extends State<ExamComplete> {
       ),
       child: Column(
         children: [
-          // Score percentage with circular indicator
-          Stack(
-            alignment: Alignment.center,
+          // Score percentage & Time Taken with side-by-side circular indicators
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              SizedBox(
-                width: 160,
-                height: 160,
-                child: CircularProgressIndicator(
-                  value: percentage / 100,
-                  strokeWidth: 12,
-                  backgroundColor: const Color(0xFFEEEFFF),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isPassed
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFFFFC107),
-                  ),
-                ),
-              ),
-              Column(
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  Text(
-                    "${percentage.round()}%",
-                    style: GoogleFonts.poppins(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2D3142),
+                  SizedBox(
+                    width: 130,
+                    height: 130,
+                    child: CircularProgressIndicator(
+                      value: percentage / 100,
+                      strokeWidth: 10,
+                      backgroundColor: const Color(0xFFEEEFFF),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isPassed
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFFFFC107),
+                      ),
                     ),
                   ),
-                  Text(
-                    isPassed ? "Passed" : "Try Again",
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: isPassed
-                          ? const Color(0xFF4CAF50)
-                          : const Color(0xFFFFC107),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "${percentage.round()}%",
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2D3142),
+                        ),
+                      ),
+                      Text(
+                        isPassed ? "Passed" : "Try Again",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isPassed
+                              ? const Color(0xFF4CAF50)
+                              : const Color(0xFFFFC107),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 130,
+                    height: 130,
+                    child: CircularProgressIndicator(
+                      value: widget.timeTakenSeconds / 300,
+                      strokeWidth: 10,
+                      backgroundColor: const Color(0xFFEEEFFF),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFF4D7CFE),
+                      ),
                     ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTimeTaken(widget.timeTakenSeconds),
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2D3142),
+                        ),
+                      ),
+                      Text(
+                        "Time Taken",
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF8C8FA5),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
