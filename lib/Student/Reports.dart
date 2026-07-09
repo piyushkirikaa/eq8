@@ -132,10 +132,18 @@ class _ReportsState extends State<Reports> {
     );
   }
   _checkDeviceStatus() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
+    final isConnected = await RestClient().checkInternetConnection();
+    if (context.mounted) {
+      context.loaderOverlay.hide();
+    }
+    if (!mounted) return;
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return const DeviceStatusSheet(backgroundColor: Colors.purple);
+        return DeviceStatusSheet(isConnected: isConnected);
       },
     );
   }

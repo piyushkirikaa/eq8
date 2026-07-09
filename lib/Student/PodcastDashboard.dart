@@ -230,10 +230,18 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
   }
 
   _checkDeviceStatus() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
+    final isConnected = await RestClient().checkInternetConnection();
+    if (context.mounted) {
+      context.loaderOverlay.hide();
+    }
+    if (!mounted) return;
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return DeviceStatusSheet(backgroundColor: Theme.of(context).primaryColor);
+        return DeviceStatusSheet(isConnected: isConnected);
       },
     );
   }

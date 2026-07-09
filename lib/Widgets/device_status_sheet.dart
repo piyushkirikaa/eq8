@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../Library/RestClient.dart';
 
 class DeviceStatusSheet extends StatefulWidget {
+  final bool isConnected;
   final Color backgroundColor;
 
   const DeviceStatusSheet({
     super.key,
+    required this.isConnected,
     this.backgroundColor = Colors.blue,
   });
 
@@ -48,7 +49,7 @@ class _DeviceStatusSheetState extends State<DeviceStatusSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: 200,
-      color: widget.backgroundColor,
+      color: Colors.blue, // Always use light blue background
       child: Stack(
         children: [
           // Center content
@@ -98,51 +99,26 @@ class _DeviceStatusSheetState extends State<DeviceStatusSheet> {
   }
 
   Widget _deviceStatusWidget() {
-    return FutureBuilder(
-      future: RestClient().checkInternetConnection(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Text(
-            "Checking...",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return const Text(
-            "We are unable to check device status.",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          );
-        } else {
-          if (snapshot.data == true) {
-            return const Text(
-              "Awesome! You're connected. All system go!.",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            );
-          } else {
-            return const Text(
-              "Oops! Looks like you're offline. Check your connection, and let's get back on track.",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.red,
-              ),
-              textAlign: TextAlign.center,
-            );
-          }
-        }
-      },
-    );
+    if (widget.isConnected) {
+      return const Text(
+        "Awesome! You're connected. All system go!.",
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        textAlign: TextAlign.center,
+      );
+    } else {
+      return const Text(
+        "Oops! Looks like you're offline. Check your connection, and let's get back on track.",
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
   }
 }

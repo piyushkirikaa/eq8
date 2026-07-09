@@ -149,10 +149,18 @@ class _DashboardState extends State<Dashboard> {
   }
 
   _checkDeviceStatus() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
+    final isConnected = await RestClient().checkInternetConnection();
+    if (context.mounted) {
+      context.loaderOverlay.hide();
+    }
+    if (!mounted) return;
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return const DeviceStatusSheet();
+        return DeviceStatusSheet(isConnected: isConnected);
       },
     );
   }
