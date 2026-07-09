@@ -186,16 +186,14 @@ class _forgotState extends State<forgot> {
                     const SizedBox(height: 30),
 
                     // Email Input Field
-                    Container(
-                      height: 40,
-                      width: width,
-                      margin: const EdgeInsets.only(left: 15, right: 15),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
                       child: TextFormField(
                         controller: _emailController,
                         validator: _validateEmail,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(0),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                           prefixIcon: const Icon(Icons.email_outlined),
                           hintText: "Enter your email address",
                           hintStyle: const TextStyle(),
