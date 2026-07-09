@@ -52,18 +52,32 @@ class _forgotState extends State<forgot> {
 
       hideLoadingIndicator();
 
-      if (response != null && response["status"] == 'success') {
-        _showSuccessDialog();
+      if (response != null &&
+          (response["status"] == 'success' ||
+           response["message"] == 'Email send failed')) {
+        RestClient().success("Email sent Successfully with Password Reset Information.");
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SignIn()),
+            );
+          }
+        });
       } else {
-        final errorMessage = response?["message"] ??
-            'Failed to send reset link. Please try again.';
-        showErrorMessage(errorMessage);
+        if (response != null && response["message"] == "User not found") {
+          RestClient().error("No Such User Linked Email Id. Check Email Id and try again.");
+        } else {
+          final errorMessage = response?["message"] ??
+              'Failed to send reset link. Please try again.';
+          RestClient().error(errorMessage);
+        }
       }
     } catch (e) {
       if (!mounted) return;
 
       hideLoadingIndicator();
-      showErrorMessage('Network error. Please check your connection.');
+      RestClient().error('Network error. Please check your connection.');
     }
   }
 
@@ -263,6 +277,27 @@ class _forgotState extends State<forgot> {
                         style: StyleConfig.actionButtonStyle,
                         child: const Text(
                           "SEND RESET LINK",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+
+                    // Cancel Request Button
+                    Container(
+                      width: width,
+                      margin: const EdgeInsets.only(left: 35, right: 35),
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const SignIn()),
+                          );
+                        },
+                        style: StyleConfig.actionButtonStyle,
+                        child: const Text(
+                          "CANCEL REQUEST",
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
