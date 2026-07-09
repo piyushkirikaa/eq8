@@ -4,6 +4,7 @@ import '../../Parent/ParentDashboard.dart';
 import '../../Student/Dashboard.dart';
 import '../../Signup.dart';
 import '../../forgot.dart';
+import 'dart:async';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'Service/Analytics.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -239,6 +240,28 @@ class _SignInState extends State<SignIn> {
     return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
   }
 
+  String get _apiEnv {
+    if (Platform.isIOS) return 'ios';
+    return 'android';
+  }
+
+  Future<String> _deviceId() async {
+    try {
+      final deviceInfoPlugin = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        return androidInfo.id;
+      }
+      if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        return iosInfo.identifierForVendor ?? 'ios';
+      }
+    } catch (e) {
+      debugPrint('Unable to read device id: $e');
+    }
+    return 'unknown';
+  }
+
   Future<void> login() async {
     if (_email.isEmpty) {
       showErrorMessage("Please enter your email address or student ID.");
@@ -252,26 +275,17 @@ class _SignInState extends State<SignIn> {
     bool loginSuccess = false;
 
     try {
-      final deviceInfoPlugin = DeviceInfoPlugin();
-      String deviceId = '';
-
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfoPlugin.androidInfo;
-        deviceId = androidInfo.id; // Android ID
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfoPlugin.iosInfo;
-        deviceId = iosInfo.identifierForVendor ?? '';
-      } else {
-        deviceId = 'unknown';
-      }
+      final deviceId = await _deviceId();
 
       final response = await RestClient().guestPost('/sign-in', {
         'email': _email,
         'password': _password,
-        'env': 'android',
+        'env': _apiEnv,
         'device_id': deviceId
       }).timeout(const Duration(seconds: 25));
-      if (response["status"] == 'success') {
+      if (!mounted) return;
+
+      if (response != null && response["status"] == 'success') {
         loginSuccess = true;
         final role = response["data"]["role"].toString();
         final token = response["data"]["api_token"].toString();
@@ -279,12 +293,18 @@ class _SignInState extends State<SignIn> {
         final userId = response["data"]["user_id"].toString();
         // store the user information
         await RestClient().storeUser(email, userId, token, role);
-        await Analytics().logEvent('login', {});
+        unawaited(Analytics()
+            .logEvent('login', {})
+            .timeout(const Duration(seconds: 5))
+            .catchError((_) {}));
         showLoadingIndicator(message: "Loading next page...");
         navigateToDashboard(role);
       } else {
         // Login failed, show error message
-        String errorMessage = response["data"].toString();
+        debugPrint('Sign-in rejected: $response');
+        String errorMessage = response?["message"]?.toString() ??
+            response?["data"]?.toString() ??
+            'Sign in failed. Please check your details and try again.';
         // Make server error messages more user-friendly
         if (errorMessage.toLowerCase().contains('invalid username password')) {
           errorMessage =
@@ -292,10 +312,13 @@ class _SignInState extends State<SignIn> {
         }
         showErrorMessage(errorMessage);
       }
+    } on TimeoutException {
+      showErrorMessage(
+          "Signing in is taking too long. Please check your connection and try again.");
     } catch (e) {
       // Handle any errors during login
-      showErrorMessage(
-          "We encountered an issue while signing you in. Please check your internet connection and try again.");
+      debugPrint('Sign-in failed: $e');
+      showErrorMessage("Sign in failed. Please try again.");
     } finally {
       if (!loginSuccess) {
         hideLoadingIndicator();
@@ -304,8 +327,8 @@ class _SignInState extends State<SignIn> {
   }
 
   void showErrorMessage(String message) {
-    if (Platform.isWindows) {
-      // Show dialog on Windows since Fluttertoast doesn't support it
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // Show dialog on desktop where Fluttertoast can be unreliable.
       showDialog(
         context: context,
         builder: (BuildContext context) {

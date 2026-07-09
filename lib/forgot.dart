@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'Library/RestClient.dart';
 import 'Library/StyleConfig.dart';
@@ -52,11 +53,9 @@ class _forgotState extends State<forgot> {
 
       hideLoadingIndicator();
 
-      if (response != null &&
-          (response["status"] == 'success' ||
-              response["message"] == 'Email send failed')) {
-        RestClient().success(
-            "Email sent Successfully with Password Reset Information.");
+      if (response != null && response["status"] == 'success') {
+        showSuccessMessage(
+            "Email sent successfully with password reset information.");
         Future.delayed(const Duration(seconds: 5), () {
           if (mounted) {
             Navigator.pushReplacement(
@@ -67,25 +66,31 @@ class _forgotState extends State<forgot> {
         });
       } else {
         if (response != null && response["message"] == "User not found") {
-          RestClient().error(
+          showErrorMessage(
               "No Such User Linked Email Id. Check Email Id and try again.");
         } else {
           final errorMessage = response?["message"] ??
               'Failed to send reset link. Please try again.';
-          RestClient().error(errorMessage);
+          showErrorMessage(errorMessage);
         }
       }
+    } on TimeoutException {
+      if (!mounted) return;
+
+      hideLoadingIndicator();
+      showErrorMessage(
+          'Password reset is taking too long. Please check your connection and try again.');
     } catch (e) {
       if (!mounted) return;
 
       hideLoadingIndicator();
-      RestClient().error('Network error. Please check your connection.');
+      showErrorMessage('Network error. Please check your connection.');
     }
   }
 
   void showErrorMessage(String message) {
-    if (Platform.isWindows) {
-      // Show dialog on Windows since Fluttertoast doesn't support it
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // Show dialog on desktop where Fluttertoast can be unreliable.
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -127,6 +132,51 @@ class _forgotState extends State<forgot> {
     } else {
       // Use toast for Android/iOS
       RestClient().error(message);
+    }
+  }
+
+  void showSuccessMessage(String message) {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Icon(Icons.check_circle_outline, color: Colors.green[700]),
+                const SizedBox(width: 10),
+                const Text('Success'),
+              ],
+            ),
+            content: Text(
+              message,
+              style: const TextStyle(fontSize: 15),
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.green,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+            actionsAlignment: MainAxisAlignment.center,
+          );
+        },
+      );
+    } else {
+      RestClient().success(message);
     }
   }
 

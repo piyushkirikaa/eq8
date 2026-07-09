@@ -19,13 +19,25 @@ class RestClient {
     request.fields.addAll(param);
     request.headers.addAll(headers);
     http.StreamedResponse response = await request.send();
+    final responseBody = await response.stream.bytesToString();
     if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
       print(responseBody);
-      return jsonDecode(responseBody);
-    } else {
-      print(response.reasonPhrase);
+      try {
+        return jsonDecode(responseBody);
+      } catch (e) {
+        print('Invalid JSON response: $e');
+        return {
+          'status': 'error',
+          'message': 'The server returned an invalid response.'
+        };
+      }
     }
+    print(response.reasonPhrase);
+    return {
+      'status': 'error',
+      'message': response.reasonPhrase ?? 'Request failed',
+      'data': responseBody,
+    };
   }
 
   guestGet(endpoint, param) async {
