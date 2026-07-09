@@ -1,6 +1,7 @@
 import 'package:EQ8/Widgets/CourseCardPodcust.dart';
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import '../../Student/StudentProfile.dart';
 import '../../SignIn.dart';
 import '../../Student/PodcastSubject.dart';
@@ -451,6 +452,9 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
   }
 
   void logout() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
     Navigator.pushReplacement(

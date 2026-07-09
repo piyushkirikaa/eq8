@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../SignIn.dart';
@@ -559,6 +560,9 @@ class _ExamHistoryState extends State<ExamHistory> {
   }
 
   void logout() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
     Navigator.pushReplacement(

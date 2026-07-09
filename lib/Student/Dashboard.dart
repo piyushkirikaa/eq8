@@ -285,6 +285,9 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void logout() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
     Navigator.pushReplacement(

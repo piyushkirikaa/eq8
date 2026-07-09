@@ -367,6 +367,10 @@ class _SignInState extends State<SignIn> {
     final role = await RestClient().getRole();
     if (token != null) {
       navigateToDashboard(role);
+    } else {
+      if (mounted) {
+        context.loaderOverlay.hide();
+      }
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../SignIn.dart';
@@ -593,6 +594,9 @@ class _ExamReportState extends State<ExamReport>
   }
 
   void logout() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
     if (mounted) {

@@ -179,8 +179,11 @@ class _ParentDashboardState extends State<ParentDashboard> {
   }
 
   void logout() async {
+    if (context.mounted) {
+      context.loaderOverlay.show();
+    }
     await RestClient().logout();
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const SignIn()),
     );
