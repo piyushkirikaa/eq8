@@ -250,12 +250,27 @@ class _StudentProfileState extends State<StudentProfile> {
                 Center(child: Text('All Your Offline Data Will Lost'.toUpperCase(), style: const TextStyle(fontSize: 16))),
                 const Divider(),
                 Center(
-                  child: IconButton(
-                    icon: const Icon(Icons.logout, color: Colors.black,),
-                    onPressed: () async {
+                  child: InkWell(
+                    onTap: () async {
                       Navigator.pop(context);
                       logout();
                     },
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      width: 112,
+                      height: 112,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFB300),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.logout,
+                          color: Colors.black,
+                          size: 32,
+                        ),
+                      ),
+                    ),
                   ),
                 )
               ],
