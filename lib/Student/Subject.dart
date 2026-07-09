@@ -1221,8 +1221,17 @@ class _SubjectState extends State<Subject> {
     if (flickManager != null) {
       return FlickVideoPlayer(
         flickManager: flickManager!,
-        flickVideoWithControls: const FlickVideoWithControls(
-          controls: FlickPortraitControls(),
+        flickVideoWithControls: FlickVideoWithControls(
+          controls: FlickPortraitControls(
+            progressBarSettings: FlickProgressBarSettings(
+              colors: FlickProgressColors(
+                playedColor: Colors.yellow[700]!,
+                handleColor: Colors.yellow[700]!,
+                bufferedColor: Colors.white54,
+                backgroundColor: Colors.white24,
+              ),
+            ),
+          ),
         ),
       );
     } else {
