@@ -1038,26 +1038,6 @@ class _SubjectState extends State<Subject> {
               color: AppTheme.textPrimaryColor,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            currentTutorial!['sub_title']?.toString().toUpperCase() ?? '',
-            style: GoogleFonts.lato(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.primaryColor,
-              letterSpacing: 0.5,
-            ),
-          ),
-          if (currentTutorial!['description'] != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              currentTutorial!['description'].toString(),
-              style: GoogleFonts.lato(
-                fontSize: 14,
-                color: AppTheme.textSecondaryColor,
-              ),
-            ),
-          ],
           const SizedBox(height: 12),
           const Divider(height: 1),
         ],
