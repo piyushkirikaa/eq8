@@ -81,48 +81,6 @@ class _forgotState extends State<forgot> {
     }
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green[600], size: 30),
-            const SizedBox(width: 10),
-            const Text('Email Sent!'),
-          ],
-        ),
-        content: Text(
-          'A password reset link has been sent to ${_emailController.text}.\n\nPlease check your inbox and follow the instructions.',
-          style: const TextStyle(fontSize: 15),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext); // Close dialog
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const SignIn()),
-              ); // Go back to sign in page
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.purple,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
-              ),
-            ),
-            child: const Text('OK'),
-          ),
-        ],
-        actionsAlignment: MainAxisAlignment.center,
-      ),
-    );
-  }
-
   void showErrorMessage(String message) {
     if (Platform.isWindows) {
       // Show dialog on Windows since Fluttertoast doesn't support it
