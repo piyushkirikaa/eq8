@@ -40,7 +40,7 @@ class _forgotState extends State<forgot> {
       return;
     }
 
-    showLoadingIndicator();
+    showLoadingIndicator(message: "Please wait...");
 
     try {
       final response = await RestClient().guestPost(
@@ -156,8 +156,8 @@ class _forgotState extends State<forgot> {
     }
   }
 
-  void showLoadingIndicator() {
-    context.loaderOverlay.show();
+  void showLoadingIndicator({String? message}) {
+    context.loaderOverlay.show(progress: message ?? "Please wait...");
   }
 
   void hideLoadingIndicator() {

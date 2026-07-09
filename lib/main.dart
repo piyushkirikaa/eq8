@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    progress != null ? progress.toString() : "Loading next page...",
+                    progress != null ? progress.toString() : "Loading...",
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
