@@ -143,8 +143,7 @@ class _SubjectState extends State<Subject> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             videoPlayer(playerHeight, controlBarHeight),
-            if (isVideoSet)
-              _buildPlayingVideoDetails(),
+            if (isVideoSet) _buildPlayingVideoDetails(),
             if (!isVideoSet)
               Padding(
                 padding:
@@ -188,7 +187,8 @@ class _SubjectState extends State<Subject> {
                         final data = snapshot.data;
                         final dataLength = snapshot.data?.length;
 
-                        final bool hasDownloadedVideos = data != null && data.any((video) => video['isCached'] == true);
+                        final bool hasDownloadedVideos = data != null &&
+                            data.any((video) => video['isCached'] == true);
 
                         if (!_isOnline && !hasDownloadedVideos) {
                           return Center(
@@ -1225,8 +1225,8 @@ class _SubjectState extends State<Subject> {
           controls: FlickPortraitControls(
             progressBarSettings: FlickProgressBarSettings(
               colors: FlickProgressColors(
-                playedColor: Colors.yellow[700]!,
-                handleColor: Colors.yellow[700]!,
+                playedColor: Colors.yellow[700],
+                handleColor: Colors.yellow[700],
                 bufferedColor: Colors.white54,
                 backgroundColor: Colors.white24,
               ),
