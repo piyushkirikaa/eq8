@@ -8,6 +8,7 @@ import '../Service/Analytics.dart';
 import '../Widgets/Course.dart';
 import '../Widgets/CourseCard.dart';
 import '../Widgets/ListViewItemAnimation.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -276,6 +277,10 @@ class _DashboardState extends State<Dashboard> {
       print('Error in getSubjectList: $e');
       RestClient().error("Failed to load subjects. Please try again.");
       return [];
+    } finally {
+      if (context.mounted) {
+        context.loaderOverlay.hide();
+      }
     }
   }
 

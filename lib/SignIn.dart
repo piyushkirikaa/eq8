@@ -245,6 +245,7 @@ class _SignInState extends State<SignIn> {
     }
 
     showLoadingIndicator();
+    bool loginSuccess = false;
 
     try {
       final deviceInfoPlugin = DeviceInfoPlugin();
@@ -267,6 +268,7 @@ class _SignInState extends State<SignIn> {
         'device_id': deviceId
       });
       if (response["status"] == 'success') {
+        loginSuccess = true;
         final role = response["data"]["role"].toString();
         final token = response["data"]["api_token"].toString();
         final email = response["data"]["email"].toString();
@@ -274,6 +276,7 @@ class _SignInState extends State<SignIn> {
         // store the user information
         await RestClient().storeUser(email, userId, token, role);
         await Analytics().logEvent('login', {});
+        showLoadingIndicator(message: "Loading next page...");
         navigateToDashboard(role);
       } else {
         // Login failed, show error message
@@ -290,7 +293,9 @@ class _SignInState extends State<SignIn> {
       showErrorMessage(
           "We encountered an issue while signing you in. Please check your internet connection and try again.");
     } finally {
-      hideLoadingIndicator();
+      if (!loginSuccess) {
+        hideLoadingIndicator();
+      }
     }
   }
 
@@ -335,8 +340,8 @@ class _SignInState extends State<SignIn> {
     }
   }
 
-  void showLoadingIndicator() {
-    context.loaderOverlay.show();
+  void showLoadingIndicator({String? message}) {
+    context.loaderOverlay.show(progress: message ?? "Signing in...");
   }
 
   void hideLoadingIndicator() {

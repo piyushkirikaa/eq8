@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'SignIn.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'dart:io' show Platform;
 import 'package:window_manager/window_manager.dart';
 
@@ -30,14 +31,45 @@ Future<void> main() async {
 
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GlobalLoaderOverlay(
+      overlayColor: const Color(0x99000000),
+      overlayWidgetBuilder: (progress) {
+        return Center(
+          child: Card(
+            color: const Color(0xE6FFFFFF),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 8,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SpinKitDoubleBounce(
+                    color: Colors.purple,
+                    size: 60.0,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    progress != null ? progress.toString() : "Loading next page...",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
@@ -67,43 +99,8 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        //home: const SignIn()
-        home: GlobalLoaderOverlay(
-          useDefaultLoading: true,
-          overlayColor: Colors.black.withOpacity(0.5),
-          overlayWholeScreen:
-              false, // Don't overlay the whole screen automatically
-          overlayOpacity: 0.7,
-          child: const SignIn(),
-        ));
-  }
-}
-
-// Custom loader overlay that doesn't trigger on simple UI state updates
-class GlobalLoaderOverlay extends StatelessWidget {
-  final Widget child;
-  final bool useDefaultLoading;
-  final Color overlayColor;
-  final bool overlayWholeScreen;
-  final double overlayOpacity;
-
-  const GlobalLoaderOverlay({
-    super.key,
-    required this.child,
-    required this.useDefaultLoading,
-    required this.overlayColor,
-    required this.overlayWholeScreen,
-    required this.overlayOpacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LoaderOverlay(
-      useDefaultLoading: useDefaultLoading,
-      overlayColor: overlayColor,
-      overlayWholeScreen: overlayWholeScreen,
-      disableBackButton: false,
-      child: child,
+        home: const SignIn(),
+      ),
     );
   }
 }

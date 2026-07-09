@@ -3,6 +3,7 @@ import '../../Library/RestClient.dart';
 import '../../Parent/BuySubscription.dart';
 import '../../Parent/ExamLog.dart';
 import '../../SignIn.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
 class ParentDashboard extends StatefulWidget {
   const ParentDashboard({super.key});
@@ -155,12 +156,18 @@ class _ParentDashboardState extends State<ParentDashboard> {
   }
 
   getSubscriptionsList() async {
-    final response = await RestClient().authGet('/parent/subscriptions', {});
-    if (response["status"] == 'success') {
-      return response["data"];
-    } else {
-      RestClient().error(response["data"].toString());
-      return ""; // Return an empty list in case of an error
+    try {
+      final response = await RestClient().authGet('/parent/subscriptions', {});
+      if (response["status"] == 'success') {
+        return response["data"];
+      } else {
+        RestClient().error(response["data"].toString());
+        return ""; // Return an empty list in case of an error
+      }
+    } finally {
+      if (context.mounted) {
+        context.loaderOverlay.hide();
+      }
     }
   }
 
