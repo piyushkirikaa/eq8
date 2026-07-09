@@ -221,11 +221,15 @@ class _SignInState extends State<SignIn> {
         ),
       );
     } else {
-      return SizedBox(
-        width: width,
-        child: Image.asset(
-          'assets/Images/BG/bg_login.png',
-          fit: BoxFit.fill,
+      final screenHeight = MediaQuery.of(context).size.height;
+      return ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: screenHeight * 0.42),
+        child: SizedBox(
+          width: width,
+          child: Image.asset(
+            'assets/Images/BG/bg_login.png',
+            fit: BoxFit.contain,
+          ),
         ),
       );
     }
@@ -266,7 +270,7 @@ class _SignInState extends State<SignIn> {
         'password': _password,
         'env': 'android',
         'device_id': deviceId
-      });
+      }).timeout(const Duration(seconds: 25));
       if (response["status"] == 'success') {
         loginSuccess = true;
         final role = response["data"]["role"].toString();

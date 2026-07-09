@@ -46,7 +46,7 @@ class _forgotState extends State<forgot> {
       final response = await RestClient().guestPost(
         '/forgot-password',
         {'email': _emailController.text.trim()},
-      );
+      ).timeout(const Duration(seconds: 25));
 
       if (!mounted) return;
 
@@ -54,8 +54,9 @@ class _forgotState extends State<forgot> {
 
       if (response != null &&
           (response["status"] == 'success' ||
-           response["message"] == 'Email send failed')) {
-        RestClient().success("Email sent Successfully with Password Reset Information.");
+              response["message"] == 'Email send failed')) {
+        RestClient().success(
+            "Email sent Successfully with Password Reset Information.");
         Future.delayed(const Duration(seconds: 5), () {
           if (mounted) {
             Navigator.pushReplacement(
@@ -66,7 +67,8 @@ class _forgotState extends State<forgot> {
         });
       } else {
         if (response != null && response["message"] == "User not found") {
-          RestClient().error("No Such User Linked Email Id. Check Email Id and try again.");
+          RestClient().error(
+              "No Such User Linked Email Id. Check Email Id and try again.");
         } else {
           final errorMessage = response?["message"] ??
               'Failed to send reset link. Please try again.';
@@ -193,7 +195,8 @@ class _forgotState extends State<forgot> {
                         validator: _validateEmail,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
                           prefixIcon: const Icon(Icons.email_outlined),
                           hintText: "Enter your email address",
                           hintStyle: const TextStyle(),
@@ -325,11 +328,15 @@ class _forgotState extends State<forgot> {
         ),
       );
     } else {
-      return SizedBox(
-        width: width,
-        child: Image.asset(
-          'assets/Images/BG/bg_login.png',
-          fit: BoxFit.fill,
+      final screenHeight = MediaQuery.of(context).size.height;
+      return ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: screenHeight * 0.38),
+        child: SizedBox(
+          width: width,
+          child: Image.asset(
+            'assets/Images/BG/bg_login.png',
+            fit: BoxFit.contain,
+          ),
         ),
       );
     }

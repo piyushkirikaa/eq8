@@ -20,13 +20,19 @@ class _veryfyState extends State<veryfy> {
           children: [
             SizedBox(
               width: MediaQuery.of(context).size.width,
-              child: Lottie.asset("assets/Data/dataSignin2.json"),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.38,
+                ),
+                child: Lottie.asset("assets/Data/dataSignin2.json"),
+              ),
             ),
             Container(
               height: 60,
               width: 400,
-              margin: const EdgeInsets.only(left: 35,right: 15),
-              child: const Text('OTP',
+              margin: const EdgeInsets.only(left: 35, right: 15),
+              child: const Text(
+                'OTP',
                 style: TextStyle(
                     color: Colors.black,
                     fontSize: 30,
@@ -36,11 +42,11 @@ class _veryfyState extends State<veryfy> {
             Container(
               height: 40,
               width: 340,
-              margin: const EdgeInsets.only(left: 15,right: 15),
+              margin: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
-                  prefixIcon:  const Icon(Icons.password_outlined),
+                  prefixIcon: const Icon(Icons.password_outlined),
                   hintText: "OTP",
                   hintStyle: const TextStyle(),
                   focusColor: Colors.white,
@@ -51,7 +57,10 @@ class _veryfyState extends State<veryfy> {
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(7),
-                    borderSide:  const BorderSide(style: BorderStyle.solid,width: 90,color: Colors.black),
+                    borderSide: const BorderSide(
+                        style: BorderStyle.solid,
+                        width: 90,
+                        color: Colors.black),
                   ),
                 ),
                 keyboardType: TextInputType.number,
@@ -64,24 +73,20 @@ class _veryfyState extends State<veryfy> {
               width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.only(left: 35, right: 35),
               child: OutlinedButton(
-                onPressed:(){} ,
-                style:  OutlinedButton.styleFrom(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SignIn()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.black,
-                  shape:RoundedRectangleBorder(
-                    borderRadius:
-                    BorderRadius.circular(10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: GestureDetector(
-                    onTap: (){
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SignIn()),
-                      );
-                    },
-                    child: const Text("verify otp ",
-                        style: TextStyle(
-                        color: Colors.white))),
+                child: const Text("Verify OTP",
+                    style: TextStyle(color: Colors.white)),
               ),
             ),
           ],
@@ -90,4 +95,3 @@ class _veryfyState extends State<veryfy> {
     );
   }
 }
-

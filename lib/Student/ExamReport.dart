@@ -73,7 +73,7 @@ class _ExamReportState extends State<ExamReport>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Performance Analysis'),
+        title: const Text('Progress Tracking'),
         actions: [
           IconButton(
             icon: interNetCheck(),

@@ -25,6 +25,11 @@ class _TestState extends State<Test> {
   double completionPercentage = 0;
   final List<dynamic> _answers = [];
 
+  int get _displayQuestionNumber {
+    if (_questions.isEmpty) return 0;
+    return (_questionIndex + 1).clamp(1, _questions.length);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -32,14 +37,30 @@ class _TestState extends State<Test> {
   }
 
   void _nextQuestion(obj) {
+    if (_questionIndex >= _questions.length) return;
     _answers.add(obj);
     setState(() {
       _questionIndex++;
       int totalQuestions =
           _questions.length; // Set the total number of questions
-      int answeredQuestions =
-          _questionIndex; // Set the number of questions answered
+      int answeredQuestions = _questionIndex.clamp(
+          0, totalQuestions); // Set the number of questions answered
       completionPercentage = ((answeredQuestions / totalQuestions) * 100);
+    });
+  }
+
+  void _previousQuestion() {
+    if (_questionIndex == 0) return;
+    setState(() {
+      _questionIndex--;
+      if (_answers.isNotEmpty) {
+        _answers.removeLast();
+      }
+      final totalQuestions = _questions.length;
+      final answeredQuestions = _questionIndex.clamp(0, totalQuestions);
+      completionPercentage = totalQuestions == 0
+          ? 0
+          : ((answeredQuestions / totalQuestions) * 100);
     });
   }
 
@@ -99,7 +120,7 @@ class _TestState extends State<Test> {
                               color: const Color(0xFF2D3142)),
                         ),
                         Text(
-                          'Question ${_questionIndex + 1}/${_questions.length}',
+                          'Question $_displayQuestionNumber/${_questions.length}',
                           style: GoogleFonts.poppins(
                               fontWeight: FontWeight.w500,
                               fontSize: 14,
@@ -133,7 +154,6 @@ class _TestState extends State<Test> {
   Widget questionWidget() {
     if (_questionIndex < _questions.length) {
       final data = _questions[_questionIndex];
-      final questionInfo = data["question"];
       return Container(
         width: MediaQuery.of(context).size.width,
         margin: const EdgeInsets.all(16),
@@ -214,10 +234,7 @@ class _TestState extends State<Test> {
               children: [
                 if (_questionIndex > 0)
                   TextButton.icon(
-                    onPressed: () {
-                      // This is just UI, would need backend support for previous question
-                      // Ideally we'd implement this feature fully
-                    },
+                    onPressed: _previousQuestion,
                     icon: const Icon(Icons.arrow_back_rounded,
                         size: 18, color: Color(0xFF8C8FA5)),
                     label: Text(
@@ -371,25 +388,12 @@ class _TestState extends State<Test> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-              },
-              child: Text(
-                'CONTINUE EXAM',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF4D7CFE),
-                ),
-              ),
-            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close dialog
-                Navigator.of(context).pop(); // Exit exam screen
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE63946),
+                backgroundColor: const Color(0xFF4D7CFE),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -397,9 +401,22 @@ class _TestState extends State<Test> {
                 elevation: 0,
               ),
               child: Text(
+                'CONTINUE EXAM',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Exit exam screen
+              },
+              child: Text(
                 'YES, CANCEL',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
+                  color: const Color(0xFFE63946),
                 ),
               ),
             ),

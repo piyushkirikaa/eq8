@@ -4,7 +4,6 @@ import '../Library/RestClient.dart';
 import '../Library/StyleConfig.dart';
 
 class FeedbackController extends StatefulWidget {
-
   final tutorial;
 
   const FeedbackController({super.key, this.tutorial});
@@ -14,18 +13,16 @@ class FeedbackController extends StatefulWidget {
 }
 
 class _FeedbackControllerState extends State<FeedbackController> {
-
   String _feedback = "";
+  bool _isSubmitting = false;
 
   @override
   Widget build(BuildContext context) {
-
     double width = MediaQuery.of(context).size.width;
 
     final outlineInputBorderStyle = OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(width: 1)
-    );
+        borderSide: const BorderSide(width: 1));
 
     final borderStyle = OutlineInputBorder(
       borderRadius: BorderRadius.circular(10),
@@ -39,11 +36,13 @@ class _FeedbackControllerState extends State<FeedbackController> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 15,),
+            const SizedBox(
+              height: 15,
+            ),
             Container(
               height: 200,
               width: width,
-              margin: const EdgeInsets.only(left: 15,right: 15),
+              margin: const EdgeInsets.only(left: 15, right: 15),
               child: TextField(
                 minLines: 50, // Minimum number of lines
                 maxLines: 50, // Allows for growth
@@ -65,16 +64,31 @@ class _FeedbackControllerState extends State<FeedbackController> {
                 keyboardType: TextInputType.emailAddress,
               ),
             ),
-            const SizedBox(height: 15,),
+            const SizedBox(
+              height: 15,
+            ),
             Container(
               width: MediaQuery.of(context).size.width,
               margin: const EdgeInsets.only(left: 15, right: 15),
               child: OutlinedButton(
-                onPressed:()async{
-                  await submitFeedback();
-                },
-                style:  StyleConfig.feedbackButtonStyle,
-                child: const Text("SUBMIT YOUR FEEDBACK", style: TextStyle(color: Colors.white)),
+                onPressed: _isSubmitting
+                    ? null
+                    : () async {
+                        await submitFeedback();
+                      },
+                style: StyleConfig.feedbackButtonStyle,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text("SUBMIT YOUR FEEDBACK",
+                        style: TextStyle(color: Colors.white)),
               ),
             ),
           ],
@@ -83,18 +97,39 @@ class _FeedbackControllerState extends State<FeedbackController> {
     );
   }
 
-  submitFeedback()async {
-    if (_feedback.isEmpty) {
+  Future<void> submitFeedback() async {
+    if (_feedback.trim().isEmpty) {
       RestClient().error("Please enter your feedback");
+    } else if (_isSubmitting) {
+      return;
     } else {
-      final response = await RestClient().authPost('/student/feedback', {
-        'feedback' : _feedback,
-        'tutorial_id' : widget.tutorial['id'].toString()
+      setState(() {
+        _isSubmitting = true;
       });
-      print(response);
-      RestClient().success("Your feedback Submitted successfully");
-      Navigator.pop(context);
+      try {
+        final response = await RestClient().authPost('/student/feedback', {
+          'feedback': _feedback.trim(),
+          'tutorial_id': widget.tutorial['id'].toString()
+        }).timeout(const Duration(seconds: 20));
+        if (!mounted) return;
+        if (response['status'] == 'success') {
+          RestClient().success("Your feedback submitted successfully");
+          Navigator.pop(context);
+        } else {
+          RestClient().error(
+              response['message']?.toString() ?? "Feedback submission failed");
+        }
+      } catch (e) {
+        if (mounted) {
+          RestClient().error("Feedback submission failed. Please try again.");
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+          });
+        }
+      }
     }
   }
-
 }
