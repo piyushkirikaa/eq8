@@ -692,6 +692,13 @@ class _SubjectState extends State<Subject> {
                     DefaultCacheManager().getSingleFile(videoURL).then((file) {
                       RestClient()
                           .success('Video saved is now available offline');
+                      if (cachedSubjectList != null) {
+                        for (var item in cachedSubjectList!) {
+                          if (item['video_url'] == videoURL) {
+                            item['isCached'] = true;
+                          }
+                        }
+                      }
                       setState(() {});
                     });
                   } else {
@@ -705,6 +712,13 @@ class _SubjectState extends State<Subject> {
                     globalScaffoldContext.loaderOverlay.hide();
                     Navigator.pop(context);
                     RestClient().error('Video Deleted offline');
+                    if (cachedSubjectList != null) {
+                      for (var item in cachedSubjectList!) {
+                        if (item['video_url'] == videoURL) {
+                          item['isCached'] = false;
+                        }
+                      }
+                    }
                     setState(() {});
                   }
                 },
@@ -968,6 +982,13 @@ class _SubjectState extends State<Subject> {
 
           DefaultCacheManager().getSingleFile(videoURL).then((file) {
             RestClient().success('Video saved is now available offline');
+            if (cachedSubjectList != null) {
+              for (var item in cachedSubjectList!) {
+                if (item['video_url'] == videoURL) {
+                  item['isCached'] = true;
+                }
+              }
+            }
             setState(() {});
           });
         },
@@ -986,6 +1007,13 @@ class _SubjectState extends State<Subject> {
           globalScaffoldContext.loaderOverlay.hide();
           Navigator.pop(context);
           RestClient().error('Video Deleted offline');
+          if (cachedSubjectList != null) {
+            for (var item in cachedSubjectList!) {
+              if (item['video_url'] == videoURL) {
+                item['isCached'] = false;
+              }
+            }
+          }
           setState(() {});
         },
       );
