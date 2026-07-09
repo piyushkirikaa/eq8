@@ -1224,12 +1224,10 @@ class _SubjectState extends State<Subject> {
         flickVideoWithControls: FlickVideoWithControls(
           controls: FlickPortraitControls(
             progressBarSettings: FlickProgressBarSettings(
-              colors: FlickProgressColors(
-                playedColor: Colors.yellow[700],
-                handleColor: Colors.yellow[700],
-                bufferedColor: Colors.white54,
-                backgroundColor: Colors.white24,
-              ),
+              playedColor: Colors.yellow[700]!, // Added '!' at the end
+              handleColor: Colors.yellow[700]!, // Added '!' at the end
+              bufferedColor: Colors.white54,
+              backgroundColor: Colors.white24,
             ),
           ),
         ),

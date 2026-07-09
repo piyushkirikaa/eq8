@@ -14,7 +14,7 @@ class BuySubscription extends StatefulWidget {
 }
 
 class _BuySubscriptionState extends State<BuySubscription> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  //final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<String> logQueue = [];
 
   String _firstName = "";
