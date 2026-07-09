@@ -9,7 +9,7 @@ import '../Widgets/Course.dart';
 import '../Widgets/CourseCard.dart';
 import '../Widgets/ListViewItemAnimation.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import '../Widgets/DeviceStatusSheet.dart';
+import '../Widgets/device_status_sheet.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});

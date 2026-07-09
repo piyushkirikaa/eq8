@@ -5,7 +5,7 @@ import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../SignIn.dart';
 import 'StudentProfile.dart';
-import '../Widgets/DeviceStatusSheet.dart';
+import '../Widgets/device_status_sheet.dart';
 import 'dart:async';
 
 class ExamReport extends StatefulWidget {

@@ -3,7 +3,7 @@ import 'package:loader_overlay/loader_overlay.dart';
 import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../SignIn.dart';
-import '../Widgets/DeviceStatusSheet.dart';
+import '../Widgets/device_status_sheet.dart';
 
 class StudentProfile extends StatefulWidget {
   const StudentProfile({super.key});

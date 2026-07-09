@@ -4,7 +4,7 @@ import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../SignIn.dart';
 import 'StudentProfile.dart';
-import '../Widgets/DeviceStatusSheet.dart';
+import '../Widgets/device_status_sheet.dart';
 
 class Reports extends StatefulWidget {
   const Reports({super.key});
