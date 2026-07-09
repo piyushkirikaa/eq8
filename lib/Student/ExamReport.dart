@@ -99,6 +99,7 @@ class _ExamReportState extends State<ExamReport>
 
   @override
   Widget build(BuildContext context) {
+    final bool isIPad = MediaQuery.of(context).size.shortestSide >= 600;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Progress Tracking'),
@@ -149,9 +150,9 @@ class _ExamReportState extends State<ExamReport>
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: _isScrolledDown
+                      height: _isScrolledDown && !isIPad
                           ? MediaQuery.of(context).size.height * 0.225
-                          : MediaQuery.of(context).size.height * 0.45,
+                          : (isIPad ? 460.0 : MediaQuery.of(context).size.height * 0.45),
                       child: Column(
                         children: [
                           const SizedBox(height: 16),
@@ -166,7 +167,7 @@ class _ExamReportState extends State<ExamReport>
                           const SizedBox(height: 8),
                           Expanded(
                             child: AnimatedScale(
-                              scale: _isScrolledDown ? 0.5 : 1.0,
+                              scale: _isScrolledDown && !isIPad ? 0.5 : 1.0,
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                               child: AspectRatio(
@@ -194,8 +195,8 @@ class _ExamReportState extends State<ExamReport>
                                     startDegreeOffset: 180,
                                     borderData: FlBorderData(show: false),
                                     sectionsSpace: 1,
-                                    centerSpaceRadius: 30 * _chartAnimationValue,
-                                    sections: showingSections(data),
+                                    centerSpaceRadius: (isIPad ? 60.0 : 30.0) * _chartAnimationValue,
+                                    sections: showingSections(data, isIPad),
                                   ),
                                   swapAnimationDuration:
                                       const Duration(milliseconds: 400),
@@ -396,7 +397,7 @@ class _ExamReportState extends State<ExamReport>
     );
   }
 
-  List<PieChartSectionData> showingSections(List<dynamic> data) {
+  List<PieChartSectionData> showingSections(List<dynamic> data, bool isIPad) {
     final double total = data.fold(
         0.0, (sum, item) => sum + (item['average_number'] as num).toDouble());
 
@@ -404,8 +405,11 @@ class _ExamReportState extends State<ExamReport>
       final subject = data[i];
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 14.0 : 12.0;
-      final radius =
-          isTouched ? 70.0 * _chartAnimationValue : 60.0 * _chartAnimationValue;
+      final baseRadius = isIPad ? 120.0 : 60.0;
+      final touchedRadius = isIPad ? 140.0 : 70.0;
+      final radius = isTouched
+          ? touchedRadius * _chartAnimationValue
+          : baseRadius * _chartAnimationValue;
       final color = chartColors[i % chartColors.length];
 
       // Calculate a value for the pie chart segment
