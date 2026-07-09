@@ -40,32 +40,10 @@ class MyApp extends StatelessWidget {
     return GlobalLoaderOverlay(
       overlayColor: const Color(0x99000000),
       overlayWidgetBuilder: (progress) {
-        return Center(
-          child: Card(
-            color: const Color(0xE6FFFFFF),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 8,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SpinKitDoubleBounce(
-                    color: Colors.purple,
-                    size: 60.0,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    progress != null ? progress.toString() : "Loading...",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        return const Center(
+          child: SpinKitCubeGrid(
+            color: Colors.yellow,
+            size: 50.0,
           ),
         );
       },
