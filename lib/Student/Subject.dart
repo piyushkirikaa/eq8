@@ -142,6 +142,8 @@ class _SubjectState extends State<Subject> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             videoPlayer(playerHeight, controlBarHeight),
+            if (isVideoSet)
+              _buildPlayingVideoDetails(),
             if (!isVideoSet)
               Padding(
                 padding:
@@ -1018,6 +1020,49 @@ class _SubjectState extends State<Subject> {
         },
       );
     }
+  }
+
+  Widget _buildPlayingVideoDetails() {
+    if (currentTutorial == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            currentTutorial!['title']?.toString() ?? '',
+            style: GoogleFonts.lato(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimaryColor,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            currentTutorial!['sub_title']?.toString().toUpperCase() ?? '',
+            style: GoogleFonts.lato(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryColor,
+              letterSpacing: 0.5,
+            ),
+          ),
+          if (currentTutorial!['description'] != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              currentTutorial!['description'].toString(),
+              style: GoogleFonts.lato(
+                fontSize: 14,
+                color: AppTheme.textSecondaryColor,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+        ],
+      ),
+    );
   }
 
   Widget videoPlayer(playerHeight, controlBarHeight) {
