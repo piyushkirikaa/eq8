@@ -9,7 +9,6 @@ import '../../Student/PodcastSubject.dart';
 import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 import '../Widgets/Course.dart';
-import '../Widgets/CourseCard.dart';
 import '../Widgets/ListViewItemAnimation.dart';
 
 class PodcastDashboard extends StatefulWidget {

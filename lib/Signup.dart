@@ -14,8 +14,6 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  final bool _checkbox = false;
-  String? _value;
 
   String _email = "";
   String _password = "";

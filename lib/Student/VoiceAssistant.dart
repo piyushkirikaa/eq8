@@ -63,7 +63,6 @@ class _VoiceAssistantState extends State<VoiceAssistant>
   late AnimationController _pulseController;
   late AnimationController _waveController;
   late Animation<double> _pulseAnimation;
-  late Animation<double> _waveAnimation;
 
   // Voice assistant state
   bool _isListening = false;
@@ -98,9 +97,6 @@ class _VoiceAssistantState extends State<VoiceAssistant>
     _waveController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
-    );
-    _waveAnimation = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
-      CurvedAnimation(parent: _waveController, curve: Curves.linear),
     );
 
     // Start animations but with lower frame rate

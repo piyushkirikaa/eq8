@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:EQ8/Student/LiveTeacherWindows.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -12,9 +11,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'dart:io' show Platform;
-
-// Import for LiveTeacher
-import 'LiveTeacher.dart';
 
 // Theme constants for consistent styling
 class TeacherTheme {
@@ -88,7 +84,6 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
 
   bool _isListening = false;
   String _text = "";
-  final String _response = "";
   final List<Map<String, dynamic>> _messages = [];
   bool _isTyping = false;
   bool _isSpeaking = false;

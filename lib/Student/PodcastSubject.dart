@@ -14,7 +14,6 @@ import 'FeedbackController.dart';
 import 'ExamHistory.dart';
 import 'PDFScreen.dart';
 import 'StartYourExam.dart';
-import 'package:loader_overlay/loader_overlay.dart';
 
 class PodcastSubject extends StatefulWidget {
   final Course course;
@@ -24,7 +23,7 @@ class PodcastSubject extends StatefulWidget {
 }
 
 class _PodcastSubjectState extends State<PodcastSubject> {
-  var currentTutorial;
+  dynamic currentTutorial;
   late AudioPlayerInterface _audioPlayer;
   bool isAudioSet = false;
   late List<dynamic> subjectList = [];

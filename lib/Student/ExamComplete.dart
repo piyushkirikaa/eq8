@@ -5,7 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ExamComplete extends StatefulWidget {
-  final examStatus;
+  final dynamic examStatus;
   final int timeTakenSeconds;
   const ExamComplete({super.key, required this.examStatus, required this.timeTakenSeconds});
   @override
@@ -136,7 +136,6 @@ class _ExamComplete extends State<ExamComplete> {
     final numberOfQuestions = widget.examStatus['number_of_questions'];
     final rightAnswers = widget.examStatus['right_answers'] ?? 0;
     final wrongAnswers = widget.examStatus['wrong_answers'] ?? 0;
-    final passingMarks = widget.examStatus['passing_marks'];
     final examStatus = widget.examStatus;
     final isPassed = examStatus['exam_status'] == "Pass";
 

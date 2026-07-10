@@ -11,7 +11,6 @@ class Analytics {
     param['user_role'] = userRole;
     param['user_id'] = userId;
     param['key'] = name;
-    final returnData =
-        await RestClient().authPost('/student/activity/add', param);
+    await RestClient().authPost('/student/activity/add', param);
   }
 }

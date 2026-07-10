@@ -13,7 +13,6 @@ class LiveTeacherWindows extends StatefulWidget {
 
 class _LiveTeacherWindowsState extends State<LiveTeacherWindows> {
   final WebviewController _controller = WebviewController();
-  final bool _isWebviewSuspended = false;
 
   @override
   void initState() {
