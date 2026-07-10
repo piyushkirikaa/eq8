@@ -12,6 +12,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class RestClient {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
 
   guestPost(endpoint, param) async {
@@ -22,18 +23,18 @@ class RestClient {
     http.StreamedResponse response = await request.send();
     final responseBody = await response.stream.bytesToString();
     if (response.statusCode == 200) {
-      print(responseBody);
+      debugPrint(responseBody);
       try {
         return jsonDecode(responseBody);
       } catch (e) {
-        print('Invalid JSON response: $e');
+        debugPrint('Invalid JSON response: $e');
         return {
           'status': 'error',
           'message': 'The server returned an invalid response.'
         };
       }
     }
-    print(response.reasonPhrase);
+    debugPrint(response.reasonPhrase);
     return {
       'status': 'error',
       'message': response.reasonPhrase ?? 'Request failed',
@@ -50,7 +51,7 @@ class RestClient {
       final responseBody = await response.stream.bytesToString();
       return jsonDecode(responseBody);
     } else {
-      print(response.reasonPhrase);
+      debugPrint(response.reasonPhrase);
     }
   }
 
@@ -68,7 +69,7 @@ class RestClient {
     if (response.statusCode == 200) {
       return jsonDecode(responseBody);
     } else {
-      print(response.reasonPhrase);
+      debugPrint(response.reasonPhrase);
     }
   }
 
@@ -96,27 +97,27 @@ class RestClient {
             try {
               return jsonDecode(responseBody);
             } catch (e) {
-              print('JSON decode error: $e');
+              debugPrint('JSON decode error: $e');
               return null;
             }
           } else {
-            print('Response is not valid JSON (likely HTML error page)');
+            debugPrint('Response is not valid JSON (likely HTML error page)');
             return null;
           }
         } else {
-          print(
+          debugPrint(
               'HTTP ${response.statusCode}: ${response.reasonPhrase ?? 'Request failed'}');
           return null;
         }
       } catch (e) {
-        print('Network request error: $e');
+        debugPrint('Network request error: $e');
         // Fallback to cached data if available
         final cachedData = await getCachedResponse(endpoint);
         if (cachedData != null) {
           try {
             return jsonDecode(cachedData);
           } catch (e) {
-            print('Cached JSON decode error: $e');
+            debugPrint('Cached JSON decode error: $e');
             return null;
           }
         }
@@ -129,11 +130,11 @@ class RestClient {
         try {
           return jsonDecode(cachedData);
         } catch (e) {
-          print('Cached JSON decode error: $e');
+          debugPrint('Cached JSON decode error: $e');
           return null;
         }
       } else {
-        print('No cached data available');
+        debugPrint('No cached data available');
         return null;
       }
     }
@@ -153,9 +154,9 @@ class RestClient {
     try {
       await DefaultCacheManager().putFile(
           "$baseUrl$endpoint", Uint8List.fromList(utf8.encode(responseBody)));
-      print('Response cached successfully for $endpoint');
+      debugPrint('Response cached successfully for $endpoint');
     } catch (e) {
-      print('Error caching response: $e');
+      debugPrint('Error caching response: $e');
     }
   }
 
@@ -168,7 +169,7 @@ class RestClient {
         return await file.readAsString();
       }
     } catch (e) {
-      print('Error reading cached data: $e');
+      debugPrint('Error reading cached data: $e');
     }
     return null;
   }
@@ -193,7 +194,7 @@ class RestClient {
 
           return response.statusCode == 200;
         } catch (e) {
-          print('Internet connectivity test failed: $e');
+          debugPrint('Internet connectivity test failed: $e');
           // If the connectivity test fails but we have a connection, return true anyway
           // as the issue might be with the test URL rather than actual connectivity
           return true;
@@ -203,82 +204,86 @@ class RestClient {
         return false;
       }
     } catch (e) {
-      print('Error checking connectivity: $e');
+      debugPrint('Error checking connectivity: $e');
       // If connectivity check fails, assume we have internet and let the actual requests fail gracefully
       return true;
     }
   }
 
   success(message) async {
-    final context = navigatorKey.currentContext;
-    if (context == null || Platform.isAndroid || Platform.isIOS) {
+    if (Platform.isAndroid || Platform.isIOS) {
       return Fluttertoast.showToast(
           msg: message.toString(),
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 3,
+          timeInSecForIosWeb: 5,
           backgroundColor: Colors.green,
           textColor: Colors.white,
           fontSize: 16.0);
     }
-    _showCustomToast(context, message.toString(), Colors.green);
+
+    final state = scaffoldMessengerKey.currentState;
+    if (state != null) {
+      state.hideCurrentSnackBar();
+      state.showSnackBar(
+        SnackBar(
+          content: Text(
+            message.toString(),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+      );
+    }
   }
 
   error(message) async {
-    final context = navigatorKey.currentContext;
-    if (context == null || Platform.isAndroid || Platform.isIOS) {
+    if (Platform.isAndroid || Platform.isIOS) {
       return Fluttertoast.showToast(
           msg: message.toString(),
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 3,
+          timeInSecForIosWeb: 5,
           backgroundColor: Colors.red,
           textColor: Colors.white,
           fontSize: 16.0);
     }
-    _showCustomToast(context, message.toString(), Colors.red);
-  }
 
-  void _showCustomToast(BuildContext context, String message, Color backgroundColor) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry entry;
-
-    entry = OverlayEntry(
-      builder: (context) => Center(
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 32),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: backgroundColor.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ]
-            ),
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16.0,
-                fontWeight: FontWeight.w500,
-              ),
+    final state = scaffoldMessengerKey.currentState;
+    if (state != null) {
+      state.hideCurrentSnackBar();
+      state.showSnackBar(
+        SnackBar(
+          content: Text(
+            message.toString(),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.w500,
             ),
           ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
         ),
-      ),
-    );
-
-    overlay.insert(entry);
-    Future.delayed(const Duration(seconds: 3), () {
-      entry.remove();
-    });
+      );
+    }
   }
 
   storeUser(email, userId, token, role) async {

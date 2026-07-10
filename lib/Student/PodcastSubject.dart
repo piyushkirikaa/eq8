@@ -503,7 +503,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
     final currentCourseId = currentCourse.id;
     final response = await RestClient()
         .authGet('/student/podcasts/information/$currentCourseId', {});
-    if (response["status"] == 'success') {
+    if (response != null && response["status"] == 'success') {
       var audioList = [];
       for (var audio in response["data"]) {
         final audioUrl = audio['audio_url'].toString();
@@ -515,8 +515,9 @@ class _PodcastSubjectState extends State<PodcastSubject> {
       print("Audio list fetched successfully");
       return audioList;
     } else {
-      RestClient().error(response['data']);
-      print("Error fetching subject list: ${response['data']}");
+      RestClient().error(
+          "Video unavailable, please connect to the internet to continue learning.");
+      print("Error fetching subject list: response is null or failed");
       return []; // Return an empty list in case of an error
     }
   }
@@ -570,11 +571,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                       globalScaffoldContext.loaderOverlay.show();
                       try {
                         final file = await createFileOfPdfUrl(document);
-                        globalScaffoldContext.loaderOverlay.hide();
-                        viewPDF(file.path);
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                          viewPDF(file.path);
+                        }
                       } catch (e) {
-                        globalScaffoldContext.loaderOverlay.hide();
-                        RestClient().error('Error loading document: $e');
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                          RestClient().error('Error loading document: $e');
+                        }
                       }
                     } else {
                       RestClient().error('No document found');
@@ -600,11 +605,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                       globalScaffoldContext.loaderOverlay.show();
                       try {
                         final file = await createFileOfPdfUrl(document);
-                        globalScaffoldContext.loaderOverlay.hide();
-                        viewPDF(file.path);
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                          viewPDF(file.path);
+                        }
                       } catch (e) {
-                        globalScaffoldContext.loaderOverlay.hide();
-                        RestClient().error('Error loading document: $e');
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                          RestClient().error('Error loading document: $e');
+                        }
                       }
                     } else {
                       RestClient().error('No resource guide found');
@@ -630,11 +639,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                       globalScaffoldContext.loaderOverlay.show();
                       try {
                         final file = await createFileOfPdfUrl(document);
-                        globalScaffoldContext.loaderOverlay.hide();
-                        viewPDF(file.path);
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                          viewPDF(file.path);
+                        }
                       } catch (e) {
-                        globalScaffoldContext.loaderOverlay.hide();
-                        RestClient().error('Error loading document: $e');
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                          RestClient().error('Error loading document: $e');
+                        }
                       }
                     } else {
                       RestClient().error('No past paper found');

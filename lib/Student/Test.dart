@@ -11,8 +11,8 @@ import '../Library/RestClient.dart';
 import '../Service/Analytics.dart';
 
 class Test extends StatefulWidget {
-  final examConfig;
-  final tutorial;
+  final dynamic examConfig;
+  final dynamic tutorial;
   const Test({super.key, required this.examConfig, required this.tutorial});
   @override
   State<Test> createState() => _TestState();

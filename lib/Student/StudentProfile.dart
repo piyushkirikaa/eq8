@@ -218,11 +218,11 @@ class _StudentProfileState extends State<StudentProfile> {
     );
   }
   _checkDeviceStatus() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     final isConnected = await RestClient().checkInternetConnection();
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.hide();
     }
     if (!mounted) return;
@@ -282,15 +282,17 @@ class _StudentProfileState extends State<StudentProfile> {
   }
 
   void logout() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     await Analytics().logEvent('logout',{});
     await RestClient().logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SignIn()),
-    );
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignIn()),
+      );
+    }
   }
 
 }

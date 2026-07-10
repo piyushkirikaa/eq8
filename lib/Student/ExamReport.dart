@@ -536,11 +536,11 @@ class _ExamReportState extends State<ExamReport>
   }
 
   _checkDeviceStatus() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     final isConnected = await RestClient().checkInternetConnection();
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.hide();
     }
     if (!mounted) return;

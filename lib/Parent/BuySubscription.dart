@@ -27,13 +27,9 @@ class _BuySubscriptionState extends State<BuySubscription> {
   String _voucher = '';
   String _selectedGrade = '';
 
-  var membershipInfo;
+  dynamic membershipInfo;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +338,9 @@ class _BuySubscriptionState extends State<BuySubscription> {
             isDestructiveAction: true,
             onPressed: () async {
               await paypalWeb(totalAmount);
-              Navigator.pop(context);
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
             },
             child: const Text('Pay'),
           ),
@@ -375,7 +373,9 @@ class _BuySubscriptionState extends State<BuySubscription> {
             isDestructiveAction: true,
             onPressed: () async {
               await paypalWeb(totalAmount);
-              Navigator.pop(context);
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
             },
             child: const Text('Retry'),
           ),
@@ -410,7 +410,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
   }
 
   updateOrderStatus() async {
-    print(membershipInfo);
+    debugPrint(membershipInfo.toString());
     final orderID = membershipInfo['id'];
     final data = {
       "payment_status": "Completed",

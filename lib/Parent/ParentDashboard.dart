@@ -230,7 +230,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
         return ""; // Return an empty list in case of an error
       }
     } finally {
-      if (context.mounted) {
+      if (mounted) {
         context.loaderOverlay.hide();
       }
     }
@@ -244,14 +244,16 @@ class _ParentDashboardState extends State<ParentDashboard> {
   }
 
   void logout() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     await RestClient().logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SignIn()),
-    );
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignIn()),
+      );
+    }
   }
 
   void buySubscription() async {

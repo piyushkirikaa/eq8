@@ -24,6 +24,7 @@ class _DashboardState extends State<Dashboard> {
   final ContainerTransitionType _transitionType =
       ContainerTransitionType.fadeThrough;
   late List<Course> courses = [];
+  Alignment _bannerAlignment = Alignment.centerLeft;
 
   @override
   void initState() {
@@ -71,10 +72,15 @@ class _DashboardState extends State<Dashboard> {
             AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
               opacity: _shouldFade,
-              child: FractionallySizedBox(
-                widthFactor: 0.67,
-                child: Image.asset('assets/Images/dashboard_banner.png',
-                    fit: BoxFit.contain),
+              child: AnimatedAlign(
+                alignment: _bannerAlignment,
+                duration: const Duration(seconds: 1),
+                curve: Curves.easeInOut,
+                child: FractionallySizedBox(
+                  widthFactor: 0.67,
+                  child: Image.asset('assets/Images/dashboard_banner.png',
+                      fit: BoxFit.contain),
+                ),
               ),
             ),
             const SizedBox(
@@ -152,11 +158,11 @@ class _DashboardState extends State<Dashboard> {
   }
 
   _checkDeviceStatus() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     final isConnected = await RestClient().checkInternetConnection();
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.hide();
     }
     if (!mounted) return;
@@ -169,9 +175,10 @@ class _DashboardState extends State<Dashboard> {
   }
 
   void _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 50));
     setState(() {
       _shouldFade = 1; // Adjust the width as needed
+      _bannerAlignment = Alignment.center;
     });
   }
 
@@ -235,22 +242,24 @@ class _DashboardState extends State<Dashboard> {
       RestClient().error("Failed to load subjects. Please try again.");
       return [];
     } finally {
-      if (context.mounted) {
+      if (mounted) {
         context.loaderOverlay.hide();
       }
     }
   }
 
   void logout() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SignIn()),
-    );
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignIn()),
+      );
+    }
   }
 
   Future<void> alertOption() {

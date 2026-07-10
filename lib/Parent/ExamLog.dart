@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../Library/RestClient.dart';
 
 class ExamLog extends StatefulWidget {
-  final tutorialID;
+  final dynamic tutorialID;
   const ExamLog({super.key, required this.tutorialID});
   @override
   State<ExamLog> createState() => _ExamHistoryState();

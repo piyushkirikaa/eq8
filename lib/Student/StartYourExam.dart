@@ -5,7 +5,7 @@ import 'package:loader_overlay/loader_overlay.dart';
 import '../Library/RestClient.dart';
 
 class StartYourExam extends StatefulWidget {
-  final tutorial;
+  final dynamic tutorial;
   const StartYourExam({super.key, required this.tutorial});
 
   @override
@@ -18,11 +18,7 @@ class _StartYourExamState extends State<StartYourExam> {
 
   late BuildContext globalScaffoldContext;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -285,8 +281,10 @@ class _StartYourExamState extends State<StartYourExam> {
       'exam_type': examType,
     });
     if (response['status'] == "success") {
-      globalScaffoldContext.loaderOverlay.hide();
-      startExam(response);
+      if (mounted) {
+        globalScaffoldContext.loaderOverlay.hide();
+        startExam(response);
+      }
     } else {
       RestClient().error(response['message'].toString());
     }

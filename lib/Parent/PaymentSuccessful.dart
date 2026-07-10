@@ -3,7 +3,7 @@ import '../../Library/StyleConfig.dart';
 import '../../Parent/ParentDashboard.dart';
 
 class PaymentSuccessful extends StatefulWidget {
-  final subcriptionInfo;
+  final dynamic subcriptionInfo;
   const PaymentSuccessful({super.key, this.subcriptionInfo});
 
   @override

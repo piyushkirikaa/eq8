@@ -21,12 +21,21 @@ class _SignInState extends State<SignIn> {
   bool _checkbox = false;
   String _email = "";
   String _password = "";
+  double _imageOpacity = 0.0;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     navigateToDashboardIfLoggedIn();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (mounted) {
+          setState(() {
+            _imageOpacity = 1.0;
+          });
+        }
+      });
+    });
   }
 
   @override
@@ -225,9 +234,14 @@ class _SignInState extends State<SignIn> {
         constraints: BoxConstraints(maxHeight: screenHeight * 0.42),
         child: SizedBox(
           width: width,
-          child: Image.asset(
-            'assets/Images/BG/bg_login.png',
-            fit: BoxFit.contain,
+          child: AnimatedOpacity(
+            opacity: _imageOpacity,
+            duration: const Duration(seconds: 1),
+            curve: Curves.easeInOut,
+            child: Image.asset(
+              'assets/Images/BG/bg_login.png',
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       );

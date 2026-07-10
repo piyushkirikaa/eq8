@@ -4,7 +4,7 @@ import '../Library/RestClient.dart';
 import '../Library/StyleConfig.dart';
 
 class FeedbackController extends StatefulWidget {
-  final tutorial;
+  final dynamic tutorial;
 
   const FeedbackController({super.key, this.tutorial});
 

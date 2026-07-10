@@ -538,7 +538,7 @@ class _SubjectState extends State<Subject> {
     final currentCourseId = currentCourse.id;
     final response =
         await RestClient().authGet('/student/tutorials/$currentCourseId', {});
-    if (response["status"] == 'success') {
+    if (response != null && response["status"] == 'success') {
       var videoList = [];
       for (var video in response["data"]) {
         final videoUrl = video['video_url'].toString();
@@ -550,7 +550,8 @@ class _SubjectState extends State<Subject> {
       cachedSubjectList = videoList;
       return videoList;
     } else {
-      RestClient().error(response['data']);
+      RestClient().error(
+          "Video unavailable, please connect to the internet to continue learning.");
       return []; // Return an empty list in case of an error
     }
   }
@@ -737,7 +738,7 @@ class _SubjectState extends State<Subject> {
                     DefaultCacheManager().removeFile(videoURL);
                     globalScaffoldContext.loaderOverlay.hide();
                     Navigator.pop(context);
-                    RestClient().error('Video Deleted offline');
+                    RestClient().error('Offline Video Deleted');
                     if (cachedSubjectList != null) {
                       for (var item in cachedSubjectList!) {
                         if (item['video_url'] == videoURL) {
@@ -1046,7 +1047,7 @@ class _SubjectState extends State<Subject> {
           DefaultCacheManager().removeFile(videoURL);
           globalScaffoldContext.loaderOverlay.hide();
           Navigator.pop(context);
-          RestClient().error('Video Deleted offline');
+          RestClient().error('Offline Video Deleted');
           if (cachedSubjectList != null) {
             for (var item in cachedSubjectList!) {
               if (item['video_url'] == videoURL) {

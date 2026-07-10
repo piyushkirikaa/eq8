@@ -10,7 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class ExamHistory extends StatefulWidget {
-  final tutorialID;
+  final dynamic tutorialID;
   const ExamHistory({super.key, this.tutorialID});
   @override
   State<ExamHistory> createState() => _ExamHistoryState();
@@ -95,7 +95,7 @@ class _ExamHistoryState extends State<ExamHistory> {
   }
 
   getExamList() async {
-    final response;
+    final dynamic response;
     if (widget.tutorialID != "") {
       response = await RestClient()
           .authGet('/student/exam/history/${widget.tutorialID}', {});
@@ -275,11 +275,11 @@ class _ExamHistoryState extends State<ExamHistory> {
   }
 
   _checkDeviceStatus() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     final isConnected = await RestClient().checkInternetConnection();
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.hide();
     }
     if (!mounted) return;
@@ -418,15 +418,17 @@ class _ExamHistoryState extends State<ExamHistory> {
   }
 
   void logout() async {
-    if (context.mounted) {
+    if (mounted) {
       context.loaderOverlay.show();
     }
     await Analytics().logEvent('logout', {});
     await RestClient().logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const SignIn()),
-    );
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SignIn()),
+      );
+    }
   }
 
   Widget _buildErrorWidget(String error) {

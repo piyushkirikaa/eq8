@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class SubjectIcon extends StatelessWidget {
 
-  final Width;
-  final Height;
-  final IconSize;
-  final MyText;
+  final double Width;
+  final double Height;
+  final double IconSize;
+  final String MyText;
 
-  const SubjectIcon({super.key, this.Width = 20, this.Height = 20, this.IconSize= 18, this.MyText = "Partha Gorai"});
+  const SubjectIcon({super.key, this.Width = 20.0, this.Height = 20.0, this.IconSize = 18.0, this.MyText = "Partha Gorai"});
 
   @override
   Widget build(BuildContext context) {

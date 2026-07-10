@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'dart:io' show Platform;
+
 
 // Theme constants for consistent styling
 class TeacherTheme {
@@ -261,8 +262,10 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
       _speak(responseText);
     } catch (e) {
       setState(() => _isTyping = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Error: Unable to get response. Please try again.')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Error: Unable to get response. Please try again.')));
+      }
 
       // Handle the error
       debugPrint("error: $e");
@@ -325,31 +328,35 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
       final File imageFile = File(image.path);
 
       // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const Dialog(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: TeacherTheme.primaryColor),
-                  SizedBox(width: 20),
-                  Text("Processing image..."),
-                ],
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Dialog(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(color: TeacherTheme.primaryColor),
+                    SizedBox(width: 20),
+                    Text("Processing image..."),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
+            );
+          },
+        );
+      }
 
       // Step 1: Upload the image to your Laravel server and get the URL
       String? imageUrl = await _uploadImageAndGetUrl(imageFile);
 
       // Close loading dialog
-      Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
 
       if (imageUrl != null) {
         _addMessage("user", query, imageUrl: imageUrl);
@@ -403,16 +410,20 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           }
         } catch (e) {
           setState(() => _isTyping = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error processing image: ${e.toString()}')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error processing image: ${e.toString()}')),
+            );
+          }
         }
       } else {
         setState(() => _isTyping = false);
         // Handle error if image upload failed
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Failed to upload image. Please try again."),
-        ));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Failed to upload image. Please try again."),
+          ));
+        }
       }
     } else {
       setState(() => _isTyping = false);
