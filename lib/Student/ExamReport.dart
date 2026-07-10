@@ -150,9 +150,9 @@ class _ExamReportState extends State<ExamReport>
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: _isScrolledDown && !isIPad
-                          ? MediaQuery.of(context).size.height * 0.225
-                          : (isIPad ? 460.0 : MediaQuery.of(context).size.height * 0.45),
+                      height: _isScrolledDown
+                          ? (isIPad ? 230.0 : MediaQuery.of(context).size.height * 0.25)
+                          : (isIPad ? 460.0 : MediaQuery.of(context).size.height * 0.50),
                       child: Column(
                         children: [
                           const SizedBox(height: 16),
@@ -167,7 +167,7 @@ class _ExamReportState extends State<ExamReport>
                           const SizedBox(height: 8),
                           Expanded(
                             child: AnimatedScale(
-                              scale: _isScrolledDown && !isIPad ? 0.5 : 1.0,
+                              scale: _isScrolledDown ? 0.5 : 1.0,
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                               child: AspectRatio(
@@ -195,7 +195,7 @@ class _ExamReportState extends State<ExamReport>
                                     startDegreeOffset: 180,
                                     borderData: FlBorderData(show: false),
                                     sectionsSpace: 1,
-                                    centerSpaceRadius: (isIPad ? 60.0 : 30.0) * _chartAnimationValue,
+                                    centerSpaceRadius: (isIPad ? 60.0 : 52.5) * _chartAnimationValue,
                                     sections: showingSections(data, isIPad),
                                   ),
                                   swapAnimationDuration:
@@ -405,8 +405,8 @@ class _ExamReportState extends State<ExamReport>
       final subject = data[i];
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 14.0 : 12.0;
-      final baseRadius = isIPad ? 120.0 : 60.0;
-      final touchedRadius = isIPad ? 140.0 : 70.0;
+      final baseRadius = isIPad ? 120.0 : 105.0;
+      final touchedRadius = isIPad ? 140.0 : 122.5;
       final radius = isTouched
           ? touchedRadius * _chartAnimationValue
           : baseRadius * _chartAnimationValue;
