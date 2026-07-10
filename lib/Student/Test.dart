@@ -101,6 +101,7 @@ class _TestState extends State<Test> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         title: Text(
           'Online Examination',
           style: GoogleFonts.poppins(

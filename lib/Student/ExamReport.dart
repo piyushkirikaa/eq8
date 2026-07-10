@@ -140,8 +140,8 @@ class _ExamReportState extends State<ExamReport>
               if (snapshot.hasData && snapshot.data.length > 0) {
                 final List<dynamic> data = List.from(snapshot.data);
                 data.sort((a, b) {
-                  final aAvg = (a['average_number'] as num).toDouble();
-                  final bAvg = (b['average_number'] as num).toDouble();
+                  final aAvg = double.tryParse(a['average_number'].toString()) ?? 0.0;
+                  final bAvg = double.tryParse(b['average_number'].toString()) ?? 0.0;
                   return bAvg.compareTo(aAvg);
                 });
                 return Column(

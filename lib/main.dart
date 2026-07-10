@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import 'SignIn.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
         );
       },
       child: MaterialApp(
+        scrollBehavior: const MyScrollBehavior(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
@@ -82,4 +84,15 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+class MyScrollBehavior extends MaterialScrollBehavior {
+  const MyScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
 }
