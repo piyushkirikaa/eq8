@@ -1253,6 +1253,28 @@ class _SubjectState extends State<Subject> {
               ),
             ),
           ),
+          flickVideoWithControlsFullscreen: FlickVideoWithControls(
+            videoFit: BoxFit.contain,
+            controls: Theme(
+              data: Theme.of(context).copyWith(
+                iconTheme: const IconThemeData(
+                  color: Colors.white,
+                ),
+              ),
+              child: DefaultTextStyle(
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold),
+                child: FlickLandscapeControls(
+                  progressBarSettings: FlickProgressBarSettings(
+                    playedColor: AppTheme.primaryColor,
+                    handleColor: AppTheme.primaryColor,
+                    bufferedColor: Colors.white54,
+                    backgroundColor: Colors.white24,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       );
     } else {
