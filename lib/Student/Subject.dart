@@ -449,7 +449,7 @@ class _SubjectState extends State<Subject> {
             if (tutorial['isCached'])
               const Padding(
                 padding: EdgeInsets.only(right: 4.0),
-                child: const Icon(Icons.download_for_offline,
+                child: Icon(Icons.download_for_offline,
                     color: Colors.green, size: 30),
               ),
             // Only show options menu for currently playing video
@@ -1176,8 +1176,12 @@ class _SubjectState extends State<Subject> {
                 child: FittedBox(
                   fit: BoxFit.contain,
                   child: SizedBox(
-                    width: winVideoController!.value.size.width > 0 ? winVideoController!.value.size.width : 1600,
-                    height: winVideoController!.value.size.height > 0 ? winVideoController!.value.size.height : 900,
+                    width: winVideoController!.value.size.width > 0
+                        ? winVideoController!.value.size.width
+                        : 1600,
+                    height: winVideoController!.value.size.height > 0
+                        ? winVideoController!.value.size.height
+                        : 900,
                     child: VideoPlayer(winVideoController!),
                   ),
                 ),
@@ -1237,7 +1241,8 @@ class _SubjectState extends State<Subject> {
           flickVideoWithControls: FlickVideoWithControls(
             videoFit: BoxFit.contain,
             controls: DefaultTextStyle(
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
               child: FlickPortraitControls(
                 progressBarSettings: FlickProgressBarSettings(
                   playedColor: AppTheme.primaryColor,
@@ -1443,8 +1448,12 @@ class _SubjectState extends State<Subject> {
                 child: FittedBox(
                   fit: BoxFit.contain,
                   child: SizedBox(
-                    width: winVideoController!.value.size.width > 0 ? winVideoController!.value.size.width : 1600,
-                    height: winVideoController!.value.size.height > 0 ? winVideoController!.value.size.height : 900,
+                    width: winVideoController!.value.size.width > 0
+                        ? winVideoController!.value.size.width
+                        : 1600,
+                    height: winVideoController!.value.size.height > 0
+                        ? winVideoController!.value.size.height
+                        : 900,
                     child: VideoPlayer(winVideoController!),
                   ),
                 ),

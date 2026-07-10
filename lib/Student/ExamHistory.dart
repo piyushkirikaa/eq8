@@ -740,16 +740,16 @@ class _ExamHistoryState extends State<ExamHistory> {
         gridData: const FlGridData(show: true),
         titlesData: FlTitlesData(
           leftTitles: const AxisTitles(
-            sideTitles: const SideTitles(
+            sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 30,
             ),
           ),
           rightTitles: const AxisTitles(
-            sideTitles: const SideTitles(showTitles: false),
+            sideTitles: SideTitles(showTitles: false),
           ),
           topTitles: const AxisTitles(
-            sideTitles: const SideTitles(showTitles: false),
+            sideTitles: SideTitles(showTitles: false),
           ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(

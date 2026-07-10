@@ -250,7 +250,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
       debugPrint("ChatGPT error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: const Text('Connection error. Please try again.')));
+            content: Text('Connection error. Please try again.')));
       }
     }
   }
@@ -337,7 +337,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
           const SizedBox(width: 16),
           const Text(
             'AI Assistant',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,

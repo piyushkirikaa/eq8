@@ -131,7 +131,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     ),
                     child: const Text(
                       'Maximum Volume',
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ],

@@ -95,12 +95,12 @@ class _StartYourExamState extends State<StartYourExam> {
                         borderRadius: BorderRadius.circular(10)),
                     child: Column(
                       children: [
-                        ListTile(
-                          leading: const Icon(Icons.access_time_filled,
+                        const ListTile(
+                          leading: Icon(Icons.access_time_filled,
                               color: Colors.black),
-                          title: const Text('Time allowed',
+                          title: Text('Time allowed',
                               style: TextStyle(color: Colors.grey)),
-                          trailing: const Text('5',
+                          trailing: Text('5',
                               style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -226,7 +226,8 @@ class _StartYourExamState extends State<StartYourExam> {
                   child: Column(
                     children: [
                       ListTile(
-                        title: Text('Tutorial Specific', style: textStyle),
+                        title:
+                            const Text('Tutorial Specific', style: textStyle),
                         onTap: () {
                           setState(() {
                             examType = "Tutorial Specific";
@@ -236,7 +237,7 @@ class _StartYourExamState extends State<StartYourExam> {
                       ),
                       const Divider(),
                       ListTile(
-                        title: Text('Lower Order', style: textStyle),
+                        title: const Text('Lower Order', style: textStyle),
                         onTap: () {
                           setState(() {
                             examType = "Lower Order";
@@ -246,7 +247,7 @@ class _StartYourExamState extends State<StartYourExam> {
                       ),
                       const Divider(),
                       ListTile(
-                        title: Text('Medium Order', style: textStyle),
+                        title: const Text('Medium Order', style: textStyle),
                         onTap: () {
                           setState(() {
                             examType = "Medium Order";
@@ -256,7 +257,7 @@ class _StartYourExamState extends State<StartYourExam> {
                       ),
                       const Divider(),
                       ListTile(
-                        title: Text('Higher Order', style: textStyle),
+                        title: const Text('Higher Order', style: textStyle),
                         onTap: () {
                           setState(() {
                             examType = "Higher Order";

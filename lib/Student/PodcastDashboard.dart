@@ -106,7 +106,7 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
                           const SizedBox(height: 20),
                           const Text(
                             'Thank you for your patience , something special is coming soon…',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,
@@ -143,15 +143,15 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.headphones_outlined,
                             color: Colors.deepPurple,
                             size: 60,
                           ),
                           SizedBox(height: 20),
-                          const Text(
+                          Text(
                             'No Podcasts Available',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.deepPurple,

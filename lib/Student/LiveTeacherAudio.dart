@@ -267,8 +267,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
     } catch (e) {
       setState(() => _isTyping = false);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content:
-              const Text('Error: Unable to get response. Please try again.')));
+          content: Text('Error: Unable to get response. Please try again.')));
 
       // Handle the error
       debugPrint("error: $e");
@@ -338,9 +337,9 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           return const Dialog(
             child: Padding(
               padding: EdgeInsets.all(20.0),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   CircularProgressIndicator(color: TeacherTheme.primaryColor),
                   SizedBox(width: 20),
                   Text("Processing image..."),
@@ -457,11 +456,11 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
         flexibleSpace: Container(),
         leading: const Padding(
           padding: EdgeInsets.all(8.0),
-          child: const Hero(
+          child: Hero(
             tag: 'teacher_avatar',
-            child: const CircleAvatar(
+            child: CircleAvatar(
               radius: 30.0,
-              backgroundImage: const AssetImage('assets/Images/teacher.png'),
+              backgroundImage: AssetImage('assets/Images/teacher.png'),
               backgroundColor: Colors.transparent,
             ),
           ),
@@ -521,20 +520,20 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: _isTyping
                     ? const Row(
-                        children: const [
+                        children: [
                           SizedBox(
                             width: 20,
                             height: 20,
-                            child: const CircularProgressIndicator(
+                            child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: const AlwaysStoppedAnimation<Color>(
+                              valueColor: AlwaysStoppedAnimation<Color>(
                                   TeacherTheme.primaryColor),
                             ),
                           ),
                           SizedBox(width: 8),
                           Text(
                             'Genius is typing...',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: TeacherTheme.secondaryColor,
                               fontStyle: FontStyle.italic,
                             ),
@@ -662,8 +661,8 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                           padding: const EdgeInsets.all(10),
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: const [
+                            gradient: LinearGradient(
+                              colors: [
                                 TeacherTheme.primaryColor,
                                 TeacherTheme.accentColor
                               ],
@@ -703,7 +702,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           const SizedBox(height: 16),
           const Text(
             "Welcome to Live Teacher",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: TeacherTheme.primaryColor,
@@ -758,18 +757,17 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
             if (!isUserMessage)
               const Padding(
                 padding: EdgeInsets.only(bottom: 6.0),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     CircleAvatar(
                       radius: 10,
-                      backgroundImage:
-                          const AssetImage('assets/Images/teacher.png'),
+                      backgroundImage: AssetImage('assets/Images/teacher.png'),
                     ),
                     SizedBox(width: 6),
                     Text(
                       'Genius',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: TeacherTheme.primaryColor,
@@ -793,11 +791,11 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                         color: Colors.grey.shade200,
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Icon(Icons.broken_image, color: Colors.grey),
                             SizedBox(width: 8),
                             Text('Failed to load image',
-                                style: const TextStyle(color: Colors.grey)),
+                                style: TextStyle(color: Colors.grey)),
                           ],
                         ),
                       );
