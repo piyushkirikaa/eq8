@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class RestClient {
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
 
   guestPost(endpoint, param) async {
@@ -209,35 +210,75 @@ class RestClient {
   }
 
   success(message) async {
-    // Fluttertoast doesn't support Windows, so just print for Windows
-    if (Platform.isWindows) {
-      print('SUCCESS: $message');
-      return;
+    final context = navigatorKey.currentContext;
+    if (context == null || Platform.isAndroid || Platform.isIOS) {
+      return Fluttertoast.showToast(
+          msg: message.toString(),
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 3,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0);
     }
-    return Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 3,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 16.0);
+    _showCustomToast(context, message.toString(), Colors.green);
   }
 
   error(message) async {
-    // Fluttertoast doesn't support Windows, so just print for Windows
-    if (Platform.isWindows) {
-      print('ERROR: $message');
-      return;
+    final context = navigatorKey.currentContext;
+    if (context == null || Platform.isAndroid || Platform.isIOS) {
+      return Fluttertoast.showToast(
+          msg: message.toString(),
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 3,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
     }
-    return Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 3,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0);
+    _showCustomToast(context, message.toString(), Colors.red);
+  }
+
+  void _showCustomToast(BuildContext context, String message, Color backgroundColor) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (context) => Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: backgroundColor.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            ),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(entry);
+    Future.delayed(const Duration(seconds: 3), () {
+      entry.remove();
+    });
   }
 
   storeUser(email, userId, token, role) async {

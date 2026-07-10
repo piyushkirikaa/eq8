@@ -713,19 +713,19 @@ class _SubjectState extends State<Subject> {
                       "video": currentTutorial['title'].toString()
                     });
                     Navigator.pop(context);
+                    if (cachedSubjectList != null) {
+                      for (var item in cachedSubjectList!) {
+                        if (item['video_url'] == videoURL) {
+                          item['isCached'] = true;
+                        }
+                      }
+                    }
+                    setState(() {});
                     RestClient().success(
                         'We are saving your video offline, We will notify you when complete.');
                     DefaultCacheManager().getSingleFile(videoURL).then((file) {
                       RestClient()
                           .success('Video saved is now available offline');
-                      if (cachedSubjectList != null) {
-                        for (var item in cachedSubjectList!) {
-                          if (item['video_url'] == videoURL) {
-                            item['isCached'] = true;
-                          }
-                        }
-                      }
-                      setState(() {});
                     });
                   } else {
                     Analytics().logEvent("REMOVE_OFFLINE_VIDEO", {
@@ -1017,19 +1017,19 @@ class _SubjectState extends State<Subject> {
             "video": currentTutorial['title'].toString()
           });
           Navigator.pop(context);
+          if (cachedSubjectList != null) {
+            for (var item in cachedSubjectList!) {
+              if (item['video_url'] == videoURL) {
+                item['isCached'] = true;
+              }
+            }
+          }
+          setState(() {});
           RestClient().success(
               'We are saving your video offline, We will notify you when complete.');
 
           DefaultCacheManager().getSingleFile(videoURL).then((file) {
             RestClient().success('Video saved is now available offline');
-            if (cachedSubjectList != null) {
-              for (var item in cachedSubjectList!) {
-                if (item['video_url'] == videoURL) {
-                  item['isCached'] = true;
-                }
-              }
-            }
-            setState(() {});
           });
         },
       );

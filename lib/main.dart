@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'SignIn.dart';
+import 'Library/RestClient.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
         );
       },
       child: MaterialApp(
+        navigatorKey: RestClient.navigatorKey,
         scrollBehavior: const MyScrollBehavior(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
