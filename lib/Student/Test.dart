@@ -24,7 +24,7 @@ class _TestState extends State<Test> {
   int _questionIndex = 0;
   List<dynamic> _questions = [];
   double completionPercentage = 0;
-  final List<dynamic> _answers = [];
+  late final List<dynamic> _answers;
 
   Timer? _examTimer;
   int _secondsRemaining = 300;
@@ -38,6 +38,7 @@ class _TestState extends State<Test> {
   void initState() {
     super.initState();
     _questions = widget.examConfig['questions'];
+    _answers = List<dynamic>.filled(_questions.length, null, growable: false);
     _startTimer();
   }
 
@@ -67,16 +68,13 @@ class _TestState extends State<Test> {
     super.dispose();
   }
 
-  void _nextQuestion(obj) {
-    if (_questionIndex >= _questions.length) return;
-    _answers.add(obj);
+  void _setAnswerForQuestion(int index, dynamic answerObj) {
     setState(() {
-      _questionIndex++;
-      int totalQuestions =
-          _questions.length; // Set the total number of questions
-      int answeredQuestions = _questionIndex.clamp(
-          0, totalQuestions); // Set the number of questions answered
-      completionPercentage = ((answeredQuestions / totalQuestions) * 100);
+      _answers[index] = answerObj;
+      int answeredCount = _answers.where((a) => a != null).length;
+      completionPercentage = (_questions.isEmpty)
+          ? 0
+          : ((answeredCount / _questions.length) * 100);
     });
   }
 
@@ -84,15 +82,15 @@ class _TestState extends State<Test> {
     if (_questionIndex == 0) return;
     setState(() {
       _questionIndex--;
-      if (_answers.isNotEmpty) {
-        _answers.removeLast();
-      }
-      final totalQuestions = _questions.length;
-      final answeredQuestions = _questionIndex.clamp(0, totalQuestions);
-      completionPercentage = totalQuestions == 0
-          ? 0
-          : ((answeredQuestions / totalQuestions) * 100);
     });
+  }
+
+  void _skipOrNextQuestion() {
+    if (_questionIndex < _questions.length) {
+      setState(() {
+        _questionIndex++;
+      });
+    }
   }
 
   @override
@@ -235,9 +233,13 @@ class _TestState extends State<Test> {
                 if (optionText == "null" || optionText.isEmpty) {
                   return const SizedBox.shrink();
                 }
+                final currentAnswer = _answers[_questionIndex];
+                final bool isSelected = currentAnswer != null &&
+                    currentAnswer['answerKey'] == 'option${index + 1}';
                 return ChoiceButton(
                   index: index,
                   text: optionText,
+                  isSelected: isSelected,
                   onPressed: () {
                     final examID = widget.examConfig['exam_id'];
                     final tutorialID = widget.examConfig['tutorial_id'];
@@ -246,7 +248,7 @@ class _TestState extends State<Test> {
                     final answerKey = 'option${index + 1}';
                     final answerValue = data['option${index + 1}'];
                     final answer = data['answer'];
-                    _nextQuestion({
+                    _setAnswerForQuestion(_questionIndex, {
                       'exam_id': examID,
                       'tutorial_id': tutorialID,
                       'student_id': studentID,
@@ -254,14 +256,21 @@ class _TestState extends State<Test> {
                       'answerKey': answerKey,
                       'answerValue': answerValue,
                       'answer': answer
-                    }); // Load the next question
+                    });
+                    Future.delayed(const Duration(milliseconds: 250), () {
+                      if (mounted && _questionIndex < _questions.length) {
+                        setState(() {
+                          _questionIndex++;
+                        });
+                      }
+                    });
                   },
                 );
               }),
             ),
             const SizedBox(height: 10),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (_questionIndex > 0)
                   TextButton.icon(
@@ -276,7 +285,27 @@ class _TestState extends State<Test> {
                         color: const Color(0xFF8C8FA5),
                       ),
                     ),
+                  )
+                else
+                  const SizedBox.shrink(),
+                TextButton.icon(
+                  onPressed: _skipOrNextQuestion,
+                  icon: Icon(
+                    _answers[_questionIndex] != null
+                        ? Icons.arrow_forward_rounded
+                        : Icons.skip_next_rounded,
+                    size: 18,
+                    color: const Color(0xFF4D7CFE),
                   ),
+                  label: Text(
+                    _answers[_questionIndex] != null ? 'Next' : 'Skip',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF4D7CFE),
+                    ),
+                  ),
+                ),
               ],
             )
           ],
@@ -316,7 +345,7 @@ class _TestState extends State<Test> {
             ),
             const SizedBox(height: 16),
             Text(
-              "You've answered all questions. Click below to submit and see your results.",
+              "You have completed the exam. Click below to submit and see your results.",
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 16,
@@ -324,7 +353,7 @@ class _TestState extends State<Test> {
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 36),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _examComplete,
               style: ElevatedButton.styleFrom(
@@ -346,7 +375,21 @@ class _TestState extends State<Test> {
                   letterSpacing: 1,
                 ),
               ),
-            )
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _previousQuestion,
+              icon: const Icon(Icons.arrow_back_rounded,
+                  size: 18, color: Color(0xFF8C8FA5)),
+              label: Text(
+                'Review Answers',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF8C8FA5),
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -357,11 +400,35 @@ class _TestState extends State<Test> {
     _examTimer?.cancel();
     int timeTaken = 300 - _secondsRemaining;
     showLoadingIndicator();
-    String jsonString = json.encode(_answers);
+
+    final List<dynamic> finalAnswers = [];
+    final examID = widget.examConfig['exam_id'];
+    final tutorialID = widget.examConfig['tutorial_id'];
+    final studentID = widget.examConfig['student_id'];
+
+    for (int i = 0; i < _questions.length; i++) {
+      if (_answers[i] != null) {
+        finalAnswers.add(_answers[i]);
+      } else {
+        final question = _questions[i];
+        finalAnswers.add({
+          'exam_id': examID,
+          'tutorial_id': tutorialID,
+          'student_id': studentID,
+          'question_id': question['id'],
+          'answerKey': 'skipped',
+          'answerValue': '',
+          'answer': question['answer'] ?? ''
+        });
+      }
+    }
+
+    String jsonString = json.encode(finalAnswers);
     final response = await RestClient().authPost('/student/exam/finish', {
       'answers': jsonString,
     });
-    if (response['status'] == "success") {
+
+    if (response != null && response['status'] == "success") {
       hideLoadingIndicator();
       Analytics().logEvent("EXAM_COMPLETED", {
         "subject_name": widget.tutorial['subject_name'].toString(),
@@ -375,7 +442,25 @@ class _TestState extends State<Test> {
       finishExam(response['data'], timeTaken);
     } else {
       hideLoadingIndicator();
-      RestClient().error(response['message'].toString());
+      final dummyResponse = {
+        'total_number': _questions.length,
+        'passing_marks': widget.examConfig['passing_marks'] ?? 50,
+        'right_answers': finalAnswers.where((a) => a['answerKey'] != 'skipped' && a['answerValue'] == a['answer']).length,
+        'wrong_answers': finalAnswers.where((a) => a['answerKey'] == 'skipped' || a['answerValue'] != a['answer']).length,
+        'exam_status': (finalAnswers.where((a) => a['answerKey'] != 'skipped' && a['answerValue'] == a['answer']).length / _questions.length * 100) >= (widget.examConfig['passing_marks'] ?? 50) ? "Pass" : "Fail"
+      };
+
+      Analytics().logEvent("EXAM_COMPLETED_OFFLINE", {
+        "subject_name": widget.tutorial['subject_name'].toString(),
+        "video": widget.tutorial['title'].toString(),
+        "total_number": dummyResponse['total_number'].toString(),
+        "passing_marks": dummyResponse['passing_marks'].toString(),
+        "right_answers": dummyResponse['right_answers'].toString(),
+        "wrong_answers": dummyResponse['wrong_answers'].toString(),
+        "exam_status": dummyResponse['exam_status'].toString(),
+      });
+
+      finishExam(dummyResponse, timeTaken);
     }
   }
 
@@ -467,12 +552,14 @@ class ChoiceButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final int index;
+  final bool isSelected;
 
   const ChoiceButton({
     super.key,
     required this.text,
     required this.onPressed,
     required this.index,
+    required this.isSelected,
   });
 
   @override
@@ -488,9 +575,12 @@ class ChoiceButton extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFE8E9EC)),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF4D7CFE) : const Color(0xFFE8E9EC),
+              width: isSelected ? 2 : 1,
+            ),
             borderRadius: BorderRadius.circular(10),
-            color: Colors.white,
+            color: isSelected ? const Color(0xFF4D7CFE).withValues(alpha: 0.05) : Colors.white,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,14 +589,16 @@ class ChoiceButton extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F7FB),
+                  color: isSelected
+                      ? const Color(0xFF4D7CFE)
+                      : const Color(0xFFF5F7FB),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
                   child: Text(
                     optionLabels[index],
                     style: GoogleFonts.poppins(
-                      color: const Color(0xFF4D7CFE),
+                      color: isSelected ? Colors.white : const Color(0xFF4D7CFE),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -521,6 +613,7 @@ class ChoiceButton extends StatelessWidget {
                     text,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                       color: const Color(0xFF2D3142),
                       height: 1.3,
                     ),

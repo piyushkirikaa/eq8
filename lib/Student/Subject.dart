@@ -67,7 +67,7 @@ class Subject extends StatefulWidget {
 }
 
 class _SubjectState extends State<Subject> {
-  var currentTutorial;
+  dynamic currentTutorial;
   bool isVideoSet = false;
   late List<dynamic> subjectList;
   late BuildContext globalScaffoldContext;
@@ -768,13 +768,17 @@ class _SubjectState extends State<Subject> {
                     globalScaffoldContext.loaderOverlay.show();
                     try {
                       final file = await createFileOfPdfUrl(document);
-                      globalScaffoldContext.loaderOverlay.hide();
+                      if (mounted) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                      }
                       debugPrint('Video AID file created: ${file.path}');
                       debugPrint('File exists: ${await file.exists()}');
                       debugPrint('File size: ${await file.length()} bytes');
                       viewPDF(file.path);
                     } catch (e) {
-                      globalScaffoldContext.loaderOverlay.hide();
+                      if (mounted) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                      }
                       debugPrint('Error with Video AID: $e');
                       RestClient().error('Error loading document: $e');
                     }
@@ -847,13 +851,17 @@ class _SubjectState extends State<Subject> {
                       globalScaffoldContext.loaderOverlay.show();
                       try {
                         final file = await createFileOfPdfUrl(document);
-                        globalScaffoldContext.loaderOverlay.hide();
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                        }
                         debugPrint('Resource Guide file created: ${file.path}');
                         debugPrint('File exists: ${await file.exists()}');
                         debugPrint('File size: ${await file.length()} bytes');
                         viewPDF(file.path);
                       } catch (e) {
-                        globalScaffoldContext.loaderOverlay.hide();
+                        if (mounted) {
+                          globalScaffoldContext.loaderOverlay.hide();
+                        }
                         debugPrint('Error with Resource Guide: $e');
                         RestClient().error('Error loading document: $e');
                       }
@@ -1261,17 +1269,10 @@ class _SubjectState extends State<Subject> {
                   color: Colors.white,
                 ),
               ),
-              child: DefaultTextStyle(
-                style: const TextStyle(
+              child: const DefaultTextStyle(
+                style: TextStyle(
                     color: Colors.white, fontWeight: FontWeight.bold),
-                child: FlickLandscapeControls(
-                  progressBarSettings: FlickProgressBarSettings(
-                    playedColor: AppTheme.primaryColor,
-                    handleColor: AppTheme.primaryColor,
-                    bufferedColor: Colors.white54,
-                    backgroundColor: Colors.white24,
-                  ),
-                ),
+                child: FlickLandscapeControls(),
               ),
             ),
           ),
