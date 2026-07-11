@@ -16,30 +16,40 @@ class RestClient {
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
 
   guestPost(endpoint, param) async {
-    var headers = {'Accept': 'application/json'};
-    var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
-    request.fields.addAll(param);
-    request.headers.addAll(headers);
-    http.StreamedResponse response = await request.send();
-    final responseBody = await response.stream.bytesToString();
-    if (response.statusCode == 200) {
-      debugPrint(responseBody);
-      try {
-        return jsonDecode(responseBody);
-      } catch (e) {
-        debugPrint('Invalid JSON response: $e');
-        return {
-          'status': 'error',
-          'message': 'The server returned an invalid response.'
-        };
+    try {
+      var headers = {'Accept': 'application/json'};
+      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
+      request.fields.addAll(param);
+      request.headers.addAll(headers);
+      http.StreamedResponse response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      if (response.statusCode == 200) {
+        debugPrint(responseBody);
+        try {
+          return jsonDecode(responseBody);
+        } catch (e) {
+          debugPrint('Invalid JSON response: $e');
+          return {
+            'status': 'error',
+            'message': 'The server returned an invalid response.',
+            'data': 'The server returned an invalid response.'
+          };
+        }
       }
+      debugPrint(response.reasonPhrase);
+      return {
+        'status': 'error',
+        'message': response.reasonPhrase ?? 'Request failed',
+        'data': responseBody,
+      };
+    } catch (e) {
+      debugPrint('guestPost connection error: $e');
+      return {
+        'status': 'error',
+        'message': 'No Internet Connection. Check Internet Connectivity and try again',
+        'data': 'No Internet Connection. Check Internet Connectivity and try again'
+      };
     }
-    debugPrint(response.reasonPhrase);
-    return {
-      'status': 'error',
-      'message': response.reasonPhrase ?? 'Request failed',
-      'data': responseBody,
-    };
   }
 
   guestGet(endpoint, param) async {
@@ -56,20 +66,34 @@ class RestClient {
   }
 
   authPost(endpoint, param) async {
-    final token = await getCurrentToken();
-    var headers = {
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $token'
-    };
-    var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
-    request.fields.addAll(param);
-    request.headers.addAll(headers);
-    http.StreamedResponse response = await request.send();
-    final responseBody = await response.stream.bytesToString();
-    if (response.statusCode == 200) {
-      return jsonDecode(responseBody);
-    } else {
-      debugPrint(response.reasonPhrase);
+    try {
+      final token = await getCurrentToken();
+      var headers = {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      };
+      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
+      request.fields.addAll(param);
+      request.headers.addAll(headers);
+      http.StreamedResponse response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      if (response.statusCode == 200) {
+        return jsonDecode(responseBody);
+      } else {
+        debugPrint(response.reasonPhrase);
+        return {
+          'status': 'error',
+          'message': response.reasonPhrase ?? 'Request failed',
+          'data': responseBody
+        };
+      }
+    } catch (e) {
+      debugPrint('authPost connection error: $e');
+      return {
+        'status': 'error',
+        'message': 'No Internet Connection. Check Internet Connectivity and try again',
+        'data': 'No Internet Connection. Check Internet Connectivity and try again'
+      };
     }
   }
 
@@ -211,17 +235,6 @@ class RestClient {
   }
 
   success(message) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      return Fluttertoast.showToast(
-          msg: message.toString(),
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0);
-    }
-
     final state = scaffoldMessengerKey.currentState;
     if (state != null) {
       state.hideCurrentSnackBar();
@@ -245,21 +258,19 @@ class RestClient {
           ),
         ),
       );
+    } else {
+      return Fluttertoast.showToast(
+          msg: message.toString(),
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0);
     }
   }
 
   error(message) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      return Fluttertoast.showToast(
-          msg: message.toString(),
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
-    }
-
     final state = scaffoldMessengerKey.currentState;
     if (state != null) {
       state.hideCurrentSnackBar();
@@ -283,6 +294,15 @@ class RestClient {
           ),
         ),
       );
+    } else {
+      return Fluttertoast.showToast(
+          msg: message.toString(),
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
     }
   }
 
