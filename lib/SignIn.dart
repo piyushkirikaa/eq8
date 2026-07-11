@@ -231,7 +231,7 @@ class _SignInState extends State<SignIn> {
     } else {
       final screenHeight = MediaQuery.of(context).size.height;
       return ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: screenHeight * 0.42),
+        constraints: BoxConstraints(maxHeight: screenHeight * 0.40),
         child: SizedBox(
           width: width,
           child: AnimatedOpacity(
@@ -240,7 +240,8 @@ class _SignInState extends State<SignIn> {
             curve: Curves.easeInOut,
             child: Image.asset(
               'assets/Images/BG/bg_login.png',
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
+              alignment: Alignment.bottomCenter,
             ),
           ),
         ),
