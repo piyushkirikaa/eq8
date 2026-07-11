@@ -60,6 +60,10 @@ class MyApp extends StatelessWidget {
           fontFamily: GoogleFonts.ptSans().fontFamily,
           brightness: Brightness.light,
           primaryColor: Colors.blueAccent,
+          inputDecorationTheme: const InputDecorationTheme(
+            prefixIconColor: Color(0xFFFCB603),
+            suffixIconColor: Color(0xFFFCB603),
+          ),
           iconButtonTheme: const IconButtonThemeData(
             style: ButtonStyle(
               foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
