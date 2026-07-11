@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,14 +10,17 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class RestClient {
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
 
   guestPost(endpoint, param) async {
     try {
       var headers = {'Accept': 'application/json'};
-      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
+      var request =
+          http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
       request.fields.addAll(param);
       request.headers.addAll(headers);
       http.StreamedResponse response = await request.send();
@@ -46,8 +48,10 @@ class RestClient {
       debugPrint('guestPost connection error: $e');
       return {
         'status': 'error',
-        'message': 'No Internet Connection. Check Internet Connectivity and try again',
-        'data': 'No Internet Connection. Check Internet Connectivity and try again'
+        'message':
+            'No Internet Connection. Check Internet Connectivity and try again',
+        'data':
+            'No Internet Connection. Check Internet Connectivity and try again'
       };
     }
   }
@@ -72,7 +76,8 @@ class RestClient {
         'Accept': 'application/json',
         'Authorization': 'Bearer $token'
       };
-      var request = http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
+      var request =
+          http.MultipartRequest('POST', Uri.parse("$baseUrl$endpoint"));
       request.fields.addAll(param);
       request.headers.addAll(headers);
       http.StreamedResponse response = await request.send();
@@ -91,8 +96,10 @@ class RestClient {
       debugPrint('authPost connection error: $e');
       return {
         'status': 'error',
-        'message': 'No Internet Connection. Check Internet Connectivity and try again',
-        'data': 'No Internet Connection. Check Internet Connectivity and try again'
+        'message':
+            'No Internet Connection. Check Internet Connectivity and try again',
+        'data':
+            'No Internet Connection. Check Internet Connectivity and try again'
       };
     }
   }
