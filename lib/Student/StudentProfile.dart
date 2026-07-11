@@ -285,9 +285,18 @@ class _StudentProfileState extends State<StudentProfile> {
     if (mounted) {
       context.loaderOverlay.show();
     }
-    await Analytics().logEvent('logout',{});
-    await RestClient().logout();
+    try {
+      await Analytics().logEvent('logout', {});
+    } catch (e) {
+      print('Error logging event: $e');
+    }
+    try {
+      await RestClient().logout();
+    } catch (e) {
+      print('Error during logout: $e');
+    }
     if (mounted) {
+      context.loaderOverlay.hide();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignIn()),

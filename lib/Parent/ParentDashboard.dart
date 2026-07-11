@@ -247,8 +247,13 @@ class _ParentDashboardState extends State<ParentDashboard> {
     if (mounted) {
       context.loaderOverlay.show();
     }
-    await RestClient().logout();
+    try {
+      await RestClient().logout();
+    } catch (e) {
+      print('Error during logout: $e');
+    }
     if (mounted) {
+      context.loaderOverlay.hide();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SignIn()),
