@@ -61,8 +61,12 @@ post_install do |installer|
   if runner_target
     phase_name = '[pdfrx] Copy PDFium dSYMs'
 
-    # Remove any previously added phase to avoid duplicates on each pod install
-    runner_target.shell_script_build_phases.delete_if { |p| p.name == phase_name }
+    # Properly remove any previously added phase from build_phases and objects
+    phases_to_delete = runner_target.build_phases.select { |p| p.isa == 'PBXShellScriptBuildPhase' && p.name == phase_name }
+    phases_to_delete.each do |p|
+      runner_target.build_phases.delete(p)
+      project.objects.delete(p)
+    end
 
     phase = runner_target.new_shell_script_build_phase(phase_name)
     phase.shell_script = <<~'SHELL'
