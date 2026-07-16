@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -649,12 +650,13 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                                   ),
                                 ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.attach_file),
-                                color: TeacherTheme.secondaryColor,
-                                onPressed: () => _pickImageWithQuery(
-                                    _textController.text.trim()),
-                              ),
+                              if (kIsWeb || (!Platform.isMacOS && defaultTargetPlatform != TargetPlatform.macOS))
+                                IconButton(
+                                  icon: const Icon(Icons.attach_file),
+                                  color: TeacherTheme.secondaryColor,
+                                  onPressed: () => _pickImageWithQuery(
+                                      _textController.text.trim()),
+                                ),
                             ],
                           ),
                         ),
