@@ -650,13 +650,15 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                                   ),
                                 ),
                               ),
-                              if (kIsWeb || (!Platform.isMacOS && defaultTargetPlatform != TargetPlatform.macOS))
-                                IconButton(
+                              Visibility(
+                                visible: false,
+                                child: IconButton(
                                   icon: const Icon(Icons.attach_file),
                                   color: TeacherTheme.secondaryColor,
                                   onPressed: () => _pickImageWithQuery(
                                       _textController.text.trim()),
                                 ),
+                              ),
                             ],
                           ),
                         ),
