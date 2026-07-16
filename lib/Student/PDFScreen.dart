@@ -26,7 +26,7 @@ class PDFScreen extends StatelessWidget {
     }
 
     final params = PdfViewerParams(
-      enableTextSelection: true,
+      textSelectionParams: const PdfTextSelectionParams(),
       backgroundColor: const Color(0xFF525659),
       loadingBannerBuilder: (context, bytesDownloaded, totalBytes) {
         final progress = totalBytes != null && totalBytes > 0
