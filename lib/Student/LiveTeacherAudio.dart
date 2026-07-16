@@ -13,7 +13,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
 import 'package:markdown/markdown.dart' as md;
 
-
 // Theme constants for consistent styling
 class TeacherTheme {
   static const Color primaryColor = Color(0xFF1A73E8);
@@ -413,7 +412,8 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
           setState(() => _isTyping = false);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error processing image: ${e.toString()}')),
+              SnackBar(
+                  content: Text('Error processing image: ${e.toString()}')),
             );
           }
         }
@@ -651,7 +651,10 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                                 ),
                               ),
                               Visibility(
-                                visible: false,
+                                visible: kIsWeb ||
+                                    (!Platform.isMacOS &&
+                                        defaultTargetPlatform !=
+                                            TargetPlatform.macOS),
                                 child: IconButton(
                                   icon: const Icon(Icons.attach_file),
                                   color: TeacherTheme.secondaryColor,

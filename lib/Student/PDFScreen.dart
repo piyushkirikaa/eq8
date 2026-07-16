@@ -48,7 +48,7 @@ class PDFScreen extends StatelessWidget {
           ),
         );
       },
-      errorBannerBuilder: (context, error, stackTrace) {
+      errorBannerBuilder: (context, error, stackTrace, _) {
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
