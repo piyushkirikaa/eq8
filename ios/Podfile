@@ -1,0 +1,102 @@
+# Uncomment this line to define a global platform for your project
+# platform :ios, '13.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Fix: Copy PDFium dSYMs into the Xcode archive for App Store submission.
+  #
+  # pdfrx 2.x bundles PDFium via a Swift Package Manager XCFramework.
+  # Xcode does not automatically copy the dSYM files from SPM XCFrameworks
+  # into the archive's dSYMs folder, causing the App Store upload error:
+  #   "The archive did not include a dSYM for the PDFium.framework"
+  #
+  # This injects a Run Script Build Phase into Runner.xcodeproj that runs
+  # only during `xcodebuild archive` (ACTION=install) and copies the
+  # PDFium.framework.dSYM from the SPM SourcePackages checkout into the
+  # archive's dSYMs directory.
+  # ──────────────────────────────────────────────────────────────────────────
+  require 'xcodeproj'
+  project_path = File.join(File.dirname(__FILE__), 'Runner.xcodeproj')
+  project = Xcodeproj::Project.open(project_path)
+  runner_target = project.targets.find { |t| t.name == 'Runner' }
+
+  if runner_target
+    phase_name = '[pdfrx] Copy PDFium dSYMs'
+
+    # Remove any previously added phase to avoid duplicates on each pod install
+    runner_target.shell_script_build_phases.delete_if { |p| p.name == phase_name }
+
+    phase = runner_target.new_shell_script_build_phase(phase_name)
+    phase.shell_script = <<~'SHELL'
+      # Copies PDFium.framework.dSYM into the archive dSYMs folder.
+      # Only runs during xcodebuild archive (ACTION=install).
+      # Required for App Store submission when using pdfrx >= 2.x.
+      if [ "${ACTION}" != "install" ]; then exit 0; fi
+
+      # Walk up from BUILD_DIR to locate the SPM SourcePackages folder.
+      SEARCH="${BUILD_DIR}"
+      for i in 1 2 3 4 5 6 7; do
+        SEARCH="$(dirname "${SEARCH}")"
+        if [ -d "${SEARCH}/SourcePackages" ]; then
+          break
+        fi
+      done
+
+      # Find the PDFium dSYM for the arm64 slice (device builds).
+      DSYM="$(find "${SEARCH}/SourcePackages" -type d -name "*.dSYM" 2>/dev/null \
+             | grep -i pdfium | grep -i arm64 | head -1)"
+
+      if [ -n "${DSYM}" ]; then
+        echo "Copying PDFium dSYM: ${DSYM}"
+        cp -rf "${DSYM}" "${DWARF_DSYM_FOLDER_PATH}/"
+        echo "Done."
+      else
+        echo "warning: [pdfrx] PDFium dSYM not found under ${SEARCH}/SourcePackages"
+        echo "warning: [pdfrx] App Store upload may fail dSYM validation."
+      fi
+    SHELL
+
+    project.save
+    puts "✅ [pdfrx] 'Copy PDFium dSYMs' build phase added to Runner target."
+  end
+end
+
