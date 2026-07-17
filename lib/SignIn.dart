@@ -67,7 +67,7 @@ class _SignInState extends State<SignIn> {
                     width: width,
                     child: Center(
                       child: Text(
-                        'Sign in to midigitalacademy'.toUpperCase(),
+                        'Sign in to mi digital academy'.toUpperCase(),
                         style: const TextStyle(
                             color: Colors.black,
                             fontSize: 24,
