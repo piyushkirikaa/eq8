@@ -770,9 +770,11 @@ class _ExamHistoryState extends State<ExamHistory> {
         child: Container(
           width: chartWidth,
           height: 270,
-          padding: const EdgeInsets.only(bottom: 40),
+          padding: const EdgeInsets.only(bottom: 50),
           child: LineChart(
             LineChartData(
+              minY: 0,
+              maxY: 10,
               lineTouchData: LineTouchData(
                 touchTooltipData: LineTouchTooltipData(
                   getTooltipItems: (List<LineBarSpot> touchedSpots) {
@@ -788,10 +790,22 @@ class _ExamHistoryState extends State<ExamHistory> {
               ),
               gridData: const FlGridData(show: true),
               titlesData: FlTitlesData(
-                leftTitles: const AxisTitles(
+                leftTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 30,
+                    getTitlesWidget: (value, meta) {
+                      if (value > 8) {
+                        return const SizedBox.shrink();
+                      }
+                      return SideTitleWidget(
+                        axisSide: meta.axisSide,
+                        child: Text(
+                          meta.formattedValue,
+                          style: GoogleFonts.lato(fontSize: 12),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 rightTitles: const AxisTitles(
