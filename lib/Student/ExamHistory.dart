@@ -24,6 +24,13 @@ class _ExamHistoryState extends State<ExamHistory> {
   double _highestScore = 0;
   List<Map<String, dynamic>> _examsData = [];
   bool _showChart = true;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -746,86 +753,104 @@ class _ExamHistoryState extends State<ExamHistory> {
       spots.add(FlSpot(i.toDouble(), score));
     }
 
-    return LineChart(
-      LineChartData(
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipItems: (List<LineBarSpot> touchedSpots) {
-              return touchedSpots.map((spot) {
-                return LineTooltipItem(
-                  spot.y.toStringAsFixed(1),
-                  const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                );
-              }).toList();
-            },
-          ),
-        ),
-        gridData: const FlGridData(show: true),
-        titlesData: FlTitlesData(
-          leftTitles: const AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 30,
-            ),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 45,
-              getTitlesWidget: (value, meta) {
-                if (value.toInt() < _examsData.length) {
-                  String label = 'Exam ${value.toInt() + 1}';
-                  String? dateString = _examsData[value.toInt()]['created_at'];
-                  if (dateString != null && dateString.isNotEmpty) {
-                    try {
-                      final DateTime date = DateTime.parse(dateString);
-                      label = DateFormat('dd/MM').format(date);
-                    } catch (e) {
-                      // fallback to default label
-                    }
-                  }
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double minWidth = screenWidth - 32; // Width of screen minus padding
+    final double calculatedWidth = _examsData.length * 60.0; // 60px per data point
+    final double chartWidth = calculatedWidth > minWidth ? calculatedWidth : minWidth;
 
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 15.0),
-                    child: Transform.rotate(
-                      angle: -1.5708, // -90 degrees in radians (bottom to top)
-                      child: Text(
-                        label,
-                        style: GoogleFonts.lato(fontSize: 12),
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
+    return Scrollbar(
+      controller: _scrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        child: Container(
+          width: chartWidth,
+          height: 220,
+          padding: const EdgeInsets.only(bottom: 12),
+          child: LineChart(
+            LineChartData(
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                    return touchedSpots.map((spot) {
+                      return LineTooltipItem(
+                        spot.y.toStringAsFixed(1),
+                        const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      );
+                    }).toList();
+                  },
+                ),
+              ),
+              gridData: const FlGridData(show: true),
+              titlesData: FlTitlesData(
+                leftTitles: const AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 30,
+                  ),
+                ),
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 45,
+                    getTitlesWidget: (value, meta) {
+                      if (value.toInt() < _examsData.length) {
+                        String label = 'Exam ${value.toInt() + 1}';
+                        String? dateString = _examsData[value.toInt()]['created_at'];
+                        if (dateString != null && dateString.isNotEmpty) {
+                          try {
+                            final DateTime date = DateTime.parse(dateString);
+                            label = DateFormat('dd/MM/yy').format(date);
+                          } catch (e) {
+                            // fallback to default label
+                          }
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 15.0),
+                          child: Transform.rotate(
+                            angle: -1.5708, // -90 degrees in radians (bottom to top)
+                            child: Text(
+                              label,
+                              style: GoogleFonts.lato(fontSize: 12),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ),
+              borderData: FlBorderData(
+                show: true,
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  color: Theme.of(context).primaryColor,
+                  barWidth: 3,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(show: true),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        borderData: FlBorderData(
-          show: true,
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        lineBarsData: [
-          LineChartBarData(
-            spots: spots,
-            isCurved: true,
-            color: Theme.of(context).primaryColor,
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: const FlDotData(show: true),
-            belowBarData: BarAreaData(
-              show: true,
-              color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
-            ),
-          ),
-        ],
       ),
     );
   }
