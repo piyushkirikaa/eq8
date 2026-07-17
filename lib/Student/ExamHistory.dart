@@ -692,7 +692,7 @@ class _ExamHistoryState extends State<ExamHistory> {
           children: [
             // Performance Trend Chart Title
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              padding: const EdgeInsets.only(top: 16.0, bottom: 50.0),
               child: Text(
                 'Performance Trend',
                 style: GoogleFonts.lato(
@@ -770,7 +770,7 @@ class _ExamHistoryState extends State<ExamHistory> {
         child: Container(
           width: chartWidth,
           height: 270,
-          padding: const EdgeInsets.only(bottom: 25),
+          padding: const EdgeInsets.only(bottom: 40),
           child: LineChart(
             LineChartData(
               lineTouchData: LineTouchData(
