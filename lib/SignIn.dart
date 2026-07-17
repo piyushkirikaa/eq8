@@ -165,14 +165,14 @@ class _SignInState extends State<SignIn> {
                     ),
                   ),
                   Container(
-                    height: 90,
+                    height: 67.5,
                     width: MediaQuery.of(context).size.width,
                     margin: const EdgeInsets.only(left: 35, right: 35),
                     child: OutlinedButton(
                       onPressed: login,
                       style: StyleConfig.actionButtonStyle,
                       child: const Text("SIGN IN",
-                          style: TextStyle(color: Colors.white, fontSize: 18)),
+                          style: TextStyle(color: Colors.white, fontSize: 22.5)),
                     ),
                   ),
                   // SizedBox(
