@@ -79,7 +79,7 @@ class _SignInState extends State<SignIn> {
                     height: 10,
                   ),
                   Container(
-                    height: 40,
+                    height: 65,
                     width: width,
                     margin: const EdgeInsets.only(left: 15, right: 15),
                     child: TextField(
@@ -106,7 +106,7 @@ class _SignInState extends State<SignIn> {
                     height: 20,
                   ),
                   Container(
-                    height: 40,
+                    height: 65,
                     width: width,
                     margin: const EdgeInsets.only(left: 15, right: 15),
                     child: TextField(

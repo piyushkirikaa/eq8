@@ -261,7 +261,7 @@ class _forgotState extends State<forgot> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           contentPadding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
+                              vertical: 22.5, horizontal: 15),
                           prefixIcon: const Icon(Icons.email_outlined),
                           hintText: "Enter your email address",
                           hintStyle: const TextStyle(),
