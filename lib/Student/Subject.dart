@@ -515,13 +515,40 @@ class _SubjectState extends State<Subject> {
     */
   }
 
-  submitYourFeedback() {
-    Navigator.push(
+  Future<dynamic> _navigateWithVideoPause(Widget page) async {
+    bool wasPlaying = false;
+    
+    if (Platform.isWindows) {
+      wasPlaying = winVideoController?.value.isPlaying ?? false;
+      if (wasPlaying) {
+        winVideoController?.pause();
+      }
+    } else {
+      wasPlaying = flickManager?.flickVideoManager?.videoPlayerController?.value.isPlaying ?? false;
+      if (wasPlaying) {
+        flickManager?.flickVideoManager?.videoPlayerController?.pause();
+      }
+    }
+
+    final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => FeedbackController(
-                tutorial: currentTutorial,
-              )),
+      MaterialPageRoute(builder: (context) => page),
+    );
+
+    if (wasPlaying) {
+      if (Platform.isWindows) {
+        winVideoController?.play();
+      } else {
+        flickManager?.flickVideoManager?.videoPlayerController?.play();
+      }
+    }
+    
+    return result;
+  }
+
+  submitYourFeedback() {
+    _navigateWithVideoPause(
+      FeedbackController(tutorial: currentTutorial),
     );
   }
 
@@ -926,12 +953,8 @@ class _SubjectState extends State<Subject> {
                           currentTutorial['subject_name'].toString(),
                       "video": currentTutorial['title'].toString()
                     });
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ExamHistory(
-                                tutorialID: tutorialID,
-                              )),
+                    _navigateWithVideoPause(
+                      ExamHistory(tutorialID: tutorialID),
                     );
                   },
                 ),
@@ -998,12 +1021,8 @@ class _SubjectState extends State<Subject> {
 
   viewPDF(url) async {
     debugPrint('viewPDF called with URL: $url');
-    return await Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => PDFScreen(
-                path: url,
-              )),
+    return await _navigateWithVideoPause(
+      PDFScreen(path: url),
     );
   }
 
@@ -1741,31 +1760,9 @@ class _SubjectState extends State<Subject> {
       "video": currentTutorial['title'].toString()
     });
 
-    // Pause the video before navigating to the exam page
-    if (Platform.isWindows) {
-      winVideoController?.pause();
-    } else {
-      if (flickManager?.flickVideoManager?.videoPlayerController != null) {
-        flickManager!.flickVideoManager!.videoPlayerController!.pause();
-      }
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => StartYourExam(
-                tutorial: currentTutorial,
-              )),
-    ).then((_) {
-      // Resume the video when returning from the exam page
-      if (Platform.isWindows) {
-        winVideoController?.play();
-      } else {
-        if (flickManager?.flickVideoManager?.videoPlayerController != null) {
-          flickManager!.flickVideoManager!.videoPlayerController!.play();
-        }
-      }
-    });
+    _navigateWithVideoPause(
+      StartYourExam(tutorial: currentTutorial),
+    );
   }
 
   void showLoadingIndicator() {

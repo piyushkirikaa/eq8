@@ -165,7 +165,7 @@ class _SignInState extends State<SignIn> {
                     ),
                   ),
                   Container(
-                    height: 60,
+                    height: 90,
                     width: MediaQuery.of(context).size.width,
                     margin: const EdgeInsets.only(left: 35, right: 35),
                     child: OutlinedButton(
@@ -294,7 +294,7 @@ class _SignInState extends State<SignIn> {
 
   Future<void> login() async {
     if (_email.isEmpty) {
-      showErrorMessage("Please enter your email address or student ID.");
+      showErrorMessage("Enter your Username");
       return;
     } else if (_password.isEmpty) {
       showErrorMessage("Please enter your password.");
@@ -314,6 +314,8 @@ class _SignInState extends State<SignIn> {
         'device_id': deviceId
       }).timeout(const Duration(seconds: 25));
       if (!mounted) return;
+
+      print(response);
 
       if (response != null && response["status"] == 'success') {
         loginSuccess = true;
