@@ -146,76 +146,77 @@ class _ExamReportState extends State<ExamReport>
                       double.tryParse(b['average_number'].toString()) ?? 0.0;
                   return bAvg.compareTo(aAvg);
                 });
-                return Column(
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      height: _isScrolledDown
-                          ? (isIPad
-                              ? 230.0
-                              : MediaQuery.of(context).size.height * 0.25)
-                          : (isIPad
-                              ? 460.0
-                              : MediaQuery.of(context).size.height * 0.50),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Subject Performance Overview',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                return SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        height: _isScrolledDown
+                            ? (isIPad
+                                ? 230.0
+                                : MediaQuery.of(context).size.height * 0.25)
+                            : (isIPad
+                                ? 460.0
+                                : MediaQuery.of(context).size.height * 0.50),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Subject Performance Overview',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: AnimatedScale(
-                              scale: _isScrolledDown ? 0.5 : 1.0,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                              child: AspectRatio(
-                                aspectRatio: 1.3,
-                                child: PieChart(
-                                  PieChartData(
-                                    pieTouchData: PieTouchData(
-                                      touchCallback: (FlTouchEvent event,
-                                          pieTouchResponse) {
-                                        setState(() {
-                                          if (!event
-                                                  .isInterestedForInteractions ||
-                                              pieTouchResponse == null ||
-                                              pieTouchResponse.touchedSection ==
-                                                  null) {
-                                            touchedIndex = -1;
-                                            return;
-                                          }
-                                          touchedIndex = pieTouchResponse
-                                              .touchedSection!
-                                              .touchedSectionIndex;
-                                        });
-                                      },
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: AnimatedScale(
+                                scale: _isScrolledDown ? 0.5 : 1.0,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                                child: AspectRatio(
+                                  aspectRatio: 1.3,
+                                  child: PieChart(
+                                    PieChartData(
+                                      pieTouchData: PieTouchData(
+                                        touchCallback: (FlTouchEvent event,
+                                            pieTouchResponse) {
+                                          setState(() {
+                                            if (!event
+                                                    .isInterestedForInteractions ||
+                                                pieTouchResponse == null ||
+                                                pieTouchResponse.touchedSection ==
+                                                    null) {
+                                              touchedIndex = -1;
+                                              return;
+                                            }
+                                            touchedIndex = pieTouchResponse
+                                                .touchedSection!
+                                                .touchedSectionIndex;
+                                          });
+                                        },
+                                      ),
+                                      startDegreeOffset: 180,
+                                      borderData: FlBorderData(show: false),
+                                      sectionsSpace: 1,
+                                      centerSpaceRadius: (isIPad ? 60.0 : 52.5) *
+                                          _chartAnimationValue,
+                                      sections: showingSections(data, isIPad),
                                     ),
-                                    startDegreeOffset: 180,
-                                    borderData: FlBorderData(show: false),
-                                    sectionsSpace: 1,
-                                    centerSpaceRadius: (isIPad ? 60.0 : 52.5) *
-                                        _chartAnimationValue,
-                                    sections: showingSections(data, isIPad),
+                                    swapAnimationDuration:
+                                        const Duration(milliseconds: 400),
                                   ),
-                                  swapAnimationDuration:
-                                      const Duration(milliseconds: 400),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Container(
+                      Container(
                         decoration: BoxDecoration(
                           color: Colors.grey[50],
                           borderRadius: const BorderRadius.only(
@@ -251,121 +252,120 @@ class _ExamReportState extends State<ExamReport>
                                 ],
                               ),
                             ),
-                            Expanded(
-                              child: ListView.builder(
-                                controller: _scrollController,
-                                padding: const EdgeInsets.only(bottom: 16),
-                                itemCount: data.length,
-                                itemBuilder: (context, index) {
-                                  final subject = data[index];
-                                  final color =
-                                      chartColors[index % chartColors.length];
-                                  final isSelected = index == touchedIndex;
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.only(bottom: 16),
+                              itemCount: data.length,
+                              itemBuilder: (context, index) {
+                                final subject = data[index];
+                                final color =
+                                    chartColors[index % chartColors.length];
+                                final isSelected = index == touchedIndex;
 
-                                  return AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 16.0,
-                                      vertical: 4.0,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? color.withValues(alpha: 0.1)
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                              alpha: isSelected ? 0.08 : 0.04),
-                                          blurRadius: isSelected ? 4 : 2,
-                                          offset: const Offset(0, 1),
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 4.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? color.withValues(alpha: 0.1)
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                            alpha: isSelected ? 0.08 : 0.04),
+                                        blurRadius: isSelected ? 4 : 2,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        touchedIndex = index == touchedIndex
+                                            ? -1
+                                            : index;
+                                      });
+                                    },
+                                    child: ListTile(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                        vertical: 8.0,
+                                      ),
+                                      leading: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: color,
                                         ),
-                                      ],
-                                    ),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          touchedIndex = index == touchedIndex
-                                              ? -1
-                                              : index;
-                                        });
-                                      },
-                                      child: ListTile(
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                          horizontal: 16.0,
-                                          vertical: 8.0,
+                                      ),
+                                      title: Text(
+                                        subject['subject_name'],
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey[850],
                                         ),
-                                        leading: Container(
-                                          width: 12,
-                                          height: 12,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: color,
-                                          ),
-                                        ),
-                                        title: Text(
-                                          subject['subject_name'],
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey[850],
-                                          ),
-                                        ),
-                                        trailing: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              'Avg: ${(subject['average_number'] as num).toStringAsFixed(1)}',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: getScoreColor(
-                                                    (subject['average_number']
-                                                            as num)
-                                                        .toDouble()),
-                                              ),
+                                      ),
+                                      trailing: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            'Avg: ${(subject['average_number'] as num).toStringAsFixed(1)}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: getScoreColor(
+                                                  (subject['average_number']
+                                                          as num)
+                                                      .toDouble()),
                                             ),
-                                            const SizedBox(height: 4),
-                                            SizedBox(
-                                              width: 80,
-                                              height: 6,
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(3),
-                                                child: LinearProgressIndicator(
-                                                  value:
-                                                      (subject['average_number']
-                                                                  as num)
-                                                              .toDouble() /
-                                                          10,
-                                                  backgroundColor:
-                                                      Colors.grey[200] ??
-                                                          Colors.grey.shade200,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                          Color>(
-                                                    getScoreColor((subject[
-                                                                'average_number']
-                                                            as num)
-                                                        .toDouble()),
-                                                  ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          SizedBox(
+                                            width: 80,
+                                            height: 6,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
+                                              child: LinearProgressIndicator(
+                                                value:
+                                                    (subject['average_number']
+                                                                as num)
+                                                            .toDouble() /
+                                                        10,
+                                                backgroundColor:
+                                                    Colors.grey[200] ??
+                                                        Colors.grey.shade200,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(
+                                                  getScoreColor((subject[
+                                                              'average_number']
+                                                          as num)
+                                                      .toDouble()),
                                                 ),
                                               ),
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               } else {
                 return Center(
