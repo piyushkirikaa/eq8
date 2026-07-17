@@ -304,7 +304,7 @@ class _ExamHistoryState extends State<ExamHistory> {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
-          height: 220,
+          height: 320,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
