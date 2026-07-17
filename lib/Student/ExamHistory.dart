@@ -774,7 +774,7 @@ class _ExamHistoryState extends State<ExamHistory> {
           child: LineChart(
             LineChartData(
               minY: 0,
-              maxY: 10,
+              maxY: 15,
               lineTouchData: LineTouchData(
                 touchTooltipData: LineTouchTooltipData(
                   getTooltipItems: (List<LineBarSpot> touchedSpots) {
