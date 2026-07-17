@@ -705,7 +705,7 @@ class _ExamHistoryState extends State<ExamHistory> {
 
             // Line Chart
             SizedBox(
-              height: 220,
+              height: 270,
               child: _buildLineChart(),
             ),
 
@@ -761,13 +761,16 @@ class _ExamHistoryState extends State<ExamHistory> {
     return Scrollbar(
       controller: _scrollController,
       thumbVisibility: true,
+      trackVisibility: true,
+      thickness: 12.0,
+      radius: const Radius.circular(6),
       child: SingleChildScrollView(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         child: Container(
           width: chartWidth,
-          height: 220,
-          padding: const EdgeInsets.only(bottom: 12),
+          height: 270,
+          padding: const EdgeInsets.only(bottom: 25),
           child: LineChart(
             LineChartData(
               lineTouchData: LineTouchData(
@@ -800,7 +803,7 @@ class _ExamHistoryState extends State<ExamHistory> {
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
-                    reservedSize: 45,
+                    reservedSize: 70,
                     getTitlesWidget: (value, meta) {
                       if (value.toInt() < _examsData.length) {
                         String label = 'Exam ${value.toInt() + 1}';
@@ -815,7 +818,7 @@ class _ExamHistoryState extends State<ExamHistory> {
                         }
 
                         return Padding(
-                          padding: const EdgeInsets.only(top: 15.0),
+                          padding: const EdgeInsets.only(top: 8.0),
                           child: Transform.rotate(
                             angle: -1.5708, // -90 degrees in radians (bottom to top)
                             child: Text(
