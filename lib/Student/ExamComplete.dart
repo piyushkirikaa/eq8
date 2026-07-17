@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 class ExamComplete extends StatefulWidget {
   final dynamic examStatus;
   final int timeTakenSeconds;
-  const ExamComplete({super.key, required this.examStatus, required this.timeTakenSeconds});
+  const ExamComplete(
+      {super.key, required this.examStatus, required this.timeTakenSeconds});
   @override
   State<ExamComplete> createState() => _ExamComplete();
 }
@@ -18,6 +19,7 @@ class _ExamComplete extends State<ExamComplete> {
     int seconds = totalSeconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

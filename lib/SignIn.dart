@@ -91,7 +91,7 @@ class _SignInState extends State<SignIn> {
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.all(0),
                         prefixIcon: const Icon(Icons.email_outlined),
-                        hintText: "Enter Your Email or ID",
+                        hintText: "Enter your Username",
                         hintStyle: const TextStyle(),
                         filled: true,
                         focusColor: Colors.blueAccent,
@@ -165,13 +165,14 @@ class _SignInState extends State<SignIn> {
                     ),
                   ),
                   Container(
+                    height: 60,
                     width: MediaQuery.of(context).size.width,
                     margin: const EdgeInsets.only(left: 35, right: 35),
                     child: OutlinedButton(
                       onPressed: login,
                       style: StyleConfig.actionButtonStyle,
                       child: const Text("SIGN IN",
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Colors.white, fontSize: 18)),
                     ),
                   ),
                   // SizedBox(
@@ -250,7 +251,8 @@ class _SignInState extends State<SignIn> {
       // Mobile & Tablet (iOS & Android)
       return SizedBox(
         width: width,
-        height: width, // Perfect square container (no cropping, no gaps on top or sides)
+        height:
+            width, // Perfect square container (no cropping, no gaps on top or sides)
         child: AnimatedOpacity(
           opacity: _imageOpacity,
           duration: const Duration(seconds: 1),
@@ -330,13 +332,23 @@ class _SignInState extends State<SignIn> {
       } else {
         // Login failed, show error message
         debugPrint('Sign-in rejected: $response');
-        String errorMessage = response?["message"]?.toString() ??
-            response?["data"]?.toString() ??
+
+        String? messageStr = response?["message"]?.toString();
+        String? dataStr = response?["data"]?.toString();
+
+        String errorMessage = messageStr ??
+            dataStr ??
             'Sign in failed. Please check your details and try again.';
+
         // Make server error messages more user-friendly
-        if (errorMessage.toLowerCase().contains('invalid username password')) {
+        if ((messageStr != null &&
+                messageStr
+                    .toLowerCase()
+                    .contains('invalid username password')) ||
+            (dataStr != null &&
+                dataStr.toLowerCase().contains('invalid username password'))) {
           errorMessage =
-              'The email/ID or password you entered is incorrect. Please try again.';
+              'Oops! We couldn\'t Sign You In. please check your Username or Password.';
         }
         showErrorMessage(errorMessage);
       }
@@ -369,7 +381,15 @@ class _SignInState extends State<SignIn> {
               children: [
                 Icon(Icons.error_outline, color: Colors.red[700]),
                 const SizedBox(width: 10),
-                const Text('Authentication Error'),
+                Expanded(
+                  child: Text(
+                    message ==
+                            'Oops! We couldn\'t Sign You In. please check your Username or Password.'
+                        ? 'Sign In Failed'
+                        : 'Authentication Error',
+                    overflow: TextOverflow.visible,
+                  ),
+                ),
               ],
             ),
             content: Text(

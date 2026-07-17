@@ -15,6 +15,7 @@ class RestClient {
   static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
+  static DateTime? _lastOfflineToastTime;
 
   guestPost(endpoint, param) async {
     try {
@@ -46,12 +47,18 @@ class RestClient {
       };
     } catch (e) {
       debugPrint('guestPost connection error: $e');
+      final isConnected = await checkInternetConnection();
+      if (!isConnected) {
+        return {
+          'status': 'error',
+          'message': 'Please connect to the internet to continue learning.',
+          'data': 'Please connect to the internet to continue learning.'
+        };
+      }
       return {
         'status': 'error',
-        'message':
-            'No Internet Connection. Check Internet Connectivity and try again',
-        'data':
-            'No Internet Connection. Check Internet Connectivity and try again'
+        'message': 'Network error. Please try again',
+        'data': 'Network error. Please try again'
       };
     }
   }
@@ -94,12 +101,18 @@ class RestClient {
       }
     } catch (e) {
       debugPrint('authPost connection error: $e');
+      final isConnected = await checkInternetConnection();
+      if (!isConnected) {
+        return {
+          'status': 'error',
+          'message': 'Please connect to the internet to continue learning.',
+          'data': 'Please connect to the internet to continue learning.'
+        };
+      }
       return {
         'status': 'error',
-        'message':
-            'No Internet Connection. Check Internet Connectivity and try again',
-        'data':
-            'No Internet Connection. Check Internet Connectivity and try again'
+        'message': 'Network error. Please try again',
+        'data': 'Network error. Please try again'
       };
     }
   }
@@ -278,6 +291,15 @@ class RestClient {
   }
 
   error(message) async {
+    if (message == 'Please connect to the internet to continue learning.') {
+      final now = DateTime.now();
+      if (_lastOfflineToastTime != null &&
+          now.difference(_lastOfflineToastTime!).inSeconds < 5) {
+        return; // Throttle offline message
+      }
+      _lastOfflineToastTime = now;
+    }
+
     final state = scaffoldMessengerKey.currentState;
     if (state != null) {
       state.hideCurrentSnackBar();

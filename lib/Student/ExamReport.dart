@@ -140,8 +140,10 @@ class _ExamReportState extends State<ExamReport>
               if (snapshot.hasData && snapshot.data.length > 0) {
                 final List<dynamic> data = List.from(snapshot.data);
                 data.sort((a, b) {
-                  final aAvg = double.tryParse(a['average_number'].toString()) ?? 0.0;
-                  final bAvg = double.tryParse(b['average_number'].toString()) ?? 0.0;
+                  final aAvg =
+                      double.tryParse(a['average_number'].toString()) ?? 0.0;
+                  final bAvg =
+                      double.tryParse(b['average_number'].toString()) ?? 0.0;
                   return bAvg.compareTo(aAvg);
                 });
                 return Column(
@@ -151,8 +153,12 @@ class _ExamReportState extends State<ExamReport>
                       curve: Curves.easeInOut,
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       height: _isScrolledDown
-                          ? (isIPad ? 230.0 : MediaQuery.of(context).size.height * 0.25)
-                          : (isIPad ? 460.0 : MediaQuery.of(context).size.height * 0.50),
+                          ? (isIPad
+                              ? 230.0
+                              : MediaQuery.of(context).size.height * 0.25)
+                          : (isIPad
+                              ? 460.0
+                              : MediaQuery.of(context).size.height * 0.50),
                       child: Column(
                         children: [
                           const SizedBox(height: 16),
@@ -175,8 +181,8 @@ class _ExamReportState extends State<ExamReport>
                                 child: PieChart(
                                   PieChartData(
                                     pieTouchData: PieTouchData(
-                                      touchCallback:
-                                          (FlTouchEvent event, pieTouchResponse) {
+                                      touchCallback: (FlTouchEvent event,
+                                          pieTouchResponse) {
                                         setState(() {
                                           if (!event
                                                   .isInterestedForInteractions ||
@@ -195,7 +201,8 @@ class _ExamReportState extends State<ExamReport>
                                     startDegreeOffset: 180,
                                     borderData: FlBorderData(show: false),
                                     sectionsSpace: 1,
-                                    centerSpaceRadius: (isIPad ? 60.0 : 52.5) * _chartAnimationValue,
+                                    centerSpaceRadius: (isIPad ? 60.0 : 52.5) *
+                                        _chartAnimationValue,
                                     sections: showingSections(data, isIPad),
                                   ),
                                   swapAnimationDuration:

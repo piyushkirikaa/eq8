@@ -1271,8 +1271,8 @@ class _SubjectState extends State<Subject> {
                 ),
               ),
               child: const DefaultTextStyle(
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                 child: FlickLandscapeControls(),
               ),
             ),
@@ -1809,6 +1809,16 @@ class _SubjectState extends State<Subject> {
       throw Exception('Error parsing asset file!');
     }
     return completer.future;
+  }
+
+  @override
+  void deactivate() {
+    if (Platform.isWindows) {
+      winVideoController?.pause();
+    } else {
+      flickManager?.flickVideoManager?.videoPlayerController?.pause();
+    }
+    super.deactivate();
   }
 
   @override

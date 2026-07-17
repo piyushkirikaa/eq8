@@ -748,6 +748,19 @@ class _ExamHistoryState extends State<ExamHistory> {
 
     return LineChart(
       LineChartData(
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (List<LineBarSpot> touchedSpots) {
+              return touchedSpots.map((spot) {
+                return LineTooltipItem(
+                  spot.y.toStringAsFixed(1),
+                  const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                );
+              }).toList();
+            },
+          ),
+        ),
         gridData: const FlGridData(show: true),
         titlesData: FlTitlesData(
           leftTitles: const AxisTitles(
@@ -765,14 +778,28 @@ class _ExamHistoryState extends State<ExamHistory> {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 30,
+              reservedSize: 45,
               getTitlesWidget: (value, meta) {
                 if (value.toInt() < _examsData.length) {
+                  String label = 'Exam ${value.toInt() + 1}';
+                  String? dateString = _examsData[value.toInt()]['created_at'];
+                  if (dateString != null && dateString.isNotEmpty) {
+                    try {
+                      final DateTime date = DateTime.parse(dateString);
+                      label = DateFormat('dd/MM').format(date);
+                    } catch (e) {
+                      // fallback to default label
+                    }
+                  }
+
                   return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      'Exam ${value.toInt() + 1}',
-                      style: GoogleFonts.lato(fontSize: 12),
+                    padding: const EdgeInsets.only(top: 15.0),
+                    child: Transform.rotate(
+                      angle: -1.5708, // -90 degrees in radians (bottom to top)
+                      child: Text(
+                        label,
+                        style: GoogleFonts.lato(fontSize: 12),
+                      ),
                     ),
                   );
                 }

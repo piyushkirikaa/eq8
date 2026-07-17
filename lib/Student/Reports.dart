@@ -14,7 +14,6 @@ class Reports extends StatefulWidget {
 }
 
 class _ReportsState extends State<Reports> {
-
   int touchedIndex = -1;
 
   @override
@@ -56,7 +55,8 @@ class _ReportsState extends State<Reports> {
                 child: RestClient().loader(),
               ); // Show a loading indicator while waiting for the future to complete
             } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}'); // Show an error message if the future throws an error
+              return Text(
+                  'Error: ${snapshot.error}'); // Show an error message if the future throws an error
             } else {
               if (snapshot.hasData) {
                 final data = snapshot.data;
@@ -69,11 +69,18 @@ class _ReportsState extends State<Reports> {
                         children: [
                           ListTile(
                             leading: statusImage(tutorial['key']),
-                            title: Text('${tutorial['key']} action is taken on ${tutorial['created_at']}', style: const TextStyle(color: Colors.black)),
-                            subtitle: Text("Subject: ${tutorial['value']['subject_name'].toString()=='null' ? "N/A" : tutorial['value']['subject_name']} and Video:  ${tutorial['value']['video'].toString()=='null' ? "N/A" : tutorial['value']['video']}"),
-                            contentPadding: const EdgeInsets.only(right: 10, left: 10),
+                            title: Text(
+                                '${tutorial['key']} action is taken on ${tutorial['created_at']}',
+                                style: const TextStyle(color: Colors.black)),
+                            subtitle: Text(
+                                "Subject: ${tutorial['value']['subject_name'].toString() == 'null' ? "N/A" : tutorial['value']['subject_name']} and Video:  ${tutorial['value']['video'].toString() == 'null' ? "N/A" : tutorial['value']['video']}"),
+                            contentPadding:
+                                const EdgeInsets.only(right: 10, left: 10),
                           ),
-                          Container(height: 1, color: Colors.black12,)
+                          Container(
+                            height: 1,
+                            color: Colors.black12,
+                          )
                         ],
                       );
                     });
@@ -87,19 +94,37 @@ class _ReportsState extends State<Reports> {
     );
   }
 
-  Widget statusImage(status){
-    if(status == "CHECK_EXAM_HISTORY"){
-      return  const Icon(Icons.receipt_long, weight: 65,);
-    } else if (status == "VIEW_SUBJECT"){
-      return  const Icon(Icons.book, weight: 65,);
-    } else if (status == "login"){
-      return  const Icon(Icons.account_circle_outlined, weight: 65,);
-    } else if (status == "START_EXAM"){
-      return  const Icon(Icons.pages_rounded, weight: 65,);
-    } else if (status == "WATCH_VIDEO"){
-      return  const Icon(Icons.video_camera_back_outlined, weight: 65,);
+  Widget statusImage(status) {
+    if (status == "CHECK_EXAM_HISTORY") {
+      return const Icon(
+        Icons.receipt_long,
+        weight: 65,
+      );
+    } else if (status == "VIEW_SUBJECT") {
+      return const Icon(
+        Icons.book,
+        weight: 65,
+      );
+    } else if (status == "login") {
+      return const Icon(
+        Icons.account_circle_outlined,
+        weight: 65,
+      );
+    } else if (status == "START_EXAM") {
+      return const Icon(
+        Icons.pages_rounded,
+        weight: 65,
+      );
+    } else if (status == "WATCH_VIDEO") {
+      return const Icon(
+        Icons.video_camera_back_outlined,
+        weight: 65,
+      );
     } else {
-      return  const Icon(Icons.receipt_long, weight: 65,);
+      return const Icon(
+        Icons.receipt_long,
+        weight: 65,
+      );
     }
   }
 
@@ -113,7 +138,7 @@ class _ReportsState extends State<Reports> {
     }
   }
 
-  Widget interNetCheck(){
+  Widget interNetCheck() {
     return FutureBuilder(
       future: RestClient().checkInternetConnection(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -122,7 +147,7 @@ class _ReportsState extends State<Reports> {
         } else if (snapshot.hasError) {
           return const Icon(Icons.wifi_find_outlined);
         } else {
-          if(snapshot.data){
+          if (snapshot.data) {
             return const Icon(Icons.wifi);
           } else {
             return const Icon(Icons.wifi_off);
@@ -131,6 +156,7 @@ class _ReportsState extends State<Reports> {
       },
     );
   }
+
   _checkDeviceStatus() async {
     if (mounted) {
       context.loaderOverlay.show();
@@ -159,9 +185,16 @@ class _ReportsState extends State<Reports> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Center(child: Text('Are You Sure?'.toUpperCase(), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
-                const SizedBox(height: 5,),
-                Center(child: Text('All Your Offline Data Will Lost'.toUpperCase(), style: const TextStyle(fontSize: 16))),
+                Center(
+                    child: Text('Are You Sure?'.toUpperCase(),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold))),
+                const SizedBox(
+                  height: 5,
+                ),
+                Center(
+                    child: Text('All Your Offline Data Will Lost'.toUpperCase(),
+                        style: const TextStyle(fontSize: 16))),
                 const Divider(),
                 Center(
                   child: InkWell(
@@ -217,5 +250,4 @@ class _ReportsState extends State<Reports> {
       );
     }
   }
-
 }

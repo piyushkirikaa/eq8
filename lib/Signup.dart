@@ -14,7 +14,6 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-
   String _email = "";
   String _password = "";
   String _mobile = "";

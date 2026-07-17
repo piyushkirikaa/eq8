@@ -797,6 +797,12 @@ class _PodcastSubjectState extends State<PodcastSubject> {
   }
 
   @override
+  void deactivate() {
+    _audioPlayer.pause();
+    super.deactivate();
+  }
+
+  @override
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();

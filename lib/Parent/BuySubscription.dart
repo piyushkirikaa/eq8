@@ -29,8 +29,6 @@ class _BuySubscriptionState extends State<BuySubscription> {
 
   dynamic membershipInfo;
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

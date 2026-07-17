@@ -23,12 +23,13 @@ class _ExamHistoryState extends State<ExamLog> {
                 child: RestClient().loader(),
               ); // Show a loading indicator while waiting for the future to complete
             } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}'); // Show an error message if the future throws an error
+              return Text(
+                  'Error: ${snapshot.error}'); // Show an error message if the future throws an error
             } else {
               if (snapshot.hasData) {
                 final data = snapshot.data;
                 final dataLength = snapshot.data?.length;
-                if(dataLength > 0 ) {
+                if (dataLength > 0) {
                   return ListView.builder(
                       itemCount: dataLength,
                       itemBuilder: (context, index) {
@@ -37,14 +38,18 @@ class _ExamHistoryState extends State<ExamLog> {
                           children: [
                             ListTile(
                               leading: statusImage(tutorial['status']),
-                              title: Text('${tutorial['subject_name']} exam taken on ${tutorial['created_at']}',
+                              title: Text(
+                                  '${tutorial['subject_name']} exam taken on ${tutorial['created_at']}',
                                   style: const TextStyle(color: Colors.black)),
                               subtitle: Text(
                                   "Passing marks was ${tutorial['passing_marks']} and marks get ${tutorial['exam_number']}"),
-                              contentPadding: const EdgeInsets.only(
-                                  right: 10, left: 10),
+                              contentPadding:
+                                  const EdgeInsets.only(right: 10, left: 10),
                             ),
-                            Container(height: 1, color: Colors.black12,)
+                            Container(
+                              height: 1,
+                              color: Colors.black12,
+                            )
                           ],
                         );
                       });
@@ -63,18 +68,22 @@ class _ExamHistoryState extends State<ExamLog> {
     );
   }
 
-  Widget statusImage(status){
-    if(status == "Pass"){
-     return  const Image(image: AssetImage('assets/Images/pass.png'), width: 65);
-    } else if (status == "Fail"){
-      return const Image(image: AssetImage('assets/Images/fail.png'), width: 65);
+  Widget statusImage(status) {
+    if (status == "Pass") {
+      return const Image(
+          image: AssetImage('assets/Images/pass.png'), width: 65);
+    } else if (status == "Fail") {
+      return const Image(
+          image: AssetImage('assets/Images/fail.png'), width: 65);
     } else {
-      return const Image(image: AssetImage('assets/Images/warning.png'), width: 65);
+      return const Image(
+          image: AssetImage('assets/Images/warning.png'), width: 65);
     }
   }
 
   getExamList() async {
-    final response = await RestClient().authGet('/parent/exams/${widget.tutorialID}', {});
+    final response =
+        await RestClient().authGet('/parent/exams/${widget.tutorialID}', {});
     if (response["status"] == 'success') {
       return response["data"];
     } else {
@@ -82,5 +91,4 @@ class _ExamHistoryState extends State<ExamLog> {
       return []; // Return an empty list in case of an error
     }
   }
-
 }

@@ -9,7 +9,6 @@ class LiveTeacher extends StatefulWidget {
 }
 
 class _LiveTeacherState extends State<LiveTeacher> {
-
   late final WebViewController _controller;
 
   @override
@@ -22,7 +21,6 @@ class _LiveTeacherState extends State<LiveTeacher> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Live Teacher'),

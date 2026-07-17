@@ -16,6 +16,21 @@ class forgot extends StatefulWidget {
 class _forgotState extends State<forgot> {
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  double _imageOpacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (mounted) {
+          setState(() {
+            _imageOpacity = 1.0;
+          });
+        }
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -377,15 +392,37 @@ class _forgotState extends State<forgot> {
           fit: BoxFit.fill,
         ),
       );
-    } else {
+    } else if (Platform.isMacOS) {
+      // Undo the change to macOS immediately, using the original contain behavior
       final screenHeight = MediaQuery.of(context).size.height;
       return ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: screenHeight * 0.38),
+        constraints: BoxConstraints(maxHeight: screenHeight * 0.42),
         child: SizedBox(
           width: width,
+          child: AnimatedOpacity(
+            opacity: _imageOpacity,
+            duration: const Duration(seconds: 1),
+            curve: Curves.easeInOut,
+            child: Image.asset(
+              'assets/Images/BG/bg_login.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Mobile & Tablet (iOS & Android)
+      return SizedBox(
+        width: width,
+        height:
+            width, // Perfect square container (no cropping, no gaps on top or sides)
+        child: AnimatedOpacity(
+          opacity: _imageOpacity,
+          duration: const Duration(seconds: 1),
+          curve: Curves.easeInOut,
           child: Image.asset(
             'assets/Images/BG/bg_login.png',
-            fit: BoxFit.contain,
+            fit: BoxFit.fitWidth,
           ),
         ),
       );

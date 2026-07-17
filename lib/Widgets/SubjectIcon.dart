@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class SubjectIcon extends StatelessWidget {
-
   final double Width;
   final double Height;
   final double IconSize;
   final String MyText;
 
-  const SubjectIcon({super.key, this.Width = 20.0, this.Height = 20.0, this.IconSize = 18.0, this.MyText = "Partha Gorai"});
+  const SubjectIcon(
+      {super.key,
+      this.Width = 20.0,
+      this.Height = 20.0,
+      this.IconSize = 18.0,
+      this.MyText = "Partha Gorai"});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +20,10 @@ class SubjectIcon extends StatelessWidget {
     return SizedBox(
       width: Width,
       height: Height,
-      child: Text(firstLetter.toString(), style: TextStyle(fontSize: IconSize),),
+      child: Text(
+        firstLetter.toString(),
+        style: TextStyle(fontSize: IconSize),
+      ),
     );
   }
 }

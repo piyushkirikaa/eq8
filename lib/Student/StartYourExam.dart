@@ -18,8 +18,6 @@ class _StartYourExamState extends State<StartYourExam> {
 
   late BuildContext globalScaffoldContext;
 
-
-
   @override
   Widget build(BuildContext context) {
     globalScaffoldContext = context;

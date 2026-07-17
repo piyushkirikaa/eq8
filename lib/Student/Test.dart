@@ -446,9 +446,24 @@ class _TestState extends State<Test> {
       final dummyResponse = {
         'total_number': _questions.length,
         'passing_marks': widget.examConfig['passing_marks'] ?? 50,
-        'right_answers': finalAnswers.where((a) => a['answerKey'] != 'skipped' && a['answerValue'] == a['answer']).length,
-        'wrong_answers': finalAnswers.where((a) => a['answerKey'] == 'skipped' || a['answerValue'] != a['answer']).length,
-        'exam_status': (finalAnswers.where((a) => a['answerKey'] != 'skipped' && a['answerValue'] == a['answer']).length / _questions.length * 100) >= (widget.examConfig['passing_marks'] ?? 50) ? "Pass" : "Fail"
+        'right_answers': finalAnswers
+            .where((a) =>
+                a['answerKey'] != 'skipped' && a['answerValue'] == a['answer'])
+            .length,
+        'wrong_answers': finalAnswers
+            .where((a) =>
+                a['answerKey'] == 'skipped' || a['answerValue'] != a['answer'])
+            .length,
+        'exam_status': (finalAnswers
+                        .where((a) =>
+                            a['answerKey'] != 'skipped' &&
+                            a['answerValue'] == a['answer'])
+                        .length /
+                    _questions.length *
+                    100) >=
+                (widget.examConfig['passing_marks'] ?? 50)
+            ? "Pass"
+            : "Fail"
       };
 
       Analytics().logEvent("EXAM_COMPLETED_OFFLINE", {
@@ -577,11 +592,15 @@ class ChoiceButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? const Color(0xFF4D7CFE) : const Color(0xFFE8E9EC),
+              color: isSelected
+                  ? const Color(0xFF4D7CFE)
+                  : const Color(0xFFE8E9EC),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(10),
-            color: isSelected ? const Color(0xFF4D7CFE).withValues(alpha: 0.05) : Colors.white,
+            color: isSelected
+                ? const Color(0xFF4D7CFE).withValues(alpha: 0.05)
+                : Colors.white,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -599,7 +618,8 @@ class ChoiceButton extends StatelessWidget {
                   child: Text(
                     optionLabels[index],
                     style: GoogleFonts.poppins(
-                      color: isSelected ? Colors.white : const Color(0xFF4D7CFE),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF4D7CFE),
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -614,7 +634,8 @@ class ChoiceButton extends StatelessWidget {
                     text,
                     style: GoogleFonts.poppins(
                       fontSize: 15,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                       color: const Color(0xFF2D3142),
                       height: 1.3,
                     ),
