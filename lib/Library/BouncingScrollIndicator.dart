@@ -51,7 +51,7 @@ class _BouncingScrollIndicatorState extends State<BouncingScrollIndicator>
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFCB603).withValues(alpha: 0.9), // Matches app's color scheme
+              color: Colors.blueAccent.withValues(alpha: 0.9), // Matches app's color scheme
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(

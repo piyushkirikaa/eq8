@@ -20,6 +20,7 @@ class _forgotState extends State<forgot> {
   double _imageOpacity = 0.0;
   final ScrollController _scrollController = ScrollController();
   bool _showScrollHint = true;
+  final GlobalKey _cancelButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -51,12 +52,23 @@ class _forgotState extends State<forgot> {
 
     if (!isIpadLandscape) return;
 
-    final hasScrolled = _scrollController.offset > 50;
-    if (hasScrolled && _showScrollHint) {
+    final btnContext = _cancelButtonKey.currentContext;
+    if (btnContext == null) return;
+    final renderBox = btnContext.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.hasSize) return;
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // The button is fully visible if its bottom edge is above the screen bottom edge
+    final isFullyVisible = (position.dy + size.height) <= screenHeight;
+
+    if (isFullyVisible && _showScrollHint) {
       setState(() {
         _showScrollHint = false;
       });
-    } else if (!hasScrolled && !_showScrollHint) {
+    } else if (!isFullyVisible && !_showScrollHint) {
       setState(() {
         _showScrollHint = true;
       });
@@ -341,6 +353,7 @@ class _forgotState extends State<forgot> {
     
                         // Cancel Request Button
                         Container(
+                          key: _cancelButtonKey,
                           width: width,
                           margin: const EdgeInsets.only(left: 35, right: 35),
                           child: OutlinedButton(
