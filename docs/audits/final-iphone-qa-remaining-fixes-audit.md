@@ -106,5 +106,20 @@ Working directory was clean of other modifications.
 ## 20. Scope-Control Statement
 No unrelated files or configurations were modified. All modifications target the 5 confirmed manual QA failures.
 
+<<<<<<< HEAD
 ## 21. Final Status
+=======
+## 21. Scope-Control Diff Verification
+A strict scope audit was performed comparing the workspace changes to starting commit `ea74a29`:
+- **pubspec.yaml**: Added `flutter_secure_storage: ^9.2.2`. Checked and verified version and that no other dependency or metadata has changed.
+- **pubspec.lock**: Contains ONLY the lockfile result of adding `flutter_secure_storage` and its transitive dependencies (`flutter_secure_storage_linux`, `flutter_secure_storage_macos`, `flutter_secure_storage_platform_interface`, `flutter_secure_storage_web`, `flutter_secure_storage_windows`, `js`). No other versions were upgraded or downgraded.
+- **lib/SignIn.dart**: Verified changes are limited to Remember Me persistence and secure credential loading/saving. Placeholders (`Enter your Username`) and error messages (`Oops! We couldn't Sign You In...`) remain completely unchanged. Empty validation and login failure do not trigger credential saving. Logout does not clear credentials.
+- **lib/Library/RestClient.dart**: Re-verified no changes were made to RestClient.dart; it is completely untouched. Existing login, forgot password, and offline behaviors are 100% intact.
+- **lib/Student/PodcastSubject.dart**: Verified changes are limited to audio/podcast offline handling and Resource/Audio AID no-internet checks. Internet ON podcast behaviors are untouched. Offline audio message is exactly: `"Audio unavailable, please connect to the internet to continue learning."`. Greyed-out list is removed only when the state is offline and no podcasts are cached.
+- **lib/Student/Subject.dart**: Verified changes are limited to Resource Guide / Video Aid offline checks. Internet ON behavior and downloaded offline video playback are untouched.
+- **Formatting-Only Files**: `lib/Library/BouncingScrollIndicator.dart`, `lib/Student/ExamHistory.dart`, `lib/Student/ExamReport.dart`, and `lib/forgot.dart` were only formatted to comply with formatting check requirements. No logic changes were introduced.
+- **System/Generated Files**: `linux/flutter/generated_plugin_registrant.cc` and `linux/flutter/generated_plugins.cmake` were automatically updated by Flutter to register the new `flutter_secure_storage_linux` plugin. All iOS folders/files are ignored.
+
+## 22. Final Status
+>>>>>>> e231b58 (docs: add final iPhone QA remaining fixes audit report)
 **ACCEPTED** (All confirmed failures resolved, analyzer is 100% clean, and formatting checks pass).
