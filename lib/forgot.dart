@@ -420,7 +420,7 @@ class _forgotState extends State<forgot> {
             bottom: 40,
             right: 40,
             child: AnimatedOpacity(
-              duration: const Duration(seconds: 1),
+              duration: const Duration(milliseconds: 500),
               opacity: (isIpadLandscape && _showScrollHint) ? 1.0 : 0.0,
               curve: Curves.easeInOut,
               child: IgnorePointer(
