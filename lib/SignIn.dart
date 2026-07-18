@@ -9,6 +9,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'Library/StyleConfig.dart';
 import 'Student/MainNav.dart';
 import 'dart:io' show Platform;
+import 'Library/BouncingScrollIndicator.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -22,10 +23,13 @@ class _SignInState extends State<SignIn> {
   String _email = "";
   String _password = "";
   double _imageOpacity = 0.0;
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollHint = true;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     navigateToDashboardIfLoggedIn();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 50), () {
@@ -36,6 +40,32 @@ class _SignInState extends State<SignIn> {
         }
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final bool isIpadLandscape = Platform.isIOS &&
+        MediaQuery.of(context).size.shortestSide >= 600 &&
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    if (!isIpadLandscape) return;
+
+    final hasScrolled = _scrollController.offset > 50;
+    if (hasScrolled && _showScrollHint) {
+      setState(() {
+        _showScrollHint = false;
+      });
+    } else if (!hasScrolled && !_showScrollHint) {
+      setState(() {
+        _showScrollHint = true;
+      });
+    }
   }
 
   @override
@@ -51,163 +81,178 @@ class _SignInState extends State<SignIn> {
       borderSide: const BorderSide(width: 1, style: BorderStyle.solid),
     );
 
+    final bool isIpadLandscape = Platform.isIOS &&
+        MediaQuery.of(context).size.shortestSide >= 600 &&
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            logo(width),
-            Container(
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 50,
-                    width: width,
-                    child: Center(
-                      child: Text(
-                        'Sign in to mi digital academy'.toUpperCase(),
-                        style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              children: [
+                logo(width),
+                Container(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 50,
+                        width: width,
+                        child: Center(
+                          child: Text(
+                            'Sign in to mi digital academy'.toUpperCase(),
+                            style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    height: 65,
-                    width: width,
-                    margin: const EdgeInsets.only(left: 15, right: 15),
-                    child: TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          _email = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(0),
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        hintText: "Enter your Username",
-                        hintStyle: const TextStyle(),
-                        filled: true,
-                        focusColor: Colors.blueAccent,
-                        enabledBorder: outlineInputBorderStyle,
-                        fillColor: Colors.white,
-                        border: borderStyle,
+                      const SizedBox(
+                        height: 10,
                       ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                  ),
-                  Container(
-                    height: 20,
-                  ),
-                  Container(
-                    height: 65,
-                    width: width,
-                    margin: const EdgeInsets.only(left: 15, right: 15),
-                    child: TextField(
-                      obscureText: true,
-                      onChanged: (value) {
-                        setState(() {
-                          _password = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.all(0),
-                        prefixIcon: const Icon(Icons.password_outlined),
-                        hintText: "Password",
-                        hintStyle: const TextStyle(),
-                        filled: true,
-                        focusColor: Colors.blueAccent,
-                        enabledBorder: outlineInputBorderStyle,
-                        fillColor: Colors.white,
-                        border: borderStyle,
-                      ),
-                      keyboardType: TextInputType.visiblePassword,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.only(left: 5, right: 15, top: 1),
-                    height: 60,
-                    width: width,
-                    child: Row(
-                      children: [
-                        Checkbox(
-                          value: _checkbox,
+                      Container(
+                        height: 65,
+                        width: width,
+                        margin: const EdgeInsets.only(left: 15, right: 15),
+                        child: TextField(
                           onChanged: (value) {
                             setState(() {
-                              _checkbox = value!;
+                              _email = value;
                             });
                           },
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(0),
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            hintText: "Enter your Username",
+                            hintStyle: const TextStyle(),
+                            filled: true,
+                            focusColor: Colors.blueAccent,
+                            enabledBorder: outlineInputBorderStyle,
+                            fillColor: Colors.white,
+                            border: borderStyle,
+                          ),
+                          keyboardType: TextInputType.emailAddress,
                         ),
-                        const Text(
-                          'Remember me',
-                          style: TextStyle(),
+                      ),
+                      Container(
+                        height: 20,
+                      ),
+                      Container(
+                        height: 65,
+                        width: width,
+                        margin: const EdgeInsets.only(left: 15, right: 15),
+                        child: TextField(
+                          obscureText: true,
+                          onChanged: (value) {
+                            setState(() {
+                              _password = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.all(0),
+                            prefixIcon: const Icon(Icons.password_outlined),
+                            hintText: "Password",
+                            hintStyle: const TextStyle(),
+                            filled: true,
+                            focusColor: Colors.blueAccent,
+                            enabledBorder: outlineInputBorderStyle,
+                            fillColor: Colors.white,
+                            border: borderStyle,
+                          ),
+                          keyboardType: TextInputType.visiblePassword,
                         ),
-                        const Spacer(),
-                        GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const forgot()),
-                              );
-                            },
-                            child: const Text(
-                              'Forgot Password?',
+                      ),
+                      Container(
+                        padding: const EdgeInsets.only(left: 5, right: 15, top: 1),
+                        height: 60,
+                        width: width,
+                        child: Row(
+                          children: [
+                            Checkbox(
+                              value: _checkbox,
+                              onChanged: (value) {
+                                setState(() {
+                                  _checkbox = value!;
+                                });
+                              },
+                            ),
+                            const Text(
+                              'Remember me',
                               style: TextStyle(),
-                            )),
-                      ],
-                    ),
+                            ),
+                            const Spacer(),
+                            GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const forgot()),
+                                  );
+                                },
+                                child: const Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(),
+                                )),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 67.5,
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.only(left: 35, right: 35),
+                        child: OutlinedButton(
+                          onPressed: login,
+                          style: StyleConfig.actionButtonStyle,
+                          child: const Text("SIGN IN",
+                              style: TextStyle(color: Colors.white, fontSize: 22.5)),
+                        ),
+                      ),
+                      // SizedBox(
+                      //   height: 60,
+                      //   width: 340,
+                      //   child:Row(
+                      //     mainAxisAlignment: MainAxisAlignment.center,
+                      //     crossAxisAlignment: CrossAxisAlignment.center,
+                      //     children: [
+                      //       const Text(
+                      //         "Don't have an account?",
+                      //         style: TextStyle(
+                      //
+                      //         ),
+                      //       ),
+                      //       GestureDetector(
+                      //         onTap: (){
+                      //           Navigator.push(
+                      //             context,
+                      //             MaterialPageRoute(builder: (context) => const SignUp()),
+                      //           );
+                      //         },
+                      //         child: const Text('SIGN UP',style: TextStyle(
+                      //             decoration: TextDecoration.underline
+                      //         )),
+                      //       ),
+                      //     ],
+                      //   ) ,
+                      // ),
+                    ],
                   ),
-                  Container(
-                    height: 67.5,
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.only(left: 35, right: 35),
-                    child: OutlinedButton(
-                      onPressed: login,
-                      style: StyleConfig.actionButtonStyle,
-                      child: const Text("SIGN IN",
-                          style: TextStyle(color: Colors.white, fontSize: 22.5)),
-                    ),
-                  ),
-                  // SizedBox(
-                  //   height: 60,
-                  //   width: 340,
-                  //   child:Row(
-                  //     mainAxisAlignment: MainAxisAlignment.center,
-                  //     crossAxisAlignment: CrossAxisAlignment.center,
-                  //     children: [
-                  //       const Text(
-                  //         "Don't have an account?",
-                  //         style: TextStyle(
-                  //
-                  //         ),
-                  //       ),
-                  //       GestureDetector(
-                  //         onTap: (){
-                  //           Navigator.push(
-                  //             context,
-                  //             MaterialPageRoute(builder: (context) => const SignUp()),
-                  //           );
-                  //         },
-                  //         child: const Text('SIGN UP',style: TextStyle(
-                  //             decoration: TextDecoration.underline
-                  //         )),
-                  //       ),
-                  //     ],
-                  //   ) ,
-                  // ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 50)
+              ],
             ),
-            const SizedBox(height: 50)
-          ],
-        ),
+          ),
+          if (isIpadLandscape && _showScrollHint)
+            const Positioned(
+              bottom: 40,
+              right: 40,
+              child: BouncingScrollIndicator(),
+            ),
+        ],
       ),
     );
   }

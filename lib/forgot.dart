@@ -5,6 +5,7 @@ import 'Library/RestClient.dart';
 import 'Library/StyleConfig.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'SignIn.dart';
+import 'Library/BouncingScrollIndicator.dart';
 
 class forgot extends StatefulWidget {
   const forgot({super.key});
@@ -17,10 +18,13 @@ class _forgotState extends State<forgot> {
   final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   double _imageOpacity = 0.0;
+  final ScrollController _scrollController = ScrollController();
+  bool _showScrollHint = true;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 50), () {
         if (mounted) {
@@ -34,8 +38,29 @@ class _forgotState extends State<forgot> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    final bool isIpadLandscape = Platform.isIOS &&
+        MediaQuery.of(context).size.shortestSide >= 600 &&
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
+    if (!isIpadLandscape) return;
+
+    final hasScrolled = _scrollController.offset > 50;
+    if (hasScrolled && _showScrollHint) {
+      setState(() {
+        _showScrollHint = false;
+      });
+    } else if (!hasScrolled && !_showScrollHint) {
+      setState(() {
+        _showScrollHint = true;
+      });
+    }
   }
 
   // Email validation
@@ -207,169 +232,184 @@ class _forgotState extends State<forgot> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
 
+    final bool isIpadLandscape = Platform.isIOS &&
+        MediaQuery.of(context).size.shortestSide >= 600 &&
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            logo(width),
-            Container(
-              padding: const EdgeInsets.only(left: 10, right: 10),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Title
-                    SizedBox(
-                      height: 60,
-                      width: width,
-                      child: Center(
-                        child: Text(
-                          'Forgot Password?'.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w500,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              children: [
+                logo(width),
+                Container(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Title
+                        SizedBox(
+                          height: 60,
+                          width: width,
+                          child: Center(
+                            child: Text(
+                              'Forgot Password?'.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-
-                    // Subtitle
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        'Enter your email address and we\'ll send you a link to reset your password',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-
-                    // Email Input Field
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: TextFormField(
-                        controller: _emailController,
-                        validator: _validateEmail,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 22.5, horizontal: 15),
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          hintText: "Enter your email address",
-                          hintStyle: const TextStyle(),
-                          filled: true,
-                          focusColor: Colors.blueAccent,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                            borderSide: const BorderSide(width: 1),
-                          ),
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                            borderSide: const BorderSide(
-                                width: 1, style: BorderStyle.solid),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                            borderSide:
-                                BorderSide(color: Colors.red[400]!, width: 1),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(50),
-                            borderSide:
-                                BorderSide(color: Colors.red[600]!, width: 1.5),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Send Reset Link Button
-                    Container(
-                      width: width,
-                      margin: const EdgeInsets.only(left: 35, right: 35),
-                      child: OutlinedButton(
-                        onPressed: _sendResetLink,
-                        style: StyleConfig.actionButtonStyle,
-                        child: const Text(
-                          "SEND RESET LINK",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-
-                    // Cancel Request Button
-                    Container(
-                      width: width,
-                      margin: const EdgeInsets.only(left: 35, right: 35),
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const SignIn()),
-                          );
-                        },
-                        style: StyleConfig.actionButtonStyle,
-                        child: const Text(
-                          "CANCEL REQUEST",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Back to Sign In
-                    SizedBox(
-                      height: 40,
-                      width: width,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Remember your password? ',
+                        const SizedBox(height: 5),
+    
+                        // Subtitle
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            'Enter your email address and we\'ll send you a link to reset your password',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 14,
+                              height: 1.5,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
+                        ),
+                        const SizedBox(height: 30),
+    
+                        // Email Input Field
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: TextFormField(
+                            controller: _emailController,
+                            validator: _validateEmail,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 22.5, horizontal: 15),
+                              prefixIcon: const Icon(Icons.email_outlined),
+                              hintText: "Enter your email address",
+                              hintStyle: const TextStyle(),
+                              filled: true,
+                              focusColor: Colors.blueAccent,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide: const BorderSide(width: 1),
+                              ),
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide: const BorderSide(
+                                    width: 1, style: BorderStyle.solid),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide:
+                                    BorderSide(color: Colors.red[400]!, width: 1),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(50),
+                                borderSide:
+                                    BorderSide(color: Colors.red[600]!, width: 1.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+    
+                        // Send Reset Link Button
+                        Container(
+                          width: width,
+                          margin: const EdgeInsets.only(left: 35, right: 35),
+                          child: OutlinedButton(
+                            onPressed: _sendResetLink,
+                            style: StyleConfig.actionButtonStyle,
+                            child: const Text(
+                              "SEND RESET LINK",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+    
+                        // Cancel Request Button
+                        Container(
+                          width: width,
+                          margin: const EdgeInsets.only(left: 35, right: 35),
+                          child: OutlinedButton(
+                            onPressed: () {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => const SignIn()),
                               );
                             },
+                            style: StyleConfig.actionButtonStyle,
                             child: const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
-                              ),
+                              "CANCEL REQUEST",
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 20),
+    
+                        // Back to Sign In
+                        SizedBox(
+                          height: 40,
+                          width: width,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Remember your password? ',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const SignIn()),
+                                  );
+                                },
+                                child: const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 50),
+              ],
             ),
-            const SizedBox(height: 50),
-          ],
-        ),
+          ),
+          if (isIpadLandscape && _showScrollHint)
+            const Positioned(
+              bottom: 40,
+              right: 40,
+              child: BouncingScrollIndicator(),
+            ),
+        ],
       ),
     );
   }
