@@ -416,12 +416,19 @@ class _forgotState extends State<forgot> {
               ],
             ),
           ),
-          if (isIpadLandscape && _showScrollHint)
-            const Positioned(
-              bottom: 40,
-              right: 40,
-              child: BouncingScrollIndicator(),
+          Positioned(
+            bottom: 40,
+            right: 40,
+            child: AnimatedOpacity(
+              duration: const Duration(seconds: 1),
+              opacity: (isIpadLandscape && _showScrollHint) ? 1.0 : 0.0,
+              curve: Curves.easeInOut,
+              child: IgnorePointer(
+                ignoring: !(isIpadLandscape && _showScrollHint),
+                child: const BouncingScrollIndicator(),
+              ),
             ),
+          ),
         ],
       ),
     );
