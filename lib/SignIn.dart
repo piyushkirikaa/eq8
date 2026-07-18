@@ -10,6 +10,8 @@ import 'Library/StyleConfig.dart';
 import 'Student/MainNav.dart';
 import 'dart:io' show Platform;
 import 'Library/BouncingScrollIndicator.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({super.key});
@@ -27,10 +29,15 @@ class _SignInState extends State<SignIn> {
   bool _showScrollHint = true;
   final GlobalKey _signInButtonKey = GlobalKey();
 
+  final _secureStorage = const FlutterSecureStorage();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _loadRememberedCredentials();
     navigateToDashboardIfLoggedIn();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 50), () {
@@ -43,10 +50,36 @@ class _SignInState extends State<SignIn> {
     });
   }
 
+  Future<void> _loadRememberedCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bool rememberMe = prefs.getBool('remember_me') ?? false;
+      if (rememberMe) {
+        final savedEmail =
+            await _secureStorage.read(key: 'remembered_username');
+        final savedPassword =
+            await _secureStorage.read(key: 'remembered_password');
+        if (savedEmail != null && savedPassword != null) {
+          setState(() {
+            _checkbox = true;
+            _email = savedEmail;
+            _password = savedPassword;
+            _emailController.text = savedEmail;
+            _passwordController.text = savedPassword;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading remembered credentials: $e');
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -65,7 +98,7 @@ class _SignInState extends State<SignIn> {
     final position = renderBox.localToGlobal(Offset.zero);
     final size = renderBox.size;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     // The button is fully visible if its bottom edge is above the screen bottom edge
     final isFullyVisible = (position.dy + size.height) <= screenHeight;
 
@@ -132,6 +165,7 @@ class _SignInState extends State<SignIn> {
                         width: width,
                         margin: const EdgeInsets.only(left: 15, right: 15),
                         child: TextField(
+                          controller: _emailController,
                           onChanged: (value) {
                             setState(() {
                               _email = value;
@@ -160,6 +194,7 @@ class _SignInState extends State<SignIn> {
                         margin: const EdgeInsets.only(left: 15, right: 15),
                         child: TextField(
                           obscureText: true,
+                          controller: _passwordController,
                           onChanged: (value) {
                             setState(() {
                               _password = value;
@@ -180,7 +215,8 @@ class _SignInState extends State<SignIn> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.only(left: 5, right: 15, top: 1),
+                        padding:
+                            const EdgeInsets.only(left: 5, right: 15, top: 1),
                         height: 60,
                         width: width,
                         child: Row(
@@ -222,7 +258,8 @@ class _SignInState extends State<SignIn> {
                           onPressed: login,
                           style: StyleConfig.actionButtonStyle,
                           child: const Text("SIGN IN",
-                              style: TextStyle(color: Colors.white, fontSize: 22.5)),
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 22.5)),
                         ),
                       ),
                       // SizedBox(
@@ -390,6 +427,25 @@ class _SignInState extends State<SignIn> {
         final userId = response["data"]["user_id"].toString();
         // store the user information
         await RestClient().storeUser(email, userId, token, role);
+
+        // Handle Remember Me persistence
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          if (_checkbox) {
+            await prefs.setBool('remember_me', true);
+            await _secureStorage.write(
+                key: 'remembered_username', value: _email);
+            await _secureStorage.write(
+                key: 'remembered_password', value: _password);
+          } else {
+            await prefs.remove('remember_me');
+            await _secureStorage.delete(key: 'remembered_username');
+            await _secureStorage.delete(key: 'remembered_password');
+          }
+        } catch (e) {
+          debugPrint('Error saving/clearing remembered credentials: $e');
+        }
+
         unawaited(Analytics()
             .logEvent('login', {})
             .timeout(const Duration(seconds: 5))

@@ -517,14 +517,16 @@ class _SubjectState extends State<Subject> {
 
   Future<dynamic> _navigateWithVideoPause(Widget page) async {
     bool wasPlaying = false;
-    
+
     if (Platform.isWindows) {
       wasPlaying = winVideoController?.value.isPlaying ?? false;
       if (wasPlaying) {
         winVideoController?.pause();
       }
     } else {
-      wasPlaying = flickManager?.flickVideoManager?.videoPlayerController?.value.isPlaying ?? false;
+      wasPlaying = flickManager
+              ?.flickVideoManager?.videoPlayerController?.value.isPlaying ??
+          false;
       if (wasPlaying) {
         flickManager?.flickVideoManager?.videoPlayerController?.pause();
       }
@@ -542,7 +544,7 @@ class _SubjectState extends State<Subject> {
         flickManager?.flickVideoManager?.videoPlayerController?.play();
       }
     }
-    
+
     return result;
   }
 
@@ -784,6 +786,14 @@ class _SubjectState extends State<Subject> {
                 iconBackgroundColor: Colors.blue[50]!,
                 iconColor: Colors.blue,
                 onTap: () async {
+                  final isOnline = await RestClient().checkInternetConnection();
+                  if (!mounted || !context.mounted) return;
+                  if (!isOnline) {
+                    Navigator.pop(context);
+                    RestClient().error(
+                        "No Internet. Unable to load Video Aid. Connect to the Internet to Continue.");
+                    return;
+                  }
                   Analytics().logEvent("DOCUMENT_DOWNLOAD", {
                     "subject_name": currentTutorial['subject_name'].toString(),
                     "video": currentTutorial['title'].toString()
@@ -792,6 +802,7 @@ class _SubjectState extends State<Subject> {
                   debugPrint('=== VIDEO AID ===');
                   debugPrint('Document URL: $document');
                   if (document != "null" && document.isNotEmpty) {
+                    if (!mounted || !context.mounted) return;
                     Navigator.pop(context);
                     globalScaffoldContext.loaderOverlay.show();
                     try {
@@ -811,6 +822,7 @@ class _SubjectState extends State<Subject> {
                       RestClient().error('Error loading document: $e');
                     }
                   } else {
+                    if (!mounted || !context.mounted) return;
                     Navigator.pop(context);
                     showDialog(
                       context: context,
@@ -865,6 +877,15 @@ class _SubjectState extends State<Subject> {
                   iconBackgroundColor: Colors.amber[50]!,
                   iconColor: Colors.amber[800]!,
                   onTap: () async {
+                    final isOnline =
+                        await RestClient().checkInternetConnection();
+                    if (!mounted || !context.mounted) return;
+                    if (!isOnline) {
+                      Navigator.pop(context);
+                      RestClient().error(
+                          "No Internet. Unable to load Resource Guide. Connect to the Internet to Continue.");
+                      return;
+                    }
                     Analytics().logEvent("DOCUMENT_DOWNLOAD", {
                       "subject_name":
                           currentTutorial['subject_name'].toString(),
@@ -875,6 +896,7 @@ class _SubjectState extends State<Subject> {
                     debugPrint('=== RESOURCE GUIDE ===');
                     debugPrint('Document URL: $document');
                     if (document != "null" && document.isNotEmpty) {
+                      if (!mounted || !context.mounted) return;
                       Navigator.pop(context);
                       globalScaffoldContext.loaderOverlay.show();
                       try {
@@ -894,6 +916,7 @@ class _SubjectState extends State<Subject> {
                         RestClient().error('Error loading document: $e');
                       }
                     } else {
+                      if (!mounted || !context.mounted) return;
                       Navigator.pop(context);
                       showDialog(
                         context: context,

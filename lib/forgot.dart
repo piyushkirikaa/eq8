@@ -60,7 +60,7 @@ class _forgotState extends State<forgot> {
     final position = renderBox.localToGlobal(Offset.zero);
     final size = renderBox.size;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     // The button is fully visible if its bottom edge is above the screen bottom edge
     final isFullyVisible = (position.dy + size.height) <= screenHeight;
 
@@ -280,7 +280,7 @@ class _forgotState extends State<forgot> {
                           ),
                         ),
                         const SizedBox(height: 5),
-    
+
                         // Subtitle
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -295,7 +295,7 @@ class _forgotState extends State<forgot> {
                           ),
                         ),
                         const SizedBox(height: 30),
-    
+
                         // Email Input Field
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -323,19 +323,19 @@ class _forgotState extends State<forgot> {
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(50),
-                                borderSide:
-                                    BorderSide(color: Colors.red[400]!, width: 1),
+                                borderSide: BorderSide(
+                                    color: Colors.red[400]!, width: 1),
                               ),
                               focusedErrorBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(50),
-                                borderSide:
-                                    BorderSide(color: Colors.red[600]!, width: 1.5),
+                                borderSide: BorderSide(
+                                    color: Colors.red[600]!, width: 1.5),
                               ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 20),
-    
+
                         // Send Reset Link Button
                         Container(
                           width: width,
@@ -350,7 +350,7 @@ class _forgotState extends State<forgot> {
                           ),
                         ),
                         const SizedBox(height: 15),
-    
+
                         // Cancel Request Button
                         Container(
                           key: _cancelButtonKey,
@@ -372,7 +372,7 @@ class _forgotState extends State<forgot> {
                           ),
                         ),
                         const SizedBox(height: 20),
-    
+
                         // Back to Sign In
                         SizedBox(
                           height: 40,

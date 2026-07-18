@@ -189,7 +189,8 @@ class _ExamReportState extends State<ExamReport>
                                             if (!event
                                                     .isInterestedForInteractions ||
                                                 pieTouchResponse == null ||
-                                                pieTouchResponse.touchedSection ==
+                                                pieTouchResponse
+                                                        .touchedSection ==
                                                     null) {
                                               touchedIndex = -1;
                                               return;
@@ -203,8 +204,9 @@ class _ExamReportState extends State<ExamReport>
                                       startDegreeOffset: 180,
                                       borderData: FlBorderData(show: false),
                                       sectionsSpace: 1,
-                                      centerSpaceRadius: (isIPad ? 60.0 : 52.5) *
-                                          _chartAnimationValue,
+                                      centerSpaceRadius:
+                                          (isIPad ? 60.0 : 52.5) *
+                                              _chartAnimationValue,
                                       sections: showingSections(data, isIPad),
                                     ),
                                     swapAnimationDuration:
@@ -286,9 +288,8 @@ class _ExamReportState extends State<ExamReport>
                                   child: GestureDetector(
                                     onTap: () {
                                       setState(() {
-                                        touchedIndex = index == touchedIndex
-                                            ? -1
-                                            : index;
+                                        touchedIndex =
+                                            index == touchedIndex ? -1 : index;
                                       });
                                     },
                                     child: ListTile(
@@ -346,10 +347,10 @@ class _ExamReportState extends State<ExamReport>
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
                                                         Color>(
-                                                  getScoreColor((subject[
-                                                              'average_number']
-                                                          as num)
-                                                      .toDouble()),
+                                                  getScoreColor(
+                                                      (subject['average_number']
+                                                              as num)
+                                                          .toDouble()),
                                                 ),
                                               ),
                                             ),

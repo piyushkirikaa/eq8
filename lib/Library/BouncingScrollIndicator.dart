@@ -4,7 +4,8 @@ class BouncingScrollIndicator extends StatefulWidget {
   const BouncingScrollIndicator({super.key});
 
   @override
-  State<BouncingScrollIndicator> createState() => _BouncingScrollIndicatorState();
+  State<BouncingScrollIndicator> createState() =>
+      _BouncingScrollIndicatorState();
 }
 
 class _BouncingScrollIndicatorState extends State<BouncingScrollIndicator>
@@ -51,7 +52,8 @@ class _BouncingScrollIndicatorState extends State<BouncingScrollIndicator>
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.blueAccent.withValues(alpha: 0.9), // Matches app's color scheme
+              color: Colors.blueAccent
+                  .withValues(alpha: 0.9), // Matches app's color scheme
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(

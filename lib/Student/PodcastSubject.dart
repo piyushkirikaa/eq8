@@ -14,6 +14,7 @@ import 'FeedbackController.dart';
 import 'ExamHistory.dart';
 import 'PDFScreen.dart';
 import 'StartYourExam.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PodcastSubject extends StatefulWidget {
   final Course course;
@@ -28,6 +29,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
   bool isAudioSet = false;
   late List<dynamic> subjectList = [];
   int selectedIndex = -1;
+  bool _isOnline = true;
 
   late BuildContext globalScaffoldContext;
   bool isSavingAudio = false;
@@ -185,11 +187,40 @@ class _PodcastSubjectState extends State<PodcastSubject> {
               return Text('Error: ${snapshot.error}');
             } else {
               if (snapshot.hasData) {
-                if (selectedIndex == -1 && snapshot.data.length > 0) {
+                final data = snapshot.data as List<dynamic>;
+                final bool hasDownloadedAudios =
+                    data.any((audio) => audio['isCached'] == true);
+
+                if (!_isOnline && !hasDownloadedAudios) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.wifi_off_outlined,
+                              size: 64, color: Colors.grey),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Audio unavailable, please connect to the internet to continue learning.',
+                            style: GoogleFonts.lato(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF757575),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                if (selectedIndex == -1 && data.isNotEmpty) {
                   // Auto-select first podcast
                   Future.microtask(() {
                     if (mounted) {
-                      selectPodcast(0, snapshot.data[0]);
+                      selectPodcast(0, data[0]);
                     }
                   });
                 }
@@ -201,7 +232,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
 
                     // Playlist area
                     Expanded(
-                      child: buildPlaylist(snapshot.data),
+                      child: buildPlaylist(data),
                     ),
                   ],
                 );
@@ -497,6 +528,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
   }
 
   Future<List<dynamic>> getSubjectList() async {
+    _isOnline = await RestClient().checkInternetConnection();
     final currentCourse = widget.course;
     Analytics().logEvent(
         "VIEW_SUBJECT", {"subject_name": currentCourse.title.toString()});
@@ -516,7 +548,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
       return audioList;
     } else {
       RestClient().error(
-          "Video unavailable, please connect to the internet to continue learning.");
+          "Audio unavailable, please connect to the internet to continue learning.");
       print("Error fetching subject list: response is null or failed");
       return []; // Return an empty list in case of an error
     }
@@ -524,11 +556,20 @@ class _PodcastSubjectState extends State<PodcastSubject> {
 
   playAudio(audio) async {
     if (await RestClient().checkInternetConnection()) {
-      changeAudio(audio);
+      final fileInfo = await DefaultCacheManager().getFileFromCache(audio);
+      if (fileInfo != null) {
+        changeAudio(fileInfo.file.path);
+      } else {
+        changeAudio(audio);
+      }
     } else {
-      DefaultCacheManager().getSingleFile(audio).then((file) {
-        changeAudio(file.path);
-      });
+      final fileInfo = await DefaultCacheManager().getFileFromCache(audio);
+      if (fileInfo != null) {
+        changeAudio(fileInfo.file.path);
+      } else {
+        RestClient().error(
+            "Audio unavailable, please connect to the internet to continue learning.");
+      }
     }
   }
 
@@ -560,6 +601,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                   leading: const Icon(Icons.file_copy_outlined),
                   title: const Text('Audio AID'),
                   onTap: () async {
+                    final isOnline =
+                        await RestClient().checkInternetConnection();
+                    if (!mounted || !context.mounted) return;
+                    if (!isOnline) {
+                      Navigator.pop(context);
+                      RestClient().error(
+                          "No Internet. Unable to load Audio AID. Connect to the Internet to Continue.");
+                      return;
+                    }
                     Analytics().logEvent("DOCUMENT_DOWNLOAD", {
                       "subject_name":
                           currentTutorial['subject_name'].toString(),
@@ -567,6 +617,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     });
                     final document = currentTutorial['document_url'].toString();
                     if (document != "null") {
+                      if (!mounted || !context.mounted) return;
                       Navigator.pop(context);
                       globalScaffoldContext.loaderOverlay.show();
                       try {
@@ -593,6 +644,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                   leading: const Icon(Icons.file_copy_outlined),
                   title: const Text('Resource Guide'),
                   onTap: () async {
+                    final isOnline =
+                        await RestClient().checkInternetConnection();
+                    if (!mounted || !context.mounted) return;
+                    if (!isOnline) {
+                      Navigator.pop(context);
+                      RestClient().error(
+                          "No Internet. Unable to load Resource Guide. Connect to the Internet to Continue.");
+                      return;
+                    }
                     Analytics().logEvent("DOCUMENT_DOWNLOAD", {
                       "subject_name":
                           currentTutorial['subject_name'].toString(),
@@ -601,6 +661,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     final document =
                         currentTutorial['resource_guide'].toString();
                     if (document != "null") {
+                      if (!mounted || !context.mounted) return;
                       Navigator.pop(context);
                       globalScaffoldContext.loaderOverlay.show();
                       try {
@@ -627,6 +688,15 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                   leading: const Icon(Icons.file_copy_outlined),
                   title: const Text('Past Exam Papers'),
                   onTap: () async {
+                    final isOnline =
+                        await RestClient().checkInternetConnection();
+                    if (!mounted || !context.mounted) return;
+                    if (!isOnline) {
+                      Navigator.pop(context);
+                      RestClient().error(
+                          "No Internet. Unable to load Past Exam Papers. Connect to the Internet to Continue.");
+                      return;
+                    }
                     Analytics().logEvent("DOCUMENT_DOWNLOAD", {
                       "subject_name":
                           currentTutorial['subject_name'].toString(),
@@ -635,6 +705,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
                     final document =
                         currentTutorial['previous_exam'].toString();
                     if (document != "null") {
+                      if (!mounted || !context.mounted) return;
                       Navigator.pop(context);
                       globalScaffoldContext.loaderOverlay.show();
                       try {

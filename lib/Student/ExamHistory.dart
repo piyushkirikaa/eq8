@@ -755,8 +755,10 @@ class _ExamHistoryState extends State<ExamHistory> {
 
     final double screenWidth = MediaQuery.of(context).size.width;
     final double minWidth = screenWidth - 32; // Width of screen minus padding
-    final double calculatedWidth = _examsData.length * 60.0; // 60px per data point
-    final double chartWidth = calculatedWidth > minWidth ? calculatedWidth : minWidth;
+    final double calculatedWidth =
+        _examsData.length * 60.0; // 60px per data point
+    final double chartWidth =
+        calculatedWidth > minWidth ? calculatedWidth : minWidth;
 
     return Scrollbar(
       controller: _scrollController,
@@ -821,7 +823,8 @@ class _ExamHistoryState extends State<ExamHistory> {
                     getTitlesWidget: (value, meta) {
                       if (value.toInt() < _examsData.length) {
                         String label = 'Exam ${value.toInt() + 1}';
-                        String? dateString = _examsData[value.toInt()]['created_at'];
+                        String? dateString =
+                            _examsData[value.toInt()]['created_at'];
                         if (dateString != null && dateString.isNotEmpty) {
                           try {
                             final DateTime date = DateTime.parse(dateString);
@@ -834,7 +837,8 @@ class _ExamHistoryState extends State<ExamHistory> {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Transform.rotate(
-                            angle: -1.5708, // -90 degrees in radians (bottom to top)
+                            angle:
+                                -1.5708, // -90 degrees in radians (bottom to top)
                             child: Text(
                               label,
                               style: GoogleFonts.lato(fontSize: 12),
@@ -861,7 +865,8 @@ class _ExamHistoryState extends State<ExamHistory> {
                   dotData: const FlDotData(show: true),
                   belowBarData: BarAreaData(
                     show: true,
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    color:
+                        Theme.of(context).primaryColor.withValues(alpha: 0.2),
                   ),
                 ),
               ],
