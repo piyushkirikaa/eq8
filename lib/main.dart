@@ -55,6 +55,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         navigatorKey: RestClient.navigatorKey,
         scaffoldMessengerKey: RestClient.scaffoldMessengerKey,
+        navigatorObservers: [ToastNavigationObserver()],
         scrollBehavior: const MyScrollBehavior(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

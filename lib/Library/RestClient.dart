@@ -8,6 +8,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 class RestClient {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -255,38 +257,43 @@ class RestClient {
   }
 
   success(message) async {
-    final state = scaffoldMessengerKey.currentState;
-    if (state != null) {
-      state.hideCurrentSnackBar();
-      state.showSnackBar(
-        SnackBar(
-          content: Text(
-            message.toString(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16.0,
-              fontWeight: FontWeight.w500,
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      OverlayToastManager().show(context, message.toString(), isError: false);
+    } else {
+      final state = scaffoldMessengerKey.currentState;
+      if (state != null) {
+        state.hideCurrentSnackBar();
+        state.showSnackBar(
+          SnackBar(
+            content: Text(
+              message.toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
             ),
           ),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-      );
-    } else {
-      return Fluttertoast.showToast(
-          msg: message.toString(),
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0);
+        );
+      } else {
+        return Fluttertoast.showToast(
+            msg: message.toString(),
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 5,
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
     }
   }
 
@@ -300,38 +307,43 @@ class RestClient {
       _lastOfflineToastTime = now;
     }
 
-    final state = scaffoldMessengerKey.currentState;
-    if (state != null) {
-      state.hideCurrentSnackBar();
-      state.showSnackBar(
-        SnackBar(
-          content: Text(
-            message.toString(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16.0,
-              fontWeight: FontWeight.w500,
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      OverlayToastManager().show(context, message.toString(), isError: true);
+    } else {
+      final state = scaffoldMessengerKey.currentState;
+      if (state != null) {
+        state.hideCurrentSnackBar();
+        state.showSnackBar(
+          SnackBar(
+            content: Text(
+              message.toString(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
             ),
           ),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-      );
-    } else {
-      return Fluttertoast.showToast(
-          msg: message.toString(),
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
+        );
+      } else {
+        return Fluttertoast.showToast(
+            msg: message.toString(),
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 5,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      }
     }
   }
 
@@ -378,6 +390,233 @@ class RestClient {
       child: SpinKitCubeGrid(
         color: Colors.yellow,
         size: 50.0,
+      ),
+    );
+  }
+}
+
+class ToastNavigationObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    OverlayToastManager().dismissActiveToast();
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    OverlayToastManager().dismissActiveToast();
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    OverlayToastManager().dismissActiveToast();
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    OverlayToastManager().dismissActiveToast();
+  }
+}
+
+class OverlayToastManager {
+  static final OverlayToastManager _instance = OverlayToastManager._internal();
+  factory OverlayToastManager() => _instance;
+  OverlayToastManager._internal();
+
+  OverlayEntry? _currentEntry;
+  Timer? _dismissTimer;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  GlobalKey<_CustomToastWidgetState>? _toastKey;
+
+  void show(BuildContext context, String message, {required bool isError}) {
+    dismissActiveToast();
+
+    // Start listening to connectivity changes ONLY while toast is visible
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen((results) {
+      final bool isOnline = results.contains(ConnectivityResult.mobile) ||
+          results.contains(ConnectivityResult.wifi) ||
+          results.contains(ConnectivityResult.ethernet) ||
+          results.contains(ConnectivityResult.other);
+      if (isOnline) {
+        dismissActiveToast();
+      }
+    });
+
+    _toastKey = GlobalKey<_CustomToastWidgetState>();
+
+    final entry = OverlayEntry(
+      builder: (context) {
+        return CustomToastWidget(
+          key: _toastKey,
+          message: message,
+          isError: isError,
+          onDismiss: dismissActiveToast,
+        );
+      },
+    );
+
+    final overlay = Overlay.of(context);
+    overlay.insert(entry);
+    _currentEntry = entry;
+
+    _dismissTimer = Timer(const Duration(seconds: 5), () {
+      dismissActiveToast();
+    });
+  }
+
+  void dismissActiveToast() {
+    _dismissTimer?.cancel();
+    _dismissTimer = null;
+    _connectivitySubscription?.cancel();
+    _connectivitySubscription = null;
+
+    final entry = _currentEntry;
+    final state = _toastKey?.currentState;
+
+    if (entry != null) {
+      _currentEntry = null;
+      _toastKey = null;
+
+      if (state != null && state.mounted) {
+        state.animateOut().then((_) {
+          entry.remove();
+        });
+      } else {
+        entry.remove();
+      }
+    }
+  }
+}
+
+class CustomToastWidget extends StatefulWidget {
+  final String message;
+  final bool isError;
+  final VoidCallback onDismiss;
+
+  const CustomToastWidget({
+    super.key,
+    required this.message,
+    required this.isError,
+    required this.onDismiss,
+  });
+
+  @override
+  State<CustomToastWidget> createState() => _CustomToastWidgetState();
+}
+
+class _CustomToastWidgetState extends State<CustomToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> animateOut() async {
+    if (mounted) {
+      await _controller.reverse();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isOfflineMessage =
+        widget.message.toLowerCase().contains('connect to the internet') ||
+        widget.message.toLowerCase().contains('unavailable');
+
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: GestureDetector(
+                onTap: widget.onDismiss,
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: widget.isError
+                          ? const Color(0xE6D32F2F) // Crimson red with E6 opacity
+                          : const Color(0xE62E7D32), // Emerald green with E6 opacity
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x33000000),
+                          blurRadius: 12,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isOfflineMessage
+                              ? Icons.wifi_off_outlined
+                              : (widget.isError
+                                  ? Icons.error_outline
+                                  : Icons.check_circle_outline),
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Text(
+                            widget.message,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lato(
+                              color: Colors.white,
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
