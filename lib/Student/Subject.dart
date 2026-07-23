@@ -756,6 +756,8 @@ class _SubjectState extends State<Subject> {
                     DefaultCacheManager().getSingleFile(videoURL).then((file) {
                       RestClient()
                           .success('Video saved is now available offline');
+                    }).catchError((error) {
+                      RestClient().error('Failed to save video offline');
                     });
                   } else {
                     Analytics().logEvent("REMOVE_OFFLINE_VIDEO", {
@@ -767,7 +769,7 @@ class _SubjectState extends State<Subject> {
                     DefaultCacheManager().removeFile(videoURL);
                     globalScaffoldContext.loaderOverlay.hide();
                     Navigator.pop(context);
-                    RestClient().error('Offline Video Deleted');
+                    RestClient().success('Offline Video Deleted');
                     if (cachedSubjectList != null) {
                       for (var item in cachedSubjectList!) {
                         if (item['video_url'] == videoURL) {

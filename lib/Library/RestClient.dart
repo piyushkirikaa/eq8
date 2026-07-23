@@ -554,7 +554,11 @@ class _CustomToastWidgetState extends State<CustomToastWidget>
   Widget build(BuildContext context) {
     final bool isOfflineMessage =
         widget.message.toLowerCase().contains('connect to the internet') ||
-        widget.message.toLowerCase().contains('unavailable');
+        widget.message.toLowerCase().contains('unavailable') ||
+        widget.message.toLowerCase().contains('no internet') ||
+        widget.message.toLowerCase().contains('network error') ||
+        widget.message.toLowerCase().contains('connection') ||
+        widget.message.toLowerCase().contains('offline');
 
     return SafeArea(
       child: Align(

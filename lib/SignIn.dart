@@ -395,11 +395,11 @@ class _SignInState extends State<SignIn> {
   }
 
   Future<void> login() async {
-    if (_email.isEmpty) {
-      showErrorMessage("Enter your Username");
+    if (_email.trim().isEmpty) {
+      showErrorMessage("Please enter your Username.");
       return;
-    } else if (_password.isEmpty) {
-      showErrorMessage("Please enter your password.");
+    } else if (_password.trim().isEmpty) {
+      showErrorMessage("Please enter your Password.");
       return;
     }
 
@@ -480,7 +480,7 @@ class _SignInState extends State<SignIn> {
             (dataStr != null &&
                 dataStr.toLowerCase().contains('invalid username password'))) {
           errorMessage =
-              'Oops! We couldn\'t Sign You In. please check your Username or Password.';
+              'Oops! We couldn\'t Sign You In. Please check your Username or Password.';
         }
         showErrorMessage(errorMessage);
       }
@@ -516,7 +516,7 @@ class _SignInState extends State<SignIn> {
                 Expanded(
                   child: Text(
                     message ==
-                            'Oops! We couldn\'t Sign You In. please check your Username or Password.'
+                            'Oops! We couldn\'t Sign You In. Please check your Username or Password.'
                         ? 'Sign In Failed'
                         : 'Authentication Error',
                     overflow: TextOverflow.visible,

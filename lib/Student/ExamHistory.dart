@@ -738,14 +738,17 @@ class _ExamHistoryState extends State<ExamHistory> {
       return const Center(child: Text('No data to show'));
     }
 
+    // Prepare chronological line chart data (oldest on the left, newest on the right)
+    final reversedExams = _examsData.reversed.toList();
+
     // Prepare line chart data
     List<FlSpot> spots = [];
-    for (int i = 0; i < _examsData.length; i++) {
+    for (int i = 0; i < reversedExams.length; i++) {
       // Safely convert exam_number to double
       double score = 0.0;
-      if (_examsData[i]['exam_number'] != null) {
+      if (reversedExams[i]['exam_number'] != null) {
         try {
-          score = double.parse(_examsData[i]['exam_number'].toString());
+          score = double.parse(reversedExams[i]['exam_number'].toString());
         } catch (e) {
           score = 0.0;
         }
@@ -756,7 +759,7 @@ class _ExamHistoryState extends State<ExamHistory> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double minWidth = screenWidth - 32; // Width of screen minus padding
     final double calculatedWidth =
-        _examsData.length * 60.0; // 60px per data point
+        reversedExams.length * 60.0; // 60px per data point
     final double chartWidth =
         calculatedWidth > minWidth ? calculatedWidth : minWidth;
 
@@ -820,11 +823,13 @@ class _ExamHistoryState extends State<ExamHistory> {
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 70,
+                    interval: 1,
                     getTitlesWidget: (value, meta) {
-                      if (value.toInt() < _examsData.length) {
-                        String label = 'Exam ${value.toInt() + 1}';
+                      final int index = value.toInt();
+                      if (value == index.toDouble() && index >= 0 && index < reversedExams.length) {
+                        String label = 'Exam ${index + 1}';
                         String? dateString =
-                            _examsData[value.toInt()]['created_at'];
+                            reversedExams[index]['created_at'];
                         if (dateString != null && dateString.isNotEmpty) {
                           try {
                             final DateTime date = DateTime.parse(dateString);

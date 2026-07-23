@@ -780,6 +780,8 @@ class _PodcastSubjectState extends State<PodcastSubject> {
           DefaultCacheManager().getSingleFile(audioURL).then((file) {
             RestClient().success('Audio saved is now available offline');
             setState(() {});
+          }).catchError((error) {
+            RestClient().error('Failed to save audio offline');
           });
         },
       );
@@ -796,7 +798,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
           DefaultCacheManager().removeFile(audioURL);
           globalScaffoldContext.loaderOverlay.hide();
           Navigator.pop(context);
-          RestClient().error('Audio Deleted offline');
+          RestClient().success('Audio Deleted offline');
           setState(() {});
         },
       );
