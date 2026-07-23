@@ -420,38 +420,47 @@ class _SignInState extends State<SignIn> {
       print(response);
 
       if (response != null && response["status"] == 'success') {
-        loginSuccess = true;
-        final role = response["data"]["role"].toString();
-        final token = response["data"]["api_token"].toString();
-        final email = response["data"]["email"].toString();
-        final userId = response["data"]["user_id"].toString();
-        // store the user information
-        await RestClient().storeUser(email, userId, token, role);
+        final returnedEmail = response["data"]["email"]?.toString().trim().toLowerCase();
+        final returnedUserId = response["data"]["user_id"]?.toString().trim().toLowerCase();
+        final enteredUsername = _email.trim().toLowerCase();
 
-        // Handle Remember Me persistence
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          if (_checkbox) {
-            await prefs.setBool('remember_me', true);
-            await _secureStorage.write(
-                key: 'remembered_username', value: _email);
-            await _secureStorage.write(
-                key: 'remembered_password', value: _password);
-          } else {
-            await prefs.remove('remember_me');
-            await _secureStorage.delete(key: 'remembered_username');
-            await _secureStorage.delete(key: 'remembered_password');
+        if (returnedEmail != enteredUsername && returnedUserId != enteredUsername) {
+          loginSuccess = false;
+          showErrorMessage('Oops! We couldn\'t Sign You In. please check your Username or Password.');
+        } else {
+          loginSuccess = true;
+          final role = response["data"]["role"].toString();
+          final token = response["data"]["api_token"].toString();
+          final email = response["data"]["email"].toString();
+          final userId = response["data"]["user_id"].toString();
+          // store the user information
+          await RestClient().storeUser(email, userId, token, role);
+
+          // Handle Remember Me persistence
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            if (_checkbox) {
+              await prefs.setBool('remember_me', true);
+              await _secureStorage.write(
+                  key: 'remembered_username', value: _email);
+              await _secureStorage.write(
+                  key: 'remembered_password', value: _password);
+            } else {
+              await prefs.remove('remember_me');
+              await _secureStorage.delete(key: 'remembered_username');
+              await _secureStorage.delete(key: 'remembered_password');
+            }
+          } catch (e) {
+            debugPrint('Error saving/clearing remembered credentials: $e');
           }
-        } catch (e) {
-          debugPrint('Error saving/clearing remembered credentials: $e');
-        }
 
-        unawaited(Analytics()
-            .logEvent('login', {})
-            .timeout(const Duration(seconds: 5))
-            .catchError((_) {}));
-        showLoadingIndicator(message: "Loading next page...");
-        navigateToDashboard(role);
+          unawaited(Analytics()
+              .logEvent('login', {})
+              .timeout(const Duration(seconds: 5))
+              .catchError((_) {}));
+          showLoadingIndicator(message: "Loading next page...");
+          navigateToDashboard(role);
+        }
       } else {
         // Login failed, show error message
         debugPrint('Sign-in rejected: $response');
