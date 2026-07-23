@@ -227,19 +227,19 @@ class _BuySubscriptionState extends State<BuySubscription> {
 
   purchaseSubscription() async {
     if (_firstName.isEmpty) {
-      RestClient().error("Please enter first name");
+      RestClient().error("Please enter your First Name.");
       return;
     } else if (_lastName.isEmpty) {
-      RestClient().error("Please enter last name");
+      RestClient().error("Please enter your Last Name.");
       return;
     } else if (_usersId.isEmpty) {
-      RestClient().error("Please enter user id");
+      RestClient().error("Please enter your User ID.");
       return;
     } else if (_password.isEmpty) {
-      RestClient().error("Please enter password");
+      RestClient().error("Please enter your Password.");
       return;
     } else if (_selectedGrade.isEmpty) {
-      RestClient().error("Please select grade");
+      RestClient().error("Please select a Grade.");
       return;
     } else {
       showLoadingIndicator();

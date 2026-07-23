@@ -47,7 +47,7 @@ class _veryfyState extends State<veryfy> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
                   prefixIcon: const Icon(Icons.password_outlined),
-                  hintText: "OTP",
+                  hintText: "Enter your OTP",
                   hintStyle: const TextStyle(),
                   focusColor: Colors.white,
                   enabledBorder: OutlineInputBorder(

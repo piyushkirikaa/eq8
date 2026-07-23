@@ -99,7 +99,7 @@ class _FeedbackControllerState extends State<FeedbackController> {
 
   Future<void> submitFeedback() async {
     if (_feedback.trim().isEmpty) {
-      RestClient().error("Please enter your feedback");
+      RestClient().error("Please enter your Feedback.");
     } else if (_isSubmitting) {
       return;
     } else {
@@ -113,7 +113,7 @@ class _FeedbackControllerState extends State<FeedbackController> {
         }).timeout(const Duration(seconds: 20));
         if (!mounted) return;
         if (response['status'] == 'success') {
-          RestClient().success("Your feedback submitted successfully");
+          RestClient().success("Your feedback has been submitted successfully.");
           Navigator.pop(context);
         } else {
           RestClient().error(

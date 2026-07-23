@@ -75,7 +75,7 @@ class _SignUpState extends State<SignUp> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
                   prefixIcon: const Icon(Icons.people_alt_rounded),
-                  hintText: "Enter your first name",
+                  hintText: "Enter your First Name",
                   hintStyle: const TextStyle(),
                   filled: true,
                   focusColor: Colors.blueAccent,
@@ -102,7 +102,7 @@ class _SignUpState extends State<SignUp> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
                   prefixIcon: const Icon(Icons.people_alt_rounded),
-                  hintText: "Enter last Name",
+                  hintText: "Enter your Last Name",
                   hintStyle: const TextStyle(),
                   filled: true,
                   focusColor: Colors.blueAccent,
@@ -129,7 +129,7 @@ class _SignUpState extends State<SignUp> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
                   prefixIcon: const Icon(Icons.email),
-                  hintText: "Enter your email",
+                  hintText: "Enter your Email",
                   hintStyle: const TextStyle(),
                   filled: true,
                   focusColor: Colors.blueAccent,
@@ -157,7 +157,7 @@ class _SignUpState extends State<SignUp> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
                   prefixIcon: const Icon(Icons.password_outlined),
-                  hintText: "Password",
+                  hintText: "Enter your Password",
                   hintStyle: const TextStyle(),
                   focusColor: Colors.blueAccent,
                   enabledBorder: outlineInputBorderStyle,
@@ -193,7 +193,7 @@ class _SignUpState extends State<SignUp> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(0),
                   prefixIcon: const Icon(Icons.mobile_friendly),
-                  hintText: "Enter your mobile number",
+                  hintText: "Enter your Mobile Number",
                   hintStyle: const TextStyle(),
                   filled: true,
                   focusColor: Colors.blueAccent,
@@ -410,34 +410,34 @@ class _SignUpState extends State<SignUp> {
   Future registerAccount() async {
     showLoadingIndicator();
     if (_email.isEmpty) {
-      RestClient().error("Please enter your email");
+      RestClient().error("Please enter your Email.");
       hideLoadingIndicator();
     } else if (_password.isEmpty) {
-      RestClient().error("Please enter your password");
+      RestClient().error("Please enter your Password.");
       hideLoadingIndicator();
     } else if (_mobile.isEmpty) {
-      RestClient().error("Please enter your mobile number");
+      RestClient().error("Please enter your Mobile Number.");
       hideLoadingIndicator();
     } else if (_firstName.isEmpty) {
-      RestClient().error("Please enter your first name");
+      RestClient().error("Please enter your First Name.");
       hideLoadingIndicator();
     } else if (_lastName.isEmpty) {
-      RestClient().error("Please enter your last name");
+      RestClient().error("Please enter your Last Name.");
       hideLoadingIndicator();
     } else if (_address.isEmpty) {
-      RestClient().error("Please enter your address");
+      RestClient().error("Please enter your Address.");
       hideLoadingIndicator();
     } else if (_city.isEmpty) {
-      RestClient().error("Please enter your city");
+      RestClient().error("Please enter your City.");
       hideLoadingIndicator();
     } else if (_zipCode.isEmpty) {
-      RestClient().error("Please enter your zip code");
+      RestClient().error("Please enter your Zip Code.");
       hideLoadingIndicator();
     } else if (selectedCountry == "Select your country") {
-      RestClient().error("Please select your country");
+      RestClient().error("Please select your Country.");
       hideLoadingIndicator();
     } else if (selectedState == "Select your state") {
-      RestClient().error("Please select your state");
+      RestClient().error("Please select your State.");
       hideLoadingIndicator();
     } else {
       final data = {

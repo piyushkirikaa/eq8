@@ -203,7 +203,7 @@ class _SignInState extends State<SignIn> {
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.all(0),
                             prefixIcon: const Icon(Icons.password_outlined),
-                            hintText: "Password",
+                            hintText: "Enter your Password",
                             hintStyle: const TextStyle(),
                             filled: true,
                             focusColor: Colors.blueAccent,
