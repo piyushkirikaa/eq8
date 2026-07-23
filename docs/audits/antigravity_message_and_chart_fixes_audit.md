@@ -1,83 +1,75 @@
-# Unified Audit Report: Message Corrections and Chart Date fixes
+# Unified Audit Report: Message Corrections, Form Validations, and Chart Date fixes
 
 - **Date:** 2026-07-23
 - **Repository:** `/Volumes/apps/eq8`
 - **Branch:** `main`
-- **Final Commit:** `96a8199175b5a8290bab3f965b95b2ae85e2be23`
+- **Final Commit:** `58c7fc1`
 - **Final Status:** `COMPLETE`
 
 ---
 
-## 1. Task Information & Requested Scope
-The task required checking and fixing platform messages and the Exam History line chart:
-1. **Error & Success Messages**:
-   - **Login Page**: Standardize empty field validations and capitalize wrong credentials error message properly.
-   - **Video/Audio Downloads**: Add `.catchError` handlers to prevent silent download failures and show user-friendly toasts.
-   - **Video/Audio Deletions**: Change toast type from error (red) to success (green).
-   - **WiFi Icon**: Map any network/connectivity/offline messages to show the crossed-out WiFi icon in custom toasts.
-2. **Exam History Date Chart Trend**: Correct the Performance Trend Chart under Exam History so it shows correct chronological dates (e.g. today's date `23/07/26` instead of oldest date `11/07/26`).
-3. **Hot Restart**: Perform a hot restart after all fixes are complete.
+## 1. Summary of Blank Field Validation & Error Messages
+
+Below is the exact specification of validation and error messages displayed on Android (matching the iOS build):
+
+### Login Screen (`SignIn.dart`)
+1. **Empty Username Field**:
+   - **Trigger**: Click `SIGN IN` when username is blank.
+   - **Displayed Message**: `"Please enter your Username."`
+   - **Type**: Error Toast (Crimson Red banner) on mobile / Alert Dialog on desktop.
+2. **Empty Password Field**:
+   - **Trigger**: Click `SIGN IN` when password is blank (with username filled).
+   - **Displayed Message**: `"Please enter your Password."`
+   - **Type**: Error Toast (Crimson Red banner) on mobile / Alert Dialog on desktop.
+3. **Invalid Username / Password Entry**:
+   - **Trigger**: Server returns invalid login status.
+   - **Displayed Message**: `"Oops! We couldn't Sign You In. Please check your Username or Password."`
+   - **Type**: Error Toast (Crimson Red banner) on mobile / Alert Dialog on desktop with title `"Sign In Failed"`.
+
+### Forgot Password Screen (`forgot.dart`)
+1. **Empty Email Field**:
+   - **Trigger**: Click `SEND RESET LINK` when email is blank.
+   - **Displayed Messages**:
+     - **Inline Form Field Error**: `"Please enter your Email."` (below text field)
+     - **Toast Notification**: `"Please enter your Email."` (Crimson Red banner)
+2. **Invalid Email Format**:
+   - **Trigger**: Click `SEND RESET LINK` when email format is invalid.
+   - **Displayed Messages**:
+     - **Inline Form Field Error**: `"Please enter a valid Email."`
+     - **Toast Notification**: `"Please enter a valid Email."` (Crimson Red banner)
 
 ---
 
-## 2. Implementation Changes
+## 2. Implementation Changes Summary
 
-### Files Modified
+### 1. [SignIn.dart](file:///Volumes/apps/eq8/lib/SignIn.dart)
+- Password field placeholder changed from `"Password"` to `"Enter your Password"`.
+- Username validation: `"Please enter your Username."`
+- Password validation: `"Please enter your Password."`
+- Wrong credentials error: `"Oops! We couldn't Sign You In. Please check your Username or Password."`
 
-#### 1. [SignIn.dart](file:///Volumes/apps/eq8/lib/SignIn.dart)
-- Trimmed fields during validation.
-- Standardized empty fields error messages:
-  - Empty username: `showErrorMessage("Please enter your Username.");`
-  - Empty password: `showErrorMessage("Please enter your Password.");`
-- Capitalized "please" in `errorMessage`: `"Oops! We couldn't Sign You In. Please check your Username or Password."`
-- Updated title matching check inside `showErrorMessage` AlertDialog to match the capitalized version.
+### 2. [forgot.dart](file:///Volumes/apps/eq8/lib/forgot.dart)
+- Email placeholder: `"Enter your email address"`
+- Standardized empty email & invalid email responses to trigger both inline field errors and Toast notifications (`"Please enter your Email."` & `"Please enter a valid Email."`).
 
-#### 2. [Subject.dart](file:///Volumes/apps/eq8/lib/Student/Subject.dart)
-- Corrected the video deletion success toast: `RestClient().success('Offline Video Deleted');` (was `.error(...)`).
-- Added `.catchError` block to video download logic to notify the user if a download fails.
+### 3. [Signup.dart](file:///Volumes/apps/eq8/lib/Signup.dart) & [BuySubscription.dart](file:///Volumes/apps/eq8/lib/Parent/BuySubscription.dart)
+- Standardized all field placeholders to `"Enter your [Field Name]"` format with proper Title Case.
+- Added proper capitalization and trailing periods across all validation messages.
 
-#### 3. [PodcastSubject.dart](file:///Volumes/apps/eq8/lib/Student/PodcastSubject.dart)
-- Corrected the audio deletion success toast: `RestClient().success('Audio Deleted offline');` (was `.error(...)`).
-- Added `.catchError` block to audio download logic to notify the user if a download fails.
+### 4. [Subject.dart](file:///Volumes/apps/eq8/lib/Student/Subject.dart) & [PodcastSubject.dart](file:///Volumes/apps/eq8/lib/Student/PodcastSubject.dart)
+- Video & Audio deletion toasts changed to `RestClient().success(...)` (Emerald Green).
+- Download logic wrapped with `.catchError(...)` to display error toasts if offline downloads fail.
 
-#### 4. [RestClient.dart](file:///Volumes/apps/eq8/lib/Library/RestClient.dart)
-- Expanded `isOfflineMessage` logic inside `CustomToastWidget` to also match `no internet`, `network error`, `connection`, and `offline` keywords, ensuring the crossed-out WiFi icon displays for all network issues.
+### 5. [RestClient.dart](file:///Volumes/apps/eq8/lib/Library/RestClient.dart)
+- Toast `isOfflineMessage` detection updated to catch `no internet`, `network error`, `connection`, and `offline` keywords, ensuring the crossed-out WiFi icon (`Icons.wifi_off_outlined`) displays on network errors.
 
-#### 5. [ExamHistory.dart](file:///Volumes/apps/eq8/lib/Student/ExamHistory.dart)
-- In `_buildLineChart()`, reversed `_examsData` into a `reversedExams` list to plot spots chronologically (oldest on the left, newest on the right).
-- Configured discrete `interval: 1` constraint on `SideTitles` of the bottom axis and limited label formatting to exact integer representations to prevent floating representation / duplicated labels.
-- Maintained descending list view order (`_buildExamList`) for correct list UX.
+### 6. [ExamHistory.dart](file:///Volumes/apps/eq8/lib/Student/ExamHistory.dart)
+- Line chart dataset reversed so exams plot chronologically (oldest left, newest right). Today's exam date (`23/07/26`) now appears on the rightmost data point.
 
 ---
 
 ## 3. Verification & Testing Evidence
 
-### 1. Static Analysis
-Ran `flutter analyze` inside the workspace:
-- **Result**: `No issues found! (ran in 11.4s)`
-
-### 2. Compilation Verification
-Ran `flutter build apk --debug`:
-- **Result**: Build completed successfully: `✓ Built build/app/outputs/flutter-apk/app-debug.apk`
-
-### 3. Hot Restart Execution
-Issued a Hot Restart command (`R`) to the running Flutter process (`task-29`):
-- **Result**:
-  ```text
-  Performing hot restart...                                       
-  Restarted application in 14,375ms.
-  ```
-
----
-
-## 4. Git & Commit Status
-Staged and committed all changes:
-- **Staging status**: Checked staged diff, clean of untracked files/secrets.
-- **Commit hash**: `96a8199175b5a8290bab3f965b95b2ae85e2be23`
-- **Commit message**: `fix: update platform error/success messages, validations, and chronological performance trend chart`
-
----
-
-## 5. Risks and Limitations
-- The cache database for static GET requests remains local to `flutter_cache_manager`.
-- Timezones/date representation depend on standard `DateTime.parse` ISO conversions.
+- **Static Analysis**: `flutter analyze` — `No issues found! (ran in 9.8s)`
+- **Hot Restart**: Successfully executed (`Restarted application in 5,646ms.`).
+- **Git Status**: Clean working tree on `main` branch.
