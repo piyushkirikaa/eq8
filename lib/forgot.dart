@@ -77,12 +77,12 @@ class _forgotState extends State<forgot> {
 
   // Email validation
   String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter your email';
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your Email.';
     }
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(value)) {
-      return 'Please enter a valid email';
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Please enter a valid Email.';
     }
     return null;
   }
@@ -90,6 +90,11 @@ class _forgotState extends State<forgot> {
   // Send password reset link
   Future<void> _sendResetLink() async {
     if (!_formKey.currentState!.validate()) {
+      if (_emailController.text.trim().isEmpty) {
+        showErrorMessage("Please enter your Email.");
+      } else {
+        showErrorMessage("Please enter a valid Email.");
+      }
       return;
     }
 
