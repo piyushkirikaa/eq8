@@ -434,18 +434,6 @@ class OverlayToastManager {
   void show(BuildContext context, String message, {required bool isError}) {
     dismissActiveToast();
 
-    // Start listening to connectivity changes ONLY while toast is visible
-    _connectivitySubscription =
-        Connectivity().onConnectivityChanged.listen((results) {
-      final bool isOnline = results.contains(ConnectivityResult.mobile) ||
-          results.contains(ConnectivityResult.wifi) ||
-          results.contains(ConnectivityResult.ethernet) ||
-          results.contains(ConnectivityResult.other);
-      if (isOnline) {
-        dismissActiveToast();
-      }
-    });
-
     _toastKey = GlobalKey<_CustomToastWidgetState>();
 
     final entry = OverlayEntry(

@@ -625,18 +625,21 @@ class _SubjectState extends State<Subject> {
       });
     } else {
       // For Android and other platforms
-      flickManager?.handleChangeVideo(
-        isLocalFile
-            ? VideoPlayerController.file(File(videoUrl))
-            : VideoPlayerController.networkUrl(Uri.parse(videoUrl)),
-      );
-      // Set volume to maximum when video loads
+      final newController = isLocalFile
+          ? VideoPlayerController.file(File(videoUrl))
+          : VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+
+      newController.initialize().then((_) {
+        newController.setVolume(1.0);
+        if (mounted) {
+          setState(() {});
+        }
+      });
+
+      flickManager?.handleChangeVideo(newController);
       if (flickManager?.flickControlManager != null) {
-        // Use unmute instead of setting mute property directly
         flickManager!.flickControlManager!.unmute();
       }
-      // Set volume to maximum (1.0)
-      flickManager?.flickVideoManager?.videoPlayerController?.setVolume(1.0);
 
       setState(() {
         isVideoSet = true;
