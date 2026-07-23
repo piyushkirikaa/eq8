@@ -395,13 +395,19 @@ class _SignInState extends State<SignIn> {
   }
 
   Future<void> login() async {
-    if (_email.trim().isEmpty) {
-      showErrorMessage("Please enter your Username.");
+    final emailText = _emailController.text.trim();
+    final passwordText = _passwordController.text.trim();
+
+    if (emailText.isEmpty) {
+      showErrorMessage("Enter your Username");
       return;
-    } else if (_password.trim().isEmpty) {
-      showErrorMessage("Please enter your Password.");
+    } else if (passwordText.isEmpty) {
+      showErrorMessage("Please enter your password.");
       return;
     }
+
+    _email = emailText;
+    _password = passwordText;
 
     showLoadingIndicator();
     bool loginSuccess = false;
