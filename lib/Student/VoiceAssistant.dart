@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../Library/RestClient.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
@@ -245,8 +246,7 @@ class _VoiceAssistantState extends State<VoiceAssistant>
     } catch (e) {
       debugPrint("ChatGPT error: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Connection error. Please try again.')));
+        RestClient().error('Connection error. Please try again.');
       }
     }
   }

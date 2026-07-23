@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../Library/RestClient.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:chat_gpt_sdk/chat_gpt_sdk.dart';
@@ -263,8 +264,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
     } catch (e) {
       setState(() => _isTyping = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Error: Unable to get response. Please try again.')));
+        RestClient().error('Error: Unable to get response. Please try again.');
       }
 
       // Handle the error
@@ -411,19 +411,14 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
         } catch (e) {
           setState(() => _isTyping = false);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text('Error processing image: ${e.toString()}')),
-            );
+            RestClient().error('Error processing image: ${e.toString()}');
           }
         }
       } else {
         setState(() => _isTyping = false);
         // Handle error if image upload failed
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Failed to upload image. Please try again."),
-          ));
+          RestClient().error("Failed to upload image. Please try again.");
         }
       }
     } else {

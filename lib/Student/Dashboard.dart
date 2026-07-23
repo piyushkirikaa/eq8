@@ -184,9 +184,7 @@ class _DashboardState extends State<Dashboard> {
 
   void _showMarkedAsDoneSnackbar(bool? isMarkedAsDone) {
     if (isMarkedAsDone ?? false) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Marked as done!'),
-      ));
+      RestClient().success('Marked as done!');
     }
   }
 
