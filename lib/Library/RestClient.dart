@@ -459,7 +459,8 @@ class OverlayToastManager {
       },
     );
 
-    final overlay = Overlay.of(context);
+    final overlay = RestClient.navigatorKey.currentState?.overlay ?? Overlay.maybeOf(context);
+    if (overlay == null) return;
     overlay.insert(entry);
     _currentEntry = entry;
 
