@@ -60,6 +60,7 @@ class _SignInState extends State<SignIn> {
         final savedPassword =
             await _secureStorage.read(key: 'remembered_password');
         if (savedEmail != null && savedPassword != null) {
+          if (!mounted) return;
           setState(() {
             _checkbox = true;
             _email = savedEmail;
