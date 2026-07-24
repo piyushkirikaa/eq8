@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Library/RestClient.dart';
 import '../../Student/Dashboard.dart';
 import 'PodcastDashboard.dart';
 import 'LiveTeacherAudio.dart';
@@ -19,6 +20,8 @@ class _MainNavState extends State<MainNav> {
     return Scaffold(
       bottomNavigationBar: NavigationBar(
         onDestinationSelected: (int index) {
+          OverlayToastManager().dismissActiveToast();
+          RestClient.scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
           setState(() {
             currentPageIndex = index;
           });

@@ -427,13 +427,15 @@ class _SignInState extends State<SignIn> {
       print(response);
 
       if (response != null && response["status"] == 'success') {
-        final returnedEmail = response["data"]["email"]?.toString().trim().toLowerCase();
-        final returnedUserId = response["data"]["user_id"]?.toString().trim().toLowerCase();
+        final returnedEmail = response["data"]?["email"]?.toString().trim().toLowerCase();
+        final returnedUserId = response["data"]?["user_id"]?.toString().trim().toLowerCase();
         final enteredUsername = _email.trim().toLowerCase();
 
         if (returnedEmail != enteredUsername && returnedUserId != enteredUsername) {
           loginSuccess = false;
-          showErrorMessage('Oops! We couldn\'t Sign You In. please check your Username or Password.');
+          hideLoadingIndicator();
+          showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
+          return;
         } else {
           loginSuccess = true;
           final role = response["data"]["role"].toString();
@@ -471,25 +473,9 @@ class _SignInState extends State<SignIn> {
       } else {
         // Login failed, show error message
         debugPrint('Sign-in rejected: $response');
-
-        String? messageStr = response?["message"]?.toString();
-        String? dataStr = response?["data"]?.toString();
-
-        String errorMessage = messageStr ??
-            dataStr ??
-            'Sign in failed. Please check your details and try again.';
-
-        // Make server error messages more user-friendly
-        if ((messageStr != null &&
-                messageStr
-                    .toLowerCase()
-                    .contains('invalid username password')) ||
-            (dataStr != null &&
-                dataStr.toLowerCase().contains('invalid username password'))) {
-          errorMessage =
-              'Oops! We couldn\'t Sign You In. Please check your Username or Password.';
-        }
-        showErrorMessage(errorMessage);
+        loginSuccess = false;
+        hideLoadingIndicator();
+        showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
       }
     } on TimeoutException {
       showErrorMessage(
@@ -497,11 +483,7 @@ class _SignInState extends State<SignIn> {
     } catch (e) {
       // Handle any errors during login
       debugPrint('Sign-in failed: $e');
-      if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
-        showErrorMessage("Sign in failed: $e");
-      } else {
-        showErrorMessage("Sign in failed. Please try again.");
-      }
+      showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
     } finally {
       if (!loginSuccess) {
         hideLoadingIndicator();
@@ -510,6 +492,15 @@ class _SignInState extends State<SignIn> {
   }
 
   void showErrorMessage(String message) {
+    String displayMessage = message;
+    if (message.contains("couldn't Sign You In") ||
+        message.contains("couldn't sign you in") ||
+        message.contains("Sign in failed") ||
+        message.contains("invalid") ||
+        message.contains("rejected")) {
+      displayMessage = "Oops, we couldn't sign you in. Please check the Username and Password";
+    }
+
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       // Show dialog on desktop where Fluttertoast can be unreliable.
       showDialog(
@@ -520,19 +511,16 @@ class _SignInState extends State<SignIn> {
               children: [
                 Icon(Icons.error_outline, color: Colors.red[700]),
                 const SizedBox(width: 10),
-                Expanded(
+                const Expanded(
                   child: Text(
-                    message ==
-                            'Oops! We couldn\'t Sign You In. Please check your Username or Password.'
-                        ? 'Sign In Failed'
-                        : 'Authentication Error',
+                    'Sign In Failed',
                     overflow: TextOverflow.visible,
                   ),
                 ),
               ],
             ),
             content: Text(
-              message,
+              displayMessage,
               style: const TextStyle(fontSize: 16),
             ),
             actions: <Widget>[
@@ -554,7 +542,7 @@ class _SignInState extends State<SignIn> {
       );
     } else {
       // Use toast for Android/iOS
-      RestClient().error(message);
+      RestClient().error(displayMessage);
     }
   }
 

@@ -196,8 +196,11 @@ class _DashboardState extends State<Dashboard> {
 
       // Check if response is null
       if (response == null) {
-        RestClient().error(
-            "Unable to connect to server. Please check your internet connection.");
+        final isConnected = await RestClient().checkInternetConnection();
+        if (!isConnected) {
+          RestClient().error(
+              "Unable to connect to server. Please check your internet connection.");
+        }
         return [];
       }
 

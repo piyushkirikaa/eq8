@@ -56,6 +56,16 @@ class MyApp extends StatelessWidget {
         navigatorKey: RestClient.navigatorKey,
         scaffoldMessengerKey: RestClient.scaffoldMessengerKey,
         navigatorObservers: [ToastNavigationObserver()],
+        builder: (context, child) {
+          return Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) {
+              OverlayToastManager().dismissActiveToast();
+              RestClient.scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+            },
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
         scrollBehavior: const MyScrollBehavior(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
