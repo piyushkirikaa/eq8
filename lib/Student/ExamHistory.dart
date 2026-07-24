@@ -8,6 +8,7 @@ import '../Widgets/device_status_sheet.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../Widgets/ConnectivityIcon.dart';
 
 class ExamHistory extends StatefulWidget {
   final dynamic tutorialID;
@@ -44,7 +45,7 @@ class _ExamHistoryState extends State<ExamHistory> {
             )),
         actions: [
           IconButton(
-            icon: interNetCheck(),
+            icon: const ConnectivityIcon(),
             onPressed: () async {
               await _checkDeviceStatus();
             },
@@ -262,24 +263,7 @@ class _ExamHistoryState extends State<ExamHistory> {
     );
   }
 
-  Widget interNetCheck() {
-    return FutureBuilder(
-      future: RestClient().checkInternetConnection(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Icon(Icons.wifi_find_outlined);
-        } else if (snapshot.hasError) {
-          return const Icon(Icons.wifi_find_outlined);
-        } else {
-          if (snapshot.data) {
-            return const Icon(Icons.wifi);
-          } else {
-            return const Icon(Icons.wifi_off);
-          }
-        }
-      },
-    );
-  }
+
 
   _checkDeviceStatus() async {
     if (mounted) {

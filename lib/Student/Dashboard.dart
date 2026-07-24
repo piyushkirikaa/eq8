@@ -10,6 +10,7 @@ import '../Widgets/CourseCard.dart';
 import '../Widgets/ListViewItemAnimation.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import '../Widgets/device_status_sheet.dart';
+import '../Widgets/ConnectivityIcon.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -40,7 +41,7 @@ class _DashboardState extends State<Dashboard> {
       appBar: AppBar(
         actions: [
           IconButton(
-            icon: interNetCheck(),
+            icon: const ConnectivityIcon(),
             onPressed: () async {
               await _checkDeviceStatus();
             },
@@ -138,24 +139,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget interNetCheck() {
-    return FutureBuilder(
-      future: RestClient().checkInternetConnection(),
-      builder: (BuildContext context, AsyncSnapshot snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Icon(Icons.wifi_find_outlined);
-        } else if (snapshot.hasError) {
-          return const Icon(Icons.wifi_find_outlined);
-        } else {
-          if (snapshot.data) {
-            return const Icon(Icons.wifi);
-          } else {
-            return const Icon(Icons.wifi_off);
-          }
-        }
-      },
-    );
-  }
+
 
   _checkDeviceStatus() async {
     if (mounted) {
