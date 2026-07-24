@@ -285,14 +285,18 @@ class RestClient {
           ),
         );
       } else {
-        return Fluttertoast.showToast(
-            msg: message.toString(),
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 5,
-            backgroundColor: Colors.green,
-            textColor: Colors.white,
-            fontSize: 16.0);
+        try {
+          return Fluttertoast.showToast(
+              msg: message.toString(),
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 5,
+              backgroundColor: Colors.green,
+              textColor: Colors.white,
+              fontSize: 16.0).catchError((_) => false);
+        } catch (e) {
+          debugPrint('Fluttertoast error: $e');
+        }
       }
     }
   }
@@ -335,14 +339,18 @@ class RestClient {
           ),
         );
       } else {
-        return Fluttertoast.showToast(
-            msg: message.toString(),
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 5,
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-            fontSize: 16.0);
+        try {
+          return Fluttertoast.showToast(
+              msg: message.toString(),
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 5,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0).catchError((_) => false);
+        } catch (e) {
+          debugPrint('Fluttertoast error: $e');
+        }
       }
     }
   }

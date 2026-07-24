@@ -6,6 +6,7 @@ import '../../Student/StartYourExam.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import '../Library/RestClient.dart';
+import '../Library/DownloadManager.dart';
 import '../Widgets/Course.dart';
 import 'ExamHistory.dart';
 import 'dart:async';
@@ -92,6 +93,7 @@ class _SubjectState extends State<Subject> {
   @override
   void initState() {
     super.initState();
+    DownloadManager().addListener(_onDownloadManagerChanged);
 
     // Initialize platform-specific video players
     if (Platform.isWindows) {
@@ -729,17 +731,51 @@ class _SubjectState extends State<Subject> {
                 ),
               ),
               const Divider(),
-              _buildOptionTile(
-                icon: isCached ? Icons.delete_outline : Icons.download_outlined,
-                title: isCached ? 'Delete offline video' : 'Save Offline',
-                subtitle: isCached
-                    ? 'Remove this video from device storage'
-                    : 'Download for offline viewing',
-                iconBackgroundColor:
-                    isCached ? Colors.red[50]! : Colors.green[50]!,
-                iconColor: isCached ? Colors.red : Colors.green,
-                onTap: () async {
-                  if (!isCached) {
+              if (DownloadManager().isVideoDownloaded(videoURL) || isCached) ...[
+                _buildOptionTile(
+                  icon: Icons.check_circle_outline,
+                  title: 'Available Offline',
+                  subtitle: 'This video is saved on your device for offline viewing',
+                  iconBackgroundColor: Colors.green[50]!,
+                  iconColor: Colors.green,
+                  onTap: () {
+                    Navigator.pop(context);
+                    RestClient().success('Video is already available offline');
+                  },
+                ),
+                _buildOptionTile(
+                  icon: Icons.delete_outline,
+                  title: 'Delete offline video',
+                  subtitle: 'Remove this video from device storage',
+                  iconBackgroundColor: Colors.red[50]!,
+                  iconColor: Colors.red,
+                  onTap: () async {
+                    Analytics().logEvent("REMOVE_OFFLINE_VIDEO", {
+                      "subject_name":
+                          currentTutorial['subject_name'].toString(),
+                      "video": currentTutorial['title'].toString()
+                    });
+                    Navigator.pop(context);
+                    DownloadManager().removeCompletedVideo(videoURL);
+                    if (cachedSubjectList != null) {
+                      for (var item in cachedSubjectList!) {
+                        if (item['video_url'] == videoURL) {
+                          item['isCached'] = false;
+                        }
+                      }
+                    }
+                    setState(() {});
+                    RestClient().success('Offline Video Deleted');
+                  },
+                ),
+              ] else ...[
+                _buildOptionTile(
+                  icon: Icons.download_outlined,
+                  title: 'Save Offline',
+                  subtitle: 'Download for offline viewing',
+                  iconBackgroundColor: Colors.purple[50]!,
+                  iconColor: Colors.purple,
+                  onTap: () async {
                     Analytics().logEvent("SAVE_VIDEO_OFFLINE", {
                       "subject_name":
                           currentTutorial['subject_name'].toString(),
@@ -754,50 +790,14 @@ class _SubjectState extends State<Subject> {
                       }
                     }
                     setState(() {});
-                    RestClient().success(
-                        'We are saving your video offline, We will notify you when complete.');
-                    DefaultCacheManager()
-                        .getFileStream(videoURL, withProgress: true)
-                        .listen(
-                      (FileResponse response) {
-                        if (response is DownloadProgress) {
-                          final double progress = response.progress ?? 0.0;
-                          final int percent = (progress * 100).toInt();
-                          if (percent > 0 && percent < 100 && percent % 25 == 0) {
-                            RestClient().success(
-                                'Downloading video: $percent% complete');
-                          }
-                        } else if (response is FileInfo) {
-                          RestClient()
-                              .success('Video saved is now available offline');
-                        }
-                      },
-                      onError: (error) {
-                        RestClient().error('Failed to save video offline');
-                      },
+                    DownloadManager().startDownload(
+                      videoURL,
+                      currentTutorial['title']?.toString() ?? 'Video Tutorial',
+                      currentTutorial['subject_name']?.toString() ?? 'Subject',
                     );
-                  } else {
-                    Analytics().logEvent("REMOVE_OFFLINE_VIDEO", {
-                      "subject_name":
-                          currentTutorial['subject_name'].toString(),
-                      "video": currentTutorial['title'].toString()
-                    });
-                    globalScaffoldContext.loaderOverlay.show();
-                    DefaultCacheManager().removeFile(videoURL);
-                    globalScaffoldContext.loaderOverlay.hide();
-                    Navigator.pop(context);
-                    RestClient().success('Offline Video Deleted');
-                    if (cachedSubjectList != null) {
-                      for (var item in cachedSubjectList!) {
-                        if (item['video_url'] == videoURL) {
-                          item['isCached'] = false;
-                        }
-                      }
-                    }
-                    setState(() {});
-                  }
-                },
-              ),
+                  },
+                ),
+              ],
               _buildOptionTile(
                 icon: Icons.description_outlined,
                 title: 'Video AID',
@@ -1069,7 +1069,8 @@ class _SubjectState extends State<Subject> {
   }
 
   Widget videoSaveOption(sisaave, videoURL, context) {
-    if (!sisaave) {
+    final isDownloaded = sisaave || DownloadManager().isVideoDownloaded(videoURL);
+    if (!isDownloaded) {
       return ListTile(
         leading: const Icon(Icons.download),
         title: const Text('Save Offline'),
@@ -1087,26 +1088,10 @@ class _SubjectState extends State<Subject> {
             }
           }
           setState(() {});
-          RestClient().success(
-              'We are saving your video offline, We will notify you when complete.');
-
-          DefaultCacheManager()
-              .getFileStream(videoURL, withProgress: true)
-              .listen(
-            (FileResponse response) {
-              if (response is DownloadProgress) {
-                final double progress = response.progress ?? 0.0;
-                final int percent = (progress * 100).toInt();
-                if (percent > 0 && percent < 100 && percent % 25 == 0) {
-                  RestClient().success('Downloading video: $percent% complete');
-                }
-              } else if (response is FileInfo) {
-                RestClient().success('Video saved is now available offline');
-              }
-            },
-            onError: (error) {
-              RestClient().error('Failed to save video offline');
-            },
+          DownloadManager().startDownload(
+            videoURL,
+            currentTutorial['title']?.toString() ?? 'Video Tutorial',
+            currentTutorial['subject_name']?.toString() ?? 'Subject',
           );
         },
       );
@@ -1119,10 +1104,8 @@ class _SubjectState extends State<Subject> {
             "subject_name": currentTutorial['subject_name'].toString(),
             "video": currentTutorial['title'].toString()
           });
-          globalScaffoldContext.loaderOverlay.show();
-          DefaultCacheManager().removeFile(videoURL);
-          globalScaffoldContext.loaderOverlay.hide();
           Navigator.pop(context);
+          DownloadManager().removeCompletedVideo(videoURL);
           RestClient().success('Offline Video Deleted');
           if (cachedSubjectList != null) {
             for (var item in cachedSubjectList!) {
@@ -1875,8 +1858,15 @@ class _SubjectState extends State<Subject> {
     super.deactivate();
   }
 
+  void _onDownloadManagerChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
+    DownloadManager().removeListener(_onDownloadManagerChanged);
     super.dispose();
     // Cancel timer
     _controlsTimer?.cancel();
