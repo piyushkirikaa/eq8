@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../Library/RestClient.dart';
 import '../../Student/Dashboard.dart';
 import 'PodcastDashboard.dart';
-import 'LiveTeacherAudio.dart';
+import 'DownloadedVideos.dart';
 import 'ExamReport.dart';
 
 class MainNav extends StatefulWidget {
@@ -77,7 +77,7 @@ class _MainNavState extends State<MainNav> {
       case 1:
         return const PodcastDashboard();
       case 2:
-        return const LiveTeacherAudio();
+        return const DownloadedVideos();
       case 3:
         return const ExamReport();
       default:
