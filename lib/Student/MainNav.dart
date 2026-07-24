@@ -49,7 +49,7 @@ class _MainNavState extends State<MainNav> {
               Icons.arrow_circle_down_rounded,
               color: Colors.white,
             ),
-            label: 'Downloaded\nVideos',
+            label: 'Downloaded\n  Videos',
           ),
           NavigationDestination(
             icon: Icon(Icons.pie_chart, color: Colors.white),
