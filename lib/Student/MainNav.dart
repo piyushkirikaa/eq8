@@ -45,9 +45,12 @@ class _MainNavState extends State<MainNav> {
             label: 'Podcasts',
           ),
           NavigationDestination(
-            icon: Icon(
-              Icons.arrow_circle_down_rounded,
-              color: Colors.white,
+            icon: Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: Icon(
+                Icons.arrow_circle_down_rounded,
+                color: Colors.white,
+              ),
             ),
             label: 'Downloaded\n  Videos',
           ),
