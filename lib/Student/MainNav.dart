@@ -46,7 +46,6 @@ class _MainNavState extends State<MainNav> {
           ),
           NavigationDestination(
             icon: Container(
-              margin: const EdgeInsets.only(top: 15),
               width: 64,
               height: 32,
               decoration: BoxDecoration(
