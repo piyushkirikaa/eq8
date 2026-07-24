@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'RestClient.dart';
 
 class DownloadTask {
@@ -34,7 +36,9 @@ class DownloadTask {
 class DownloadManager extends ChangeNotifier {
   static final DownloadManager _instance = DownloadManager._internal();
   factory DownloadManager() => _instance;
-  DownloadManager._internal();
+  DownloadManager._internal() {
+    _loadPersistedCompletedVideos();
+  }
 
   final List<DownloadTask> _activeDownloads = [];
   final List<Map<String, dynamic>> _completedVideos = [];
@@ -42,6 +46,65 @@ class DownloadManager extends ChangeNotifier {
 
   List<DownloadTask> get activeDownloads => List.unmodifiable(_activeDownloads);
   List<Map<String, dynamic>> get completedVideos => List.unmodifiable(_completedVideos);
+
+  Future<void> _loadPersistedCompletedVideos() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String? jsonStr = prefs.getString('persisted_completed_videos');
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        final List<dynamic> rawList = jsonDecode(jsonStr);
+        for (var item in rawList) {
+          if (item is Map<String, dynamic>) {
+            final String videoUrl = item['video_url']?.toString() ?? '';
+            final DateTime downloadedAt = item['downloaded_at'] != null
+                ? DateTime.tryParse(item['downloaded_at'].toString()) ?? DateTime.now()
+                : DateTime.now();
+
+            final map = {
+              'id': item['id']?.toString() ?? '',
+              'title': item['title']?.toString() ?? '',
+              'subject': item['subject']?.toString() ?? '',
+              'duration': item['duration']?.toString() ?? '15:00',
+              'size': item['size']?.toString() ?? '50.0 MB',
+              'video_url': videoUrl,
+              'downloaded_at': downloadedAt,
+            };
+
+            if (videoUrl.isNotEmpty && !_completedVideos.any((v) => v['video_url'] == videoUrl)) {
+              _completedVideos.add(map);
+              _downloadedUrls.add(videoUrl);
+            }
+          }
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading persisted completed videos: $e');
+    }
+  }
+
+  Future<void> _savePersistedCompletedVideos() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final serializedList = _completedVideos.map((v) {
+        final dt = v['downloaded_at'];
+        final String isoDate = (dt is DateTime) ? dt.toIso8601String() : DateTime.now().toIso8601String();
+        return {
+          'id': v['id'],
+          'title': v['title'],
+          'subject': v['subject'],
+          'duration': v['duration'],
+          'size': v['size'],
+          'video_url': v['video_url'],
+          'downloaded_at': isoDate,
+        };
+      }).toList();
+
+      await prefs.setString('persisted_completed_videos', jsonEncode(serializedList));
+    } catch (e) {
+      debugPrint('Error saving persisted completed videos: $e');
+    }
+  }
 
   bool isVideoDownloaded(String videoUrl) {
     return _downloadedUrls.contains(videoUrl) ||
@@ -162,6 +225,7 @@ class DownloadManager extends ChangeNotifier {
       'downloaded_at': DateTime.now(),
     });
 
+    _savePersistedCompletedVideos();
     notifyListeners();
     try {
       RestClient().success('Video saved is now available offline');
@@ -174,6 +238,7 @@ class DownloadManager extends ChangeNotifier {
     try {
       DefaultCacheManager().removeFile(videoUrl);
     } catch (_) {}
+    _savePersistedCompletedVideos();
     notifyListeners();
   }
 
