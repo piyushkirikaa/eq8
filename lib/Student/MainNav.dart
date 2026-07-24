@@ -27,17 +27,17 @@ class _MainNavState extends State<MainNav> {
           });
         },
         backgroundColor: Colors.purple,
-        indicatorColor: Colors.amber,
+        indicatorColor: currentPageIndex == 2 ? Colors.transparent : Colors.amber,
         selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
+        destinations: <Widget>[
+          const NavigationDestination(
             icon: Icon(
               Icons.ondemand_video_outlined,
               color: Colors.white,
             ),
             label: 'Subjects',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(
               Icons.podcasts,
               color: Colors.white,
@@ -45,16 +45,22 @@ class _MainNavState extends State<MainNav> {
             label: 'Podcasts',
           ),
           NavigationDestination(
-            icon: Padding(
-              padding: EdgeInsets.only(top: 15),
-              child: Icon(
+            icon: Container(
+              margin: const EdgeInsets.only(top: 15),
+              width: 64,
+              height: 32,
+              decoration: BoxDecoration(
+                color: currentPageIndex == 2 ? Colors.amber : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
                 Icons.arrow_circle_down_rounded,
                 color: Colors.white,
               ),
             ),
             label: 'Downloaded\n  Videos',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.pie_chart, color: Colors.white),
             label: 'Report',
           ),
