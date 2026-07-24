@@ -42,6 +42,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
       'duration': '14:20',
       'size': '45 MB',
       'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_math.mp4',
+      'downloaded_at': DateTime.now().subtract(const Duration(minutes: 5)),
     },
     {
       'id': '102',
@@ -50,6 +51,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
       'duration': '18:45',
       'size': '62 MB',
       'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_physics.mp4',
+      'downloaded_at': DateTime.now().subtract(const Duration(minutes: 45)),
     },
     {
       'id': '103',
@@ -58,6 +60,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
       'duration': '12:10',
       'size': '38 MB',
       'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_bio.mp4',
+      'downloaded_at': DateTime.now().subtract(const Duration(hours: 3)),
     },
     {
       'id': '104',
@@ -66,6 +69,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
       'duration': '22:05',
       'size': '70 MB',
       'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_acc.mp4',
+      'downloaded_at': DateTime.now().subtract(const Duration(days: 1)),
     },
     {
       'id': '105',
@@ -74,6 +78,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
       'duration': '15:30',
       'size': '50 MB',
       'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_eng.mp4',
+      'downloaded_at': DateTime.now().subtract(const Duration(days: 2)),
     },
   ];
 
@@ -101,14 +106,31 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
     }
   }
 
-  // Combined downloaded videos (initial + dynamically completed)
+  String _formatDownloadedTime(dynamic date) {
+    if (date is! DateTime) return 'Recently';
+    final diff = DateTime.now().difference(date);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  // Combined downloaded videos sorted by most recently downloaded first (descending by date)
   List<Map<String, dynamic>> get _allDownloadedVideos {
     final list = List<Map<String, dynamic>>.from(_localVideos);
     for (var completed in _downloadManager.completedVideos) {
       if (!list.any((v) => v['id'] == completed['id'])) {
-        list.insert(0, completed);
+        list.add(completed);
       }
     }
+
+    // Default sorting: Descending order by date downloaded (most recent first)
+    list.sort((a, b) {
+      final dateA = (a['downloaded_at'] as DateTime?) ?? DateTime(2020);
+      final dateB = (b['downloaded_at'] as DateTime?) ?? DateTime(2020);
+      return dateB.compareTo(dateA);
+    });
+
     return list;
   }
 
@@ -568,7 +590,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${video['duration']} • ${video['size']}',
+                                    '${video['duration']} • ${video['size']} • ${_formatDownloadedTime(video['downloaded_at'])}',
                                     style: GoogleFonts.poppins(
                                       fontSize: 12,
                                       color: Colors.grey[600],

@@ -159,6 +159,7 @@ class DownloadManager extends ChangeNotifier {
       'duration': '15:00',
       'size': '${task.totalMB.toStringAsFixed(1)} MB',
       'video_url': task.videoUrl,
+      'downloaded_at': DateTime.now(),
     });
 
     notifyListeners();
