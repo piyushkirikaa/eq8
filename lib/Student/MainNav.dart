@@ -45,8 +45,11 @@ class _MainNavState extends State<MainNav> {
             label: 'Podcasts',
           ),
           NavigationDestination(
-            icon: Icon(Icons.ac_unit_rounded, color: Colors.white),
-            label: 'Live Classes',
+            icon: Icon(
+              Icons.arrow_circle_down_rounded,
+              color: Colors.white,
+            ),
+            label: 'Downloaded\nVideos',
           ),
           NavigationDestination(
             icon: Icon(Icons.pie_chart, color: Colors.white),

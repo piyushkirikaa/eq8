@@ -85,9 +85,9 @@ class MyApp extends StatelessWidget {
           navigationBarTheme: NavigationBarThemeData(
             labelTextStyle: WidgetStateProperty.resolveWith((state) {
               if (state.contains(WidgetState.selected)) {
-                return const TextStyle(color: Colors.orange);
+                return const TextStyle(color: Colors.orange, fontSize: 11);
               }
-              return const TextStyle(color: Colors.white);
+              return const TextStyle(color: Colors.white, fontSize: 11);
             }),
           ),
           appBarTheme: const AppBarTheme(
