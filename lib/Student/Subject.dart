@@ -756,12 +756,26 @@ class _SubjectState extends State<Subject> {
                     setState(() {});
                     RestClient().success(
                         'We are saving your video offline, We will notify you when complete.');
-                    DefaultCacheManager().getSingleFile(videoURL).then((file) {
-                      RestClient()
-                          .success('Video saved is now available offline');
-                    }).catchError((error) {
-                      RestClient().error('Failed to save video offline');
-                    });
+                    DefaultCacheManager()
+                        .getFileStream(videoURL, withProgress: true)
+                        .listen(
+                      (FileResponse response) {
+                        if (response is DownloadProgress) {
+                          final double progress = response.progress ?? 0.0;
+                          final int percent = (progress * 100).toInt();
+                          if (percent > 0 && percent < 100 && percent % 25 == 0) {
+                            RestClient().success(
+                                'Downloading video: $percent% complete');
+                          }
+                        } else if (response is FileInfo) {
+                          RestClient()
+                              .success('Video saved is now available offline');
+                        }
+                      },
+                      onError: (error) {
+                        RestClient().error('Failed to save video offline');
+                      },
+                    );
                   } else {
                     Analytics().logEvent("REMOVE_OFFLINE_VIDEO", {
                       "subject_name":
@@ -1076,11 +1090,24 @@ class _SubjectState extends State<Subject> {
           RestClient().success(
               'We are saving your video offline, We will notify you when complete.');
 
-          DefaultCacheManager().getSingleFile(videoURL).then((file) {
-            RestClient().success('Video saved is now available offline');
-          }).catchError((error) {
-            RestClient().error('Failed to save video offline');
-          });
+          DefaultCacheManager()
+              .getFileStream(videoURL, withProgress: true)
+              .listen(
+            (FileResponse response) {
+              if (response is DownloadProgress) {
+                final double progress = response.progress ?? 0.0;
+                final int percent = (progress * 100).toInt();
+                if (percent > 0 && percent < 100 && percent % 25 == 0) {
+                  RestClient().success('Downloading video: $percent% complete');
+                }
+              } else if (response is FileInfo) {
+                RestClient().success('Video saved is now available offline');
+              }
+            },
+            onError: (error) {
+              RestClient().error('Failed to save video offline');
+            },
+          );
         },
       );
     } else {

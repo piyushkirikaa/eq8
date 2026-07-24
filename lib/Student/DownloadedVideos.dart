@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,6 +31,10 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
   // Temp selections inside the filter bottom sheet
   late List<String> _tempSelectedSubjects;
   late bool _tempSelectAll;
+
+  // Active in-progress downloads
+  final List<Map<String, dynamic>> _activeDownloads = [];
+  Timer? _simulatedDownloadTimer;
 
   // Sample/cached offline videos list
   final List<Map<String, dynamic>> _downloadedVideos = [
@@ -83,6 +88,12 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
     _tempSelectAll = true;
   }
 
+  @override
+  void dispose() {
+    _simulatedDownloadTimer?.cancel();
+    super.dispose();
+  }
+
   // Filtered list based on selected subjects
   List<Map<String, dynamic>> get _filteredVideos {
     if (_selectAll || _selectedSubjects.length == _availableSubjects.length) {
@@ -91,6 +102,112 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
     return _downloadedVideos
         .where((video) => _selectedSubjects.contains(video['subject']))
         .toList();
+  }
+
+  void _startDownloadWithProgress(String videoUrl, String title, String subject) {
+    // Check if already downloading
+    if (_activeDownloads.any((item) => item['video_url'] == videoUrl)) {
+      RestClient().error('Download already in progress for this video');
+      return;
+    }
+
+    final newDownload = {
+      'id': DateTime.now().millisecondsSinceEpoch,
+      'title': title,
+      'subject': subject,
+      'video_url': videoUrl,
+      'progress': 0.0,
+      'downloadedMB': 0.0,
+      'totalMB': 50.0,
+    };
+
+    setState(() {
+      _activeDownloads.add(newDownload);
+    });
+
+    RestClient().success('Started downloading "$title"');
+
+    // Subscribe to real-time cache stream
+    try {
+      DefaultCacheManager().getFileStream(videoUrl, withProgress: true).listen(
+        (FileResponse response) {
+          if (response is DownloadProgress) {
+            final double progress = response.progress ?? 0.0;
+            final double totalMB = (response.totalSize ?? 50 * 1024 * 1024) / (1024 * 1024);
+            final double downloadedMB = (response.downloaded) / (1024 * 1024);
+
+            if (mounted) {
+              setState(() {
+                newDownload['progress'] = progress;
+                newDownload['downloadedMB'] = downloadedMB;
+                newDownload['totalMB'] = totalMB;
+              });
+            }
+          } else if (response is FileInfo) {
+            if (mounted) {
+              setState(() {
+                _activeDownloads.removeWhere((item) => item['id'] == newDownload['id']);
+                _downloadedVideos.add({
+                  'id': newDownload['id'],
+                  'title': title,
+                  'subject': subject,
+                  'duration': '16:00',
+                  'size': '${((newDownload['totalMB'] as double?) ?? 50.0).toStringAsFixed(1)} MB',
+                  'video_url': videoUrl,
+                });
+              });
+              RestClient().success('Downloaded "$title" successfully!');
+            }
+          }
+        },
+        onError: (_) {
+          _cancelDownload(newDownload['id']);
+        },
+      );
+    } catch (_) {
+      // Fallback simulated progress for demo/sample URLs
+      _startSimulatedDownload(newDownload);
+    }
+  }
+
+  void _startSimulatedDownload(Map<String, dynamic> downloadItem) {
+    _simulatedDownloadTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final double currentProg = downloadItem['progress'] as double;
+      if (currentProg >= 1.0) {
+        timer.cancel();
+        setState(() {
+          _activeDownloads.removeWhere((item) => item['id'] == downloadItem['id']);
+          _downloadedVideos.add({
+            'id': downloadItem['id'],
+            'title': downloadItem['title'],
+            'subject': downloadItem['subject'],
+            'duration': '15:00',
+            'size': '50.0 MB',
+            'video_url': downloadItem['video_url'],
+          });
+        });
+        RestClient().success('Downloaded "${downloadItem['title']}" successfully!');
+      } else {
+        setState(() {
+          final newProg = (currentProg + 0.08).clamp(0.0, 1.0);
+          downloadItem['progress'] = newProg;
+          downloadItem['downloadedMB'] = newProg * 50.0;
+          downloadItem['totalMB'] = 50.0;
+        });
+      }
+    });
+  }
+
+  void _cancelDownload(dynamic id) {
+    setState(() {
+      _activeDownloads.removeWhere((item) => item['id'] == id);
+    });
+    RestClient().error('Download cancelled');
   }
 
   void _openFilterBottomSheet() {
@@ -282,144 +399,287 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add_to_photos_rounded, color: Colors.white),
+            tooltip: 'Simulate Real-time Download',
+            onPressed: () {
+              _startDownloadWithProgress(
+                'https://www.mydigitalcollege.co.za/crm/api/sample_demo_${DateTime.now().millisecondsSinceEpoch}.mp4',
+                'Organic Chemistry & Chemical Bonds',
+                'Physical Sciences',
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.filter_list_rounded, color: Colors.white),
             tooltip: 'Filter by Subject',
             onPressed: _openFilterBottomSheet,
           ),
         ],
       ),
-      body: filtered.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.download_for_offline_outlined,
-                      size: 80,
-                      color: Colors.purple[200],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No Videos Found',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0C132F),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'No offline videos match your current subject filter choice.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _selectedSubjects =
-                              List<String>.from(_availableSubjects);
-                          _selectAll = true;
-                        });
-                      },
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reset Filters'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              itemCount: filtered.length,
-              itemBuilder: (context, index) {
-                final video = filtered[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Active Real-time Downloads Section
+              if (_activeDownloads.isNotEmpty) ...[
+                Text(
+                  'Downloading Videos (${_activeDownloads.length})',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purple[900],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.purple[50],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.play_circle_fill,
-                            color: Colors.purple,
-                            size: 32,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                const SizedBox(height: 8),
+                ..._activeDownloads.map((download) {
+                  final progress = (download['progress'] as double).clamp(0.0, 1.0);
+                  final percentInt = (progress * 100).toInt();
+                  final downloadedMB = (download['downloadedMB'] as double).toStringAsFixed(1);
+                  final totalMB = (download['totalMB'] as double).toStringAsFixed(1);
+
+                  return Card(
+                    elevation: 3,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.purple.withValues(alpha: 0.3)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.purple[100],
+                                  color: Colors.amber[100],
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  video['subject'] ?? 'Subject',
+                                  download['subject'],
                                   style: GoogleFonts.poppins(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.purple[900],
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.amber[900],
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const Spacer(),
                               Text(
-                                video['title'] ?? 'Video Title',
+                                '$percentInt%',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple[800],
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${video['duration']} • ${video['size']}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                              IconButton(
+                                constraints: const BoxConstraints(),
+                                padding: const EdgeInsets.only(left: 8),
+                                icon: const Icon(Icons.cancel_outlined, color: Colors.redAccent, size: 20),
+                                onPressed: () => _cancelDownload(download['id']),
                               ),
                             ],
                           ),
+                          const SizedBox(height: 6),
+                          Text(
+                            download['title'],
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: 8,
+                              backgroundColor: Colors.purple[50],
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Downloading: $downloadedMB MB / $totalMB MB',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
+
+              // Filtered Downloaded Videos Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Offline Saved Videos (${filtered.length})',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0C132F),
+                    ),
+                  ),
+                  if (!_selectAll)
+                    Chip(
+                      backgroundColor: Colors.purple[50],
+                      label: Text(
+                        'Filtered',
+                        style: GoogleFonts.poppins(fontSize: 11, color: Colors.purple[900]),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              if (filtered.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.download_for_offline_outlined,
+                          size: 70,
+                          color: Colors.purple[200],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: Colors.redAccent),
-                          tooltip: 'Delete offline video',
-                          onPressed: () => _deleteVideo(video),
+                        const SizedBox(height: 14),
+                        Text(
+                          'No Videos Found',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF0C132F),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No offline videos match your current subject filter choice.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedSubjects = List<String>.from(_availableSubjects);
+                              _selectAll = true;
+                            });
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reset Filters'),
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final video = filtered[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.purple[50],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.play_circle_fill,
+                                color: Colors.purple,
+                                size: 30,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple[100],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      video['subject'] ?? 'Subject',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.purple[900],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    video['title'] ?? 'Video Title',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${video['duration']} • ${video['size']}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.redAccent),
+                              tooltip: 'Delete offline video',
+                              onPressed: () => _deleteVideo(video),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
