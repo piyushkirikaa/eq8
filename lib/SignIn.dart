@@ -399,11 +399,14 @@ class _SignInState extends State<SignIn> {
     final emailText = _emailController.text.trim();
     final passwordText = _passwordController.text.trim();
 
-    if (emailText.isEmpty) {
-      showErrorMessage("Enter your Username");
+    if (emailText.isEmpty && passwordText.isEmpty) {
+      showErrorMessage("Please enter your Username and Password");
+      return;
+    } else if (emailText.isEmpty) {
+      showErrorMessage("Please enter your Username");
       return;
     } else if (passwordText.isEmpty) {
-      showErrorMessage("Please enter your password.");
+      showErrorMessage("Please enter your Password");
       return;
     }
 
@@ -434,7 +437,7 @@ class _SignInState extends State<SignIn> {
         if (returnedEmail != enteredUsername && returnedUserId != enteredUsername) {
           loginSuccess = false;
           hideLoadingIndicator();
-          showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
+          showErrorMessage("Oops! We couldn't sign you in. Please check the Username and Password.");
           return;
         } else {
           loginSuccess = true;
@@ -475,14 +478,14 @@ class _SignInState extends State<SignIn> {
         debugPrint('Sign-in rejected: $response');
         loginSuccess = false;
         hideLoadingIndicator();
-        showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
+        showErrorMessage("Oops! We couldn't sign you in. Please check the Username and Password.");
       }
     } on TimeoutException {
-      showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
+      showErrorMessage("Oops! We couldn't sign you in. Please check the Username and Password.");
     } catch (e) {
       // Handle any errors during login
       debugPrint('Sign-in failed: $e');
-      showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
+      showErrorMessage("Oops! We couldn't sign you in. Please check the Username and Password.");
     } finally {
       if (!loginSuccess) {
         hideLoadingIndicator();
@@ -491,52 +494,19 @@ class _SignInState extends State<SignIn> {
   }
 
   void showErrorMessage(String message) {
-    const String displayMessage =
-        "Oops, we couldn't sign you in. Please check the Username and Password";
-
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-      // Show dialog on desktop where Fluttertoast can be unreliable.
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.red[700]),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'Sign In Failed',
-                    overflow: TextOverflow.visible,
-                  ),
-                ),
-              ],
-            ),
-            content: const Text(
-              displayMessage,
-              style: TextStyle(fontSize: 16),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue[700],
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                ),
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+    String displayMessage;
+    if (message == "Please enter your Username and Password") {
+      displayMessage = "Please enter your Username and Password";
+    } else if (message == "Please enter your Username") {
+      displayMessage = "Please enter your Username";
+    } else if (message == "Please enter your Password") {
+      displayMessage = "Please enter your Password";
     } else {
-      // Use toast for Android/iOS
-      RestClient().error(displayMessage);
+      displayMessage =
+          "Oops! We couldn't sign you in. Please check the Username and Password.";
     }
+
+    RestClient().error(displayMessage);
   }
 
   void showLoadingIndicator({String? message}) {
