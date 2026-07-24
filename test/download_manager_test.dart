@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:EQ8/Library/DownloadManager.dart';
@@ -7,6 +8,16 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    for (var channelName in [
+      'plugins.flutter.io/path_provider',
+      'plugins.flutter.io/path_provider_ios',
+      'plugins.flutter.io/path_provider_macos',
+      'dev.fluttercommunity.plus/path_provider'
+    ]) {
+      final channel = MethodChannel(channelName);
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async => '.');
+    }
   });
 
   group('DownloadManager Contract Tests', () {
@@ -43,6 +54,20 @@ void main() {
 
       manager.removeCompletedVideo(testUrl);
       expect(manager.isVideoDownloaded(testUrl), false);
+    });
+
+    test('Persistent video deletion tracking by ID and URL', () {
+      final manager = DownloadManager();
+      const testId = '102';
+      const testUrl = 'https://example.com/physics.mp4';
+
+      expect(manager.isVideoDeleted(testId, testUrl), false);
+
+      manager.removeCompletedVideo(testUrl, videoId: testId);
+
+      expect(manager.isVideoDeleted(testId, testUrl), true);
+      expect(manager.deletedVideoIds.contains(testId), true);
+      expect(manager.deletedVideoIds.contains(testUrl), true);
     });
   });
 }

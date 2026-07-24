@@ -43,25 +43,33 @@ class DownloadManager extends ChangeNotifier {
   final List<DownloadTask> _activeDownloads = [];
   final List<Map<String, dynamic>> _completedVideos = [];
   final Set<String> _downloadedUrls = {};
+  final Set<String> _deletedVideoIds = {};
 
   List<DownloadTask> get activeDownloads => List.unmodifiable(_activeDownloads);
   List<Map<String, dynamic>> get completedVideos => List.unmodifiable(_completedVideos);
+  Set<String> get deletedVideoIds => Set.unmodifiable(_deletedVideoIds);
 
   Future<void> _loadPersistedCompletedVideos() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final List<String>? deletedList = prefs.getStringList('persisted_deleted_video_ids');
+      if (deletedList != null) {
+        _deletedVideoIds.addAll(deletedList);
+      }
+
       final String? jsonStr = prefs.getString('persisted_completed_videos');
       if (jsonStr != null && jsonStr.isNotEmpty) {
         final List<dynamic> rawList = jsonDecode(jsonStr);
         for (var item in rawList) {
           if (item is Map<String, dynamic>) {
             final String videoUrl = item['video_url']?.toString() ?? '';
+            final String videoId = item['id']?.toString() ?? '';
             final DateTime downloadedAt = item['downloaded_at'] != null
                 ? DateTime.tryParse(item['downloaded_at'].toString()) ?? DateTime.now()
                 : DateTime.now();
 
             final map = {
-              'id': item['id']?.toString() ?? '',
+              'id': videoId,
               'title': item['title']?.toString() ?? '',
               'subject': item['subject']?.toString() ?? '',
               'duration': item['duration']?.toString() ?? '15:00',
@@ -70,7 +78,9 @@ class DownloadManager extends ChangeNotifier {
               'downloaded_at': downloadedAt,
             };
 
-            if (videoUrl.isNotEmpty && !_completedVideos.any((v) => v['video_url'] == videoUrl)) {
+            if (videoUrl.isNotEmpty &&
+                !_completedVideos.any((v) => v['video_url'] == videoUrl) &&
+                !isVideoDeleted(videoId, videoUrl)) {
               _completedVideos.add(map);
               _downloadedUrls.add(videoUrl);
             }
@@ -86,6 +96,8 @@ class DownloadManager extends ChangeNotifier {
   Future<void> _savePersistedCompletedVideos() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('persisted_deleted_video_ids', _deletedVideoIds.toList());
+
       final serializedList = _completedVideos.map((v) {
         final dt = v['downloaded_at'];
         final String isoDate = (dt is DateTime) ? dt.toIso8601String() : DateTime.now().toIso8601String();
@@ -106,9 +118,20 @@ class DownloadManager extends ChangeNotifier {
     }
   }
 
+  bool isVideoDeleted(String? id, String? videoUrl) {
+    if (id != null && id.isNotEmpty && _deletedVideoIds.contains(id)) {
+      return true;
+    }
+    if (videoUrl != null && videoUrl.isNotEmpty && _deletedVideoIds.contains(videoUrl)) {
+      return true;
+    }
+    return false;
+  }
+
   bool isVideoDownloaded(String videoUrl) {
-    return _downloadedUrls.contains(videoUrl) ||
-        _completedVideos.any((v) => v['video_url'] == videoUrl);
+    return (_downloadedUrls.contains(videoUrl) ||
+            _completedVideos.any((v) => v['video_url'] == videoUrl)) &&
+        !isVideoDeleted(null, videoUrl);
   }
 
   bool isDownloading(String videoUrl) {
@@ -232,12 +255,22 @@ class DownloadManager extends ChangeNotifier {
     } catch (_) {}
   }
 
-  void removeCompletedVideo(String videoUrl) {
+  void removeCompletedVideo(String videoUrl, {String? videoId}) {
+    if (videoUrl.isNotEmpty) {
+      _deletedVideoIds.add(videoUrl);
+    }
+    if (videoId != null && videoId.isNotEmpty) {
+      _deletedVideoIds.add(videoId);
+    }
     _downloadedUrls.remove(videoUrl);
-    _completedVideos.removeWhere((v) => v['video_url'] == videoUrl);
-    try {
-      DefaultCacheManager().removeFile(videoUrl);
-    } catch (_) {}
+    _completedVideos.removeWhere((v) => v['video_url'] == videoUrl || (videoId != null && v['id'] == videoId));
+    if (videoUrl.isNotEmpty) {
+      runZonedGuarded(() {
+        try {
+          DefaultCacheManager().removeFile(videoUrl);
+        } catch (_) {}
+      }, (error, stack) {});
+    }
     _savePersistedCompletedVideos();
     notifyListeners();
   }

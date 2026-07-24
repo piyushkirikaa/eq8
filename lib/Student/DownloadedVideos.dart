@@ -125,6 +125,12 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
       }
     }
 
+    // Exclude any videos that have been persistently deleted
+    list.removeWhere((v) => _downloadManager.isVideoDeleted(
+          v['id']?.toString(),
+          v['video_url']?.toString(),
+        ));
+
     // Default sorting: Descending order by date downloaded (most recent first)
     list.sort((a, b) {
       final dateA = (a['downloaded_at'] as DateTime?) ?? DateTime(2020);
@@ -302,9 +308,10 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
               onPressed: () {
                 Navigator.pop(context);
                 final videoUrl = video['video_url']?.toString() ?? '';
-                _downloadManager.removeCompletedVideo(videoUrl);
+                final videoId = video['id']?.toString();
+                _downloadManager.removeCompletedVideo(videoUrl, videoId: videoId);
                 setState(() {
-                  _localVideos.removeWhere((v) => v['id'] == video['id']);
+                  _localVideos.removeWhere((v) => v['id'] == video['id'] || v['video_url'] == videoUrl);
                 });
                 RestClient().success('Offline Video Deleted');
               },
