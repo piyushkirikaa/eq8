@@ -512,9 +512,9 @@ class _SignInState extends State<SignIn> {
                 ),
               ],
             ),
-            content: Text(
+            content: const Text(
               displayMessage,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16),
             ),
             actions: <Widget>[
               TextButton(

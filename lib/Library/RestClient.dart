@@ -430,20 +430,15 @@ class OverlayToastManager {
   factory OverlayToastManager() => _instance;
   OverlayToastManager._internal();
 
-  OverlayEntry? _currentEntry;
+  final List<OverlayEntry> _activeEntries = [];
   Timer? _dismissTimer;
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  GlobalKey<_CustomToastWidgetState>? _toastKey;
 
   void show(BuildContext context, String message, {required bool isError}) {
     dismissActiveToast();
 
-    _toastKey = GlobalKey<_CustomToastWidgetState>();
-
     final entry = OverlayEntry(
       builder: (context) {
         return CustomToastWidget(
-          key: _toastKey,
           message: message,
           isError: isError,
           onDismiss: dismissActiveToast,
@@ -451,11 +446,14 @@ class OverlayToastManager {
       },
     );
 
-    final overlay = RestClient.navigatorKey.currentState?.overlay ?? Overlay.maybeOf(context);
+    final overlay = RestClient.navigatorKey.currentState?.overlay ??
+        Overlay.maybeOf(context);
     if (overlay == null) return;
-    overlay.insert(entry);
-    _currentEntry = entry;
 
+    overlay.insert(entry);
+    _activeEntries.add(entry);
+
+    _dismissTimer?.cancel();
     _dismissTimer = Timer(const Duration(seconds: 5), () {
       dismissActiveToast();
     });
@@ -464,24 +462,20 @@ class OverlayToastManager {
   void dismissActiveToast() {
     _dismissTimer?.cancel();
     _dismissTimer = null;
-    _connectivitySubscription?.cancel();
-    _connectivitySubscription = null;
 
-    final entry = _currentEntry;
-    final state = _toastKey?.currentState;
+    RestClient.scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+    try {
+      Fluttertoast.cancel();
+    } catch (_) {}
 
-    if (entry != null) {
-      _currentEntry = null;
-      _toastKey = null;
-
-      if (state != null && state.mounted) {
-        state.animateOut().then((_) {
-          entry.remove();
-        });
-      } else {
+    for (final entry in List<OverlayEntry>.from(_activeEntries)) {
+      try {
         entry.remove();
+      } catch (e) {
+        debugPrint('Error removing overlay entry: $e');
       }
     }
+    _activeEntries.clear();
   }
 }
 
@@ -512,7 +506,7 @@ class _CustomToastWidgetState extends State<CustomToastWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 200),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -521,7 +515,7 @@ class _CustomToastWidgetState extends State<CustomToastWidget>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
+      begin: const Offset(0, 0.4),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
@@ -535,12 +529,6 @@ class _CustomToastWidgetState extends State<CustomToastWidget>
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  Future<void> animateOut() async {
-    if (mounted) {
-      await _controller.reverse();
-    }
   }
 
   @override
