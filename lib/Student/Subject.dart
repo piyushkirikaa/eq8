@@ -431,22 +431,45 @@ class _SubjectState extends State<Subject> {
             ],
           ),
         ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            tutorial['sub_title'].toString().toUpperCase(),
-            style: GoogleFonts.lato(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: isLocked
-                  ? Colors.grey[500]
-                  : isCurrentlyPlaying
-                      ? AppTheme.primaryColor.withValues(alpha: 0.7)
-                      : AppTheme.textSecondaryColor,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
+        subtitle: (tutorial['sub_title'] != null &&
+                tutorial['sub_title'].toString().trim().isNotEmpty &&
+                tutorial['sub_title'].toString().toLowerCase() != 'null')
+            ? Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  tutorial['sub_title'].toString().toUpperCase(),
+                  style: GoogleFonts.lato(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isLocked
+                        ? Colors.grey[500]
+                        : isCurrentlyPlaying
+                            ? AppTheme.primaryColor.withValues(alpha: 0.7)
+                            : AppTheme.textSecondaryColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              )
+            : (tutorial['subject_name'] != null &&
+                    tutorial['subject_name'].toString().trim().isNotEmpty &&
+                    tutorial['subject_name'].toString().toLowerCase() != 'null')
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      tutorial['subject_name'].toString().toUpperCase(),
+                      style: GoogleFonts.lato(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isLocked
+                            ? Colors.grey[500]
+                            : isCurrentlyPlaying
+                                ? AppTheme.primaryColor.withValues(alpha: 0.7)
+                                : AppTheme.textSecondaryColor,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  )
+                : null,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -890,95 +913,6 @@ class _SubjectState extends State<Subject> {
                   },
                 ),
               ],
-              _buildOptionTile(
-                icon: Icons.description_outlined,
-                title: 'Video AID',
-                subtitle: 'View supplementary material',
-                iconBackgroundColor: Colors.blue[50]!,
-                iconColor: Colors.blue,
-                onTap: () async {
-                  final isOnline = await RestClient().checkInternetConnection();
-                  if (!mounted || !context.mounted) return;
-                  if (!isOnline) {
-                    Navigator.pop(context);
-                    RestClient().error(
-                        "No Internet. Unable to load Video Aid. Connect to the Internet to Continue.");
-                    return;
-                  }
-                  Analytics().logEvent("DOCUMENT_DOWNLOAD", {
-                    "subject_name": currentTutorial['subject_name'].toString(),
-                    "video": currentTutorial['title'].toString()
-                  });
-                  final document = currentTutorial['document_url'].toString();
-                  debugPrint('=== VIDEO AID ===');
-                  debugPrint('Document URL: $document');
-                  if (document != "null" && document.isNotEmpty) {
-                    if (!mounted || !context.mounted) return;
-                    Navigator.pop(context);
-                    globalScaffoldContext.loaderOverlay.show();
-                    try {
-                      final file = await createFileOfPdfUrl(document);
-                      if (mounted) {
-                        globalScaffoldContext.loaderOverlay.hide();
-                      }
-                      debugPrint('Video AID file created: ${file.path}');
-                      debugPrint('File exists: ${await file.exists()}');
-                      debugPrint('File size: ${await file.length()} bytes');
-                      viewPDF(file.path);
-                    } catch (e) {
-                      if (mounted) {
-                        globalScaffoldContext.loaderOverlay.hide();
-                      }
-                      debugPrint('Error with Video AID: $e');
-                      RestClient().error('Error loading document: $e');
-                    }
-                  } else {
-                    if (!mounted || !context.mounted) return;
-                    Navigator.pop(context);
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        title: Row(
-                          children: [
-                            const Icon(Icons.info_outline,
-                                color: AppTheme.primaryColor),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Video AID',
-                              style: GoogleFonts.lato(
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimaryColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        content: Text(
-                          'Supplementary materials are not available for this tutorial at this time. Please check back later or contact support if you believe this is an error.',
-                          style: GoogleFonts.lato(
-                            fontSize: 14,
-                            color: AppTheme.textSecondaryColor,
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(
-                              'UNDERSTOOD',
-                              style: GoogleFonts.lato(
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-              ),
               // Only show Resource Guide if is_exam is 1
               if (currentTutorial != null && currentTutorial['is_exam'] == 1)
                 _buildOptionTile(
