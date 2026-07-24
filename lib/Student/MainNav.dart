@@ -62,7 +62,13 @@ class _MainNavState extends State<MainNav> {
           autoPlayVideo: video,
         ),
       ),
-    );
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          currentPageIndex = 2; // Always return to Offline Videos tab page on back arrow pop
+        });
+      }
+    });
   }
 
   @override

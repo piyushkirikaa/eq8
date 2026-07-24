@@ -129,6 +129,12 @@ class _SubjectState extends State<Subject> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppTheme.primaryColor,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+        ),
         title: Text(
           widget.course.title.toUpperCase(),
           style: GoogleFonts.lato(
@@ -193,10 +199,11 @@ class _SubjectState extends State<Subject> {
                     final data = snapshot.data;
                     final dataLength = snapshot.data?.length;
 
-                    final bool hasDownloadedVideos = data != null &&
-                        data.any((video) => video['isCached'] == true);
+                    final bool hasDownloadedVideos = (data != null &&
+                        data.any((video) => video['isCached'] == true)) ||
+                        widget.autoPlayVideo != null;
 
-                    if (!_isOnline && !hasDownloadedVideos) {
+                    if (!_isOnline && !hasDownloadedVideos && (data == null || data.isEmpty)) {
                       return Center(
                         child: Padding(
                           padding: const EdgeInsets.all(24.0),
@@ -618,7 +625,7 @@ class _SubjectState extends State<Subject> {
   getSubjectList() async {
     _isOnline = await RestClient().checkInternetConnection();
     // Return cached list if available to prevent reloading
-    if (cachedSubjectList != null) {
+    if (cachedSubjectList != null && cachedSubjectList!.isNotEmpty) {
       return cachedSubjectList;
     }
 
@@ -626,42 +633,68 @@ class _SubjectState extends State<Subject> {
     Analytics().logEvent(
         "VIEW_SUBJECT", {"subject_name": currentCourse.title.toString()});
     final currentCourseId = currentCourse.id;
-    final response =
-        await RestClient().authGet('/student/tutorials/$currentCourseId', {});
-    if (response != null && response["status"] == 'success') {
-      var videoList = [];
-      for (var video in response["data"]) {
-        final videoUrl = video['video_url'].toString();
-        final isCached = await isUrlCached(videoUrl);
-        video['isCached'] = isCached;
-        videoList.add(video);
-      }
-      // Cache the result to avoid reloading
-      cachedSubjectList = videoList;
-      return videoList;
-    } else {
-      RestClient().error(
-          "Video unavailable, please connect to the internet to continue learning.");
-      return []; // Return an empty list in case of an error
+
+    var videoList = [];
+
+    if (_isOnline) {
+      try {
+        final response =
+            await RestClient().authGet('/student/tutorials/$currentCourseId', {});
+        if (response != null && response["status"] == 'success') {
+          for (var video in response["data"]) {
+            final videoUrl = video['video_url'].toString();
+            final isCached = await isUrlCached(videoUrl);
+            video['isCached'] = isCached;
+            videoList.add(video);
+          }
+        }
+      } catch (_) {}
     }
+
+    // Include autoPlayVideo if provided and not already present
+    if (widget.autoPlayVideo != null) {
+      final autoVideo = Map<String, dynamic>.from(widget.autoPlayVideo!);
+      final videoUrl = autoVideo['video_url']?.toString() ?? '';
+      autoVideo['isCached'] = true;
+      autoVideo['is_trail_user'] = 0;
+      autoVideo['is_trial'] = 1;
+      autoVideo['subject_name'] = currentCourse.title;
+
+      if (!videoList.any((v) => v['video_url'] == videoUrl)) {
+        videoList.insert(0, autoVideo);
+      }
+    }
+
+    // Include completed offline videos from DownloadManager
+    for (var completed in DownloadManager().completedVideos) {
+      final String completedSub = completed['subject']?.toString().toLowerCase() ?? '';
+      if (completedSub == currentCourse.title.toLowerCase()) {
+        if (!videoList.any((v) => v['video_url'] == completed['video_url'])) {
+          videoList.add({
+            'id': completed['id'],
+            'title': completed['title'],
+            'subject_name': currentCourse.title,
+            'video_url': completed['video_url'],
+            'video_cover_image':
+                'https://www.mydigitalcollege.co.za/crm/api/sample_cover.jpg',
+            'isCached': true,
+            'is_trail_user': 0,
+            'is_trial': 1,
+          });
+        }
+      }
+    }
+
+    cachedSubjectList = videoList;
+    return videoList;
   }
 
   playVideo(video) async {
-    if (await RestClient().checkInternetConnection()) {
-      final fileInfo = await DefaultCacheManager().getFileFromCache(video);
-      if (fileInfo != null) {
-        changeVideo(fileInfo.file.path);
-      } else {
-        changeVideo(video);
-      }
+    final fileInfo = await DefaultCacheManager().getFileFromCache(video);
+    if (fileInfo != null) {
+      changeVideo(fileInfo.file.path);
     } else {
-      final fileInfo = await DefaultCacheManager().getFileFromCache(video);
-      if (fileInfo != null) {
-        changeVideo(fileInfo.file.path);
-      } else {
-        RestClient().error(
-            "Video unavailable, please connect to the internet to continue learning.");
-      }
+      changeVideo(video);
     }
   }
 
