@@ -55,18 +55,29 @@ class _SignInState extends State<SignIn> {
       final prefs = await SharedPreferences.getInstance();
       final bool rememberMe = prefs.getBool('remember_me') ?? false;
       if (rememberMe) {
-        final savedEmail =
-            await _secureStorage.read(key: 'remembered_username');
-        final savedPassword =
-            await _secureStorage.read(key: 'remembered_password');
-        if (savedEmail != null && savedPassword != null) {
+        String? savedEmail = prefs.getString('remembered_username');
+        String? savedPassword = prefs.getString('remembered_password');
+
+        if (savedEmail == null || savedPassword == null) {
+          try {
+            savedEmail ??=
+                await _secureStorage.read(key: 'remembered_username');
+            savedPassword ??=
+                await _secureStorage.read(key: 'remembered_password');
+          } catch (e) {
+            debugPrint('Secure storage read error: $e');
+          }
+        }
+
+        if (savedEmail != null && savedEmail.isNotEmpty) {
+          final String validEmail = savedEmail;
           if (!mounted) return;
           setState(() {
             _checkbox = true;
-            _email = savedEmail;
-            _password = savedPassword;
-            _emailController.text = savedEmail;
-            _passwordController.text = savedPassword;
+            _email = validEmail;
+            _password = savedPassword ?? '';
+            _emailController.text = validEmail;
+            _passwordController.text = savedPassword ?? '';
           });
         }
       }
@@ -453,14 +464,26 @@ class _SignInState extends State<SignIn> {
             final prefs = await SharedPreferences.getInstance();
             if (_checkbox) {
               await prefs.setBool('remember_me', true);
-              await _secureStorage.write(
-                  key: 'remembered_username', value: _email);
-              await _secureStorage.write(
-                  key: 'remembered_password', value: _password);
+              await prefs.setString('remembered_username', _email);
+              await prefs.setString('remembered_password', _password);
+              try {
+                await _secureStorage.write(
+                    key: 'remembered_username', value: _email);
+                await _secureStorage.write(
+                    key: 'remembered_password', value: _password);
+              } catch (e) {
+                debugPrint('Secure storage write error: $e');
+              }
             } else {
               await prefs.remove('remember_me');
-              await _secureStorage.delete(key: 'remembered_username');
-              await _secureStorage.delete(key: 'remembered_password');
+              await prefs.remove('remembered_username');
+              await prefs.remove('remembered_password');
+              try {
+                await _secureStorage.delete(key: 'remembered_username');
+                await _secureStorage.delete(key: 'remembered_password');
+              } catch (e) {
+                debugPrint('Secure storage delete error: $e');
+              }
             }
           } catch (e) {
             debugPrint('Error saving/clearing remembered credentials: $e');

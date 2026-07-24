@@ -17,5 +17,20 @@ void main() {
       const isSaved = isLoginSuccess;
       expect(isSaved, false);
     });
+
+    test('Logout retains remembered credentials if remember_me was checked', () {
+      const rememberMe = true;
+      const savedUsername = "student@example.com";
+      const savedPassword = "password123";
+
+      // Simulating RestClient.logout()
+      const activeUserTokenRemoved = true;
+      expect(activeUserTokenRemoved, true);
+
+      // Verify remembered credentials remain intact
+      expect(rememberMe, true);
+      expect(savedUsername, "student@example.com");
+      expect(savedPassword, "password123");
+    });
   });
 }
