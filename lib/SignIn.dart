@@ -478,8 +478,7 @@ class _SignInState extends State<SignIn> {
         showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
       }
     } on TimeoutException {
-      showErrorMessage(
-          "Signing in is taking too long. Please check your connection and try again.");
+      showErrorMessage("Oops, we couldn't sign you in. Please check the Username and Password");
     } catch (e) {
       // Handle any errors during login
       debugPrint('Sign-in failed: $e');
@@ -492,14 +491,8 @@ class _SignInState extends State<SignIn> {
   }
 
   void showErrorMessage(String message) {
-    String displayMessage = message;
-    if (message.contains("couldn't Sign You In") ||
-        message.contains("couldn't sign you in") ||
-        message.contains("Sign in failed") ||
-        message.contains("invalid") ||
-        message.contains("rejected")) {
-      displayMessage = "Oops, we couldn't sign you in. Please check the Username and Password";
-    }
+    const String displayMessage =
+        "Oops, we couldn't sign you in. Please check the Username and Password";
 
     if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       // Show dialog on desktop where Fluttertoast can be unreliable.
