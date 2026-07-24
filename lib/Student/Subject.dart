@@ -132,7 +132,7 @@ class _SubjectState extends State<Subject> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context, true);
+            Navigator.pop(context);
           },
         ),
         title: Text(

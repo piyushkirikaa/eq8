@@ -118,7 +118,7 @@ class _DashboardState extends State<Dashboard> {
                               course: snapshot.data![index],
                             );
                           },
-                          onClosed: _showMarkedAsDoneSnackbar,
+
                           tappable: true,
                           closedShape: const RoundedRectangleBorder(),
                           closedElevation: 0.0,
@@ -166,11 +166,7 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
-  void _showMarkedAsDoneSnackbar(bool? isMarkedAsDone) {
-    if (isMarkedAsDone ?? false) {
-      RestClient().success('Marked as done!');
-    }
-  }
+
 
   Future<List<Course>> getSubjectList() async {
     courses = [];
