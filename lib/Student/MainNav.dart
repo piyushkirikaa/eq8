@@ -58,7 +58,7 @@ class _MainNavState extends State<MainNav> {
                 color: Colors.white,
               ),
             ),
-            label: 'Downloaded\n  Videos',
+            label: 'Offline Videos',
           ),
           const NavigationDestination(
             icon: Icon(Icons.pie_chart, color: Colors.white),

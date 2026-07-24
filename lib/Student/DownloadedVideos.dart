@@ -303,7 +303,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
         title: Text(
-          'Downloaded Videos',
+          'Offline Videos',
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.bold,

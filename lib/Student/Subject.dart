@@ -82,6 +82,7 @@ class _SubjectState extends State<Subject> {
   String? currentlyPlayingId;
   // Store the fetched subject list to avoid reloading
   List<dynamic>? cachedSubjectList;
+  Future<dynamic>? _subjectListFuture;
   bool _isOnline = true;
 
   // Windows video player controls state
@@ -93,6 +94,7 @@ class _SubjectState extends State<Subject> {
   @override
   void initState() {
     super.initState();
+    _subjectListFuture = getSubjectList();
     DownloadManager().addListener(_onDownloadManagerChanged);
 
     // Initialize platform-specific video players
@@ -157,7 +159,7 @@ class _SubjectState extends State<Subject> {
             ),
           Expanded(
             child: FutureBuilder(
-              future: getSubjectList(),
+              future: _subjectListFuture ??= getSubjectList(),
               builder: (context, AsyncSnapshot<dynamic> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
