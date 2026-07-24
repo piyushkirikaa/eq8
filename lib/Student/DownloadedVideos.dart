@@ -4,7 +4,8 @@ import '../Library/DownloadManager.dart';
 import '../Library/RestClient.dart';
 
 class DownloadedVideos extends StatefulWidget {
-  const DownloadedVideos({super.key});
+  final Function(Map<String, dynamic> video)? onVideoTap;
+  const DownloadedVideos({super.key, this.onVideoTap});
 
   @override
   State<DownloadedVideos> createState() => _DownloadedVideosState();
@@ -540,7 +541,14 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Padding(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () {
+                          if (widget.onVideoTap != null) {
+                            widget.onVideoTap!(video);
+                          }
+                        },
+                        child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Row(
                           children: [
@@ -608,7 +616,8 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
                           ],
                         ),
                       ),
-                    );
+                    ),
+                  );
                   },
                 ),
             ],

@@ -62,7 +62,8 @@ class AppTheme {
 
 class Subject extends StatefulWidget {
   final Course course;
-  const Subject({super.key, required this.course});
+  final Map<String, dynamic>? autoPlayVideo;
+  const Subject({super.key, required this.course, this.autoPlayVideo});
   @override
   State<Subject> createState() => _SubjectState();
 }
@@ -96,6 +97,12 @@ class _SubjectState extends State<Subject> {
     super.initState();
     _subjectListFuture = getSubjectList();
     DownloadManager().addListener(_onDownloadManagerChanged);
+
+    if (widget.autoPlayVideo != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _autoPlayVideo(widget.autoPlayVideo!);
+      });
+    }
 
     // Initialize platform-specific video players
     if (Platform.isWindows) {
@@ -488,6 +495,56 @@ class _SubjectState extends State<Subject> {
       "video": currentTutorial['title'].toString()
     });
     playVideo(tutorial['video_url'].toString());
+  }
+
+  void _autoPlayVideo(Map<String, dynamic> video) async {
+    final videoUrl = video['video_url']?.toString() ?? '';
+    final videoTitle = video['title']?.toString() ?? '';
+
+    dynamic targetTutorial;
+
+    try {
+      final list = await _subjectListFuture;
+      if (list is List && list.isNotEmpty) {
+        for (var item in list) {
+          if (item['video_url'] == videoUrl ||
+              (item['title'] != null &&
+                  item['title'].toString().toLowerCase() ==
+                      videoTitle.toLowerCase())) {
+            targetTutorial = item;
+            break;
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (targetTutorial == null) {
+      targetTutorial = {
+        'id': video['id']?.toString() ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
+        'title': videoTitle.isNotEmpty ? videoTitle : 'Offline Video',
+        'subject_name': widget.course.title,
+        'video_url': videoUrl,
+        'video_cover_image': video['video_cover_image'] ??
+            'https://www.mydigitalcollege.co.za/crm/api/sample_cover.jpg',
+        'isCached': true,
+        'is_trail_user': 0,
+        'is_trial': 1,
+      };
+
+      if (cachedSubjectList != null) {
+        if (!cachedSubjectList!
+            .any((item) => item['video_url'] == videoUrl)) {
+          cachedSubjectList!.insert(0, targetTutorial);
+        }
+      } else {
+        cachedSubjectList = [targetTutorial];
+      }
+    }
+
+    if (mounted) {
+      _handleVideoTap(targetTutorial);
+    }
   }
 
   void _handleLockedVideo() {

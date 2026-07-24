@@ -4,6 +4,8 @@ import '../../Student/Dashboard.dart';
 import 'PodcastDashboard.dart';
 import 'DownloadedVideos.dart';
 import 'ExamReport.dart';
+import 'Subject.dart';
+import '../Widgets/Course.dart';
 
 class MainNav extends StatefulWidget {
   const MainNav({super.key});
@@ -14,6 +16,54 @@ class MainNav extends StatefulWidget {
 
 class _MainNavState extends State<MainNav> {
   int currentPageIndex = 0;
+
+  Course _getCourseForSubject(String subjectName) {
+    final nameLower = subjectName.toLowerCase();
+    int id = 1;
+    if (nameLower.contains('math')) {
+      id = 1;
+    } else if (nameLower.contains('physical') || nameLower.contains('physics')) {
+      id = 2;
+    } else if (nameLower.contains('life') || nameLower.contains('bio')) {
+      id = 3;
+    } else if (nameLower.contains('account')) {
+      id = 4;
+    } else if (nameLower.contains('english')) {
+      id = 5;
+    } else if (nameLower.contains('geography')) {
+      id = 6;
+    } else if (nameLower.contains('history')) {
+      id = 7;
+    } else if (nameLower.contains('business')) {
+      id = 8;
+    }
+
+    return Course(
+      title: subjectName,
+      description: 'Offline Course',
+      progress: 100,
+      id: id,
+    );
+  }
+
+  void _openOfflineVideoInSubjects(Map<String, dynamic> video) {
+    final String subjectName = video['subject']?.toString() ?? 'Mathematics';
+    final Course course = _getCourseForSubject(subjectName);
+
+    setState(() {
+      currentPageIndex = 0; // Switch to the Subjects tab
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Subject(
+          course: course,
+          autoPlayVideo: video,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +126,9 @@ class _MainNavState extends State<MainNav> {
       case 1:
         return const PodcastDashboard();
       case 2:
-        return const DownloadedVideos();
+        return DownloadedVideos(
+          onVideoTap: (video) => _openOfflineVideoInSubjects(video),
+        );
       case 3:
         return const ExamReport();
       default:
