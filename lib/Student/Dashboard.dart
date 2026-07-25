@@ -39,6 +39,7 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[50],
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const ConnectivityIcon(),

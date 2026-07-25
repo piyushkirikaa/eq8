@@ -21,6 +21,7 @@ class _ReportsState extends State<Reports> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Dashboard'),
         actions: [
           IconButton(
