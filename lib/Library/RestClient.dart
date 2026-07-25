@@ -20,7 +20,7 @@ class RestClient {
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
   static DateTime? _lastOfflineToastTime;
 
-  guestPost(endpoint, param) async {
+  Future<dynamic> guestPost(endpoint, param) async {
     try {
       var headers = {'Accept': 'application/json'};
       var request =
@@ -66,7 +66,7 @@ class RestClient {
     }
   }
 
-  guestGet(endpoint, param) async {
+  Future<dynamic> guestGet(endpoint, param) async {
     var headers = {'Accept': 'application/json'};
     var request = http.MultipartRequest('GET', Uri.parse("$baseUrl$endpoint"));
     request.headers.addAll(headers);
@@ -79,7 +79,7 @@ class RestClient {
     }
   }
 
-  authPost(endpoint, param) async {
+  Future<dynamic> authPost(endpoint, param) async {
     try {
       final token = await getCurrentToken();
       var headers = {
@@ -261,7 +261,7 @@ class RestClient {
     }
   }
 
-  success(message) async {
+  Future<void> success(message) async {
     final context = navigatorKey.currentContext;
     if (context != null) {
       OverlayToastManager().show(context, message.toString(), isError: false);
@@ -291,7 +291,7 @@ class RestClient {
         );
       } else {
         try {
-          return Fluttertoast.showToast(
+          await Fluttertoast.showToast(
               msg: message.toString(),
               toastLength: Toast.LENGTH_LONG,
               gravity: ToastGravity.CENTER,
@@ -306,7 +306,7 @@ class RestClient {
     }
   }
 
-  error(message) async {
+  Future<void> error(message) async {
     if (message == 'Please connect to the internet to continue learning.') {
       final now = DateTime.now();
       if (_lastOfflineToastTime != null &&
@@ -345,7 +345,7 @@ class RestClient {
         );
       } else {
         try {
-          return Fluttertoast.showToast(
+          await Fluttertoast.showToast(
               msg: message.toString(),
               toastLength: Toast.LENGTH_LONG,
               gravity: ToastGravity.CENTER,
@@ -360,7 +360,7 @@ class RestClient {
     }
   }
 
-  storeUser(email, userId, token, role) async {
+  Future<void> storeUser(email, userId, token, role) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token.toString());
     await prefs.setString('email', email.toString());
@@ -368,7 +368,7 @@ class RestClient {
     await prefs.setString('role', role.toString());
   }
 
-  getCurrentUser() async {
+  Future<Map<String, String?>> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     return {
       'email': prefs.getString('email'),
@@ -378,17 +378,17 @@ class RestClient {
     };
   }
 
-  getCurrentToken() async {
+  Future<String?> getCurrentToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  getRole() async {
+  Future<String?> getRole() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('role');
   }
 
-  logout() async {
+  Future<bool> logout() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('email');
     prefs.remove('user_id');
@@ -397,7 +397,7 @@ class RestClient {
     return true;
   }
 
-  loader() {
+  Padding loader() {
     return const Padding(
       padding: EdgeInsets.only(top: 15),
       child: SpinKitCubeGrid(
