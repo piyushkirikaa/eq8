@@ -143,6 +143,32 @@ class DownloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  void registerCachedVideo({
+    required String id,
+    required String title,
+    required String subject,
+    required String videoUrl,
+    String duration = '15:00',
+    String size = '15.0 MB',
+  }) {
+    if (videoUrl.isEmpty || isVideoDeleted(id, videoUrl)) return;
+
+    if (!_completedVideos.any((v) => v['video_url'] == videoUrl || (id.isNotEmpty && v['id'] == id))) {
+      _completedVideos.insert(0, {
+        'id': id.isNotEmpty ? id : DateTime.now().millisecondsSinceEpoch.toString(),
+        'title': title,
+        'subject': subject,
+        'duration': duration,
+        'size': size,
+        'video_url': videoUrl,
+        'downloaded_at': DateTime.now(),
+      });
+      _downloadedUrls.add(videoUrl);
+      _savePersistedCompletedVideos();
+      notifyListeners();
+    }
+  }
+
   void startDownload(String videoUrl, String title, String subject) {
     // Prevent duplicate downloads if already downloaded or in progress
     if (isVideoDownloaded(videoUrl)) {
@@ -170,7 +196,7 @@ class DownloadManager extends ChangeNotifier {
     _activeDownloads.add(task);
     notifyListeners();
     try {
-      RestClient().success('Started downloading "$title"');
+      RestClient().success('Offline Video is Downloading');
     } catch (_) {}
 
     try {

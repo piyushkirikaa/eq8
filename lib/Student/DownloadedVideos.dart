@@ -87,12 +87,19 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
   // Filtered list based on selected subjects
   List<Map<String, dynamic>> get _filteredVideos {
     final all = _allDownloadedVideos;
-    if (_selectAll || _selectedSubjects.length == _availableSubjects.length) {
+    if (_selectAll || _selectedSubjects.length >= _availableSubjects.length) {
       return all;
     }
-    return all
-        .where((video) => _selectedSubjects.contains(video['subject']))
-        .toList();
+    return all.where((video) {
+      final videoSub = (video['subject'] ?? '').toString().toLowerCase();
+      if (videoSub.isEmpty) return true;
+      return _selectedSubjects.any((selected) {
+        final selLower = selected.toLowerCase();
+        return videoSub == selLower ||
+            videoSub.contains(selLower) ||
+            selLower.contains(videoSub);
+      });
+    }).toList();
   }
 
   void _openFilterBottomSheet() {

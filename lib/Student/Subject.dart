@@ -668,6 +668,16 @@ class _SubjectState extends State<Subject> {
             final videoUrl = video['video_url'].toString();
             final isCached = await isUrlCached(videoUrl);
             video['isCached'] = isCached;
+            if (isCached && !DownloadManager().isVideoDeleted(video['id']?.toString(), videoUrl)) {
+              DownloadManager().registerCachedVideo(
+                id: video['id']?.toString() ?? '',
+                title: video['title']?.toString() ?? 'Video Tutorial',
+                subject: currentCourse.title,
+                videoUrl: videoUrl,
+                duration: video['duration']?.toString() ?? '15:00',
+                size: video['size']?.toString() ?? '15.0 MB',
+              );
+            }
             videoList.add(video);
           }
         }
@@ -912,7 +922,7 @@ class _SubjectState extends State<Subject> {
                     DownloadManager().startDownload(
                       videoURL,
                       currentTutorial['title']?.toString() ?? 'Video Tutorial',
-                      currentTutorial['subject_name']?.toString() ?? 'Subject',
+                      widget.course.title,
                     );
                   },
                 ),
@@ -1121,7 +1131,7 @@ class _SubjectState extends State<Subject> {
           DownloadManager().startDownload(
             videoURL,
             currentTutorial['title']?.toString() ?? 'Video Tutorial',
-            currentTutorial['subject_name']?.toString() ?? 'Subject',
+            widget.course.title,
           );
         },
       );
@@ -1890,8 +1900,10 @@ class _SubjectState extends State<Subject> {
 
   void _onDownloadManagerChanged() {
     if (mounted) {
-      cachedSubjectList = null;
-      _subjectListFuture = getSubjectList();
+      if (DownloadManager().activeDownloads.isEmpty) {
+        cachedSubjectList = null;
+        _subjectListFuture = getSubjectList();
+      }
       setState(() {});
     }
   }
