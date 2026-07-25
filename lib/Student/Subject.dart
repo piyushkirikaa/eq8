@@ -927,8 +927,8 @@ class _SubjectState extends State<Subject> {
                   },
                 ),
               ],
-              // Only show Resource Guide if is_exam is 1
-              if (currentTutorial != null && currentTutorial['is_exam'] == 1)
+              // Show Resource Guide for tutorials regardless of is_exam status
+              if (currentTutorial != null)
                 _buildOptionTile(
                   icon: Icons.book_outlined,
                   title: 'Resource Guide',
