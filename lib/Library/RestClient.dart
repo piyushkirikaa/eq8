@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class RestClient {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
@@ -20,7 +19,7 @@ class RestClient {
   final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
   static DateTime? _lastOfflineToastTime;
 
-  Future<dynamic> guestPost(endpoint, param) async {
+  Future<dynamic> guestPost(dynamic endpoint, dynamic param) async {
     try {
       var headers = {'Accept': 'application/json'};
       var request =
@@ -66,7 +65,7 @@ class RestClient {
     }
   }
 
-  Future<dynamic> guestGet(endpoint, param) async {
+  Future<dynamic> guestGet(dynamic endpoint, dynamic param) async {
     var headers = {'Accept': 'application/json'};
     var request = http.MultipartRequest('GET', Uri.parse("$baseUrl$endpoint"));
     request.headers.addAll(headers);
@@ -79,7 +78,7 @@ class RestClient {
     }
   }
 
-  Future<dynamic> authPost(endpoint, param) async {
+  Future<dynamic> authPost(dynamic endpoint, dynamic param) async {
     try {
       final token = await getCurrentToken();
       var headers = {
@@ -243,9 +242,11 @@ class RestClient {
           connectivityResult.length == 1) {
         // Double-check with a quick 1.5s fallback HTTP ping before concluding offline
         try {
-          final response = await http.head(
-            Uri.parse('https://www.google.com'),
-          ).timeout(const Duration(milliseconds: 1500));
+          final response = await http
+              .head(
+                Uri.parse('https://www.google.com'),
+              )
+              .timeout(const Duration(milliseconds: 1500));
           return response.statusCode < 500;
         } catch (_) {
           return false;
@@ -261,7 +262,7 @@ class RestClient {
     }
   }
 
-  Future<void> success(message) async {
+  Future<void> success(dynamic message) async {
     final context = navigatorKey.currentContext;
     if (context != null) {
       OverlayToastManager().show(context, message.toString(), isError: false);
@@ -292,13 +293,14 @@ class RestClient {
       } else {
         try {
           await Fluttertoast.showToast(
-              msg: message.toString(),
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 5,
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-              fontSize: 16.0).catchError((_) => false);
+                  msg: message.toString(),
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.CENTER,
+                  timeInSecForIosWeb: 5,
+                  backgroundColor: Colors.green,
+                  textColor: Colors.white,
+                  fontSize: 16.0)
+              .catchError((_) => false);
         } catch (e) {
           debugPrint('Fluttertoast error: $e');
         }
@@ -306,7 +308,7 @@ class RestClient {
     }
   }
 
-  Future<void> error(message) async {
+  Future<void> error(dynamic message) async {
     if (message == 'Please connect to the internet to continue learning.') {
       final now = DateTime.now();
       if (_lastOfflineToastTime != null &&
@@ -346,13 +348,14 @@ class RestClient {
       } else {
         try {
           await Fluttertoast.showToast(
-              msg: message.toString(),
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 5,
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
-              fontSize: 16.0).catchError((_) => false);
+                  msg: message.toString(),
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.CENTER,
+                  timeInSecForIosWeb: 5,
+                  backgroundColor: Colors.red,
+                  textColor: Colors.white,
+                  fontSize: 16.0)
+              .catchError((_) => false);
         } catch (e) {
           debugPrint('Fluttertoast error: $e');
         }
@@ -360,7 +363,7 @@ class RestClient {
     }
   }
 
-  Future<void> storeUser(email, userId, token, role) async {
+  Future<void> storeUser(dynamic email, dynamic userId, dynamic token, dynamic role) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token.toString());
     await prefs.setString('email', email.toString());
@@ -548,11 +551,11 @@ class _CustomToastWidgetState extends State<CustomToastWidget>
   Widget build(BuildContext context) {
     final bool isOfflineMessage =
         widget.message.toLowerCase().contains('connect to the internet') ||
-        widget.message.toLowerCase().contains('unavailable') ||
-        widget.message.toLowerCase().contains('no internet') ||
-        widget.message.toLowerCase().contains('network error') ||
-        widget.message.toLowerCase().contains('connection') ||
-        widget.message.toLowerCase().contains('offline');
+            widget.message.toLowerCase().contains('unavailable') ||
+            widget.message.toLowerCase().contains('no internet') ||
+            widget.message.toLowerCase().contains('network error') ||
+            widget.message.toLowerCase().contains('connection') ||
+            widget.message.toLowerCase().contains('offline');
 
     return SafeArea(
       child: Align(
@@ -570,8 +573,10 @@ class _CustomToastWidgetState extends State<CustomToastWidget>
                   child: Container(
                     decoration: BoxDecoration(
                       color: widget.isError
-                          ? const Color(0xE6D32F2F) // Crimson red with E6 opacity
-                          : const Color(0xE62E7D32), // Emerald green with E6 opacity
+                          ? const Color(
+                              0xE6D32F2F) // Crimson red with E6 opacity
+                          : const Color(
+                              0xE62E7D32), // Emerald green with E6 opacity
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: const [
                         BoxShadow(
