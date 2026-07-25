@@ -1028,25 +1028,112 @@ class _SubjectState extends State<Subject> {
                   }
                 },
               ),
-              // Only show Exam History if is_exam is 1
-              if (currentTutorial != null && currentTutorial['is_exam'] == 1)
-                _buildOptionTile(
-                  icon: Icons.history,
-                  title: 'Exam History',
-                  subtitle: 'View your past exam results',
-                  iconBackgroundColor: Colors.teal[50]!,
-                  iconColor: Colors.teal,
-                  onTap: () async {
-                    Analytics().logEvent("CHECK_EXAM_HISTORY", {
-                      "subject_name":
-                          currentTutorial['subject_name'].toString(),
-                      "video": currentTutorial['title'].toString()
-                    });
-                    _navigateWithVideoPause(
-                      ExamHistory(tutorialID: tutorialID),
+              // Video Aid option tile always visible for every video
+              _buildOptionTile(
+                icon: Icons.file_copy_outlined,
+                title: 'Video Aid',
+                subtitle: 'Access video aids and documents',
+                iconBackgroundColor: Colors.blue[50]!,
+                iconColor: Colors.blue[700]!,
+                onTap: () async {
+                  final isOnline =
+                      await RestClient().checkInternetConnection();
+                  if (!mounted || !context.mounted) return;
+                  if (!isOnline) {
+                    Navigator.pop(context);
+                    RestClient().error(
+                        "No Internet. Unable to load Video Aid. Connect to the Internet to Continue.");
+                    return;
+                  }
+                  Analytics().logEvent("DOCUMENT_DOWNLOAD", {
+                    "subject_name": subjectName,
+                    "video": tutorialTitle,
+                  });
+                  final document = targetTutorial['document_url']?.toString() ??
+                      targetTutorial['video_aid']?.toString() ??
+                      targetTutorial['resource_guide']?.toString() ?? '';
+                  debugPrint('=== VIDEO AID ===');
+                  debugPrint('Document URL: $document');
+                  if (document != "null" && document.isNotEmpty) {
+                    if (!mounted || !context.mounted) return;
+                    Navigator.pop(context);
+                    globalScaffoldContext.loaderOverlay.show();
+                    try {
+                      final file = await createFileOfPdfUrl(document);
+                      if (mounted) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                      }
+                      viewPDF(file.path);
+                    } catch (e) {
+                      if (mounted) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                      }
+                      RestClient().error('Error loading document: $e');
+                    }
+                  } else {
+                    if (!mounted || !context.mounted) return;
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        title: Row(
+                          children: [
+                            const Icon(Icons.info_outline,
+                                color: AppTheme.primaryColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Video Aid',
+                              style: GoogleFonts.lato(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        content: Text(
+                          'The video aid is not available for this tutorial at this time. Please check back later or contact support if you need assistance.',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'UNDERSTOOD',
+                              style: GoogleFonts.lato(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
-                  },
-                ),
+                  }
+                },
+              ),
+              // Exam History option tile always visible for every video
+              _buildOptionTile(
+                icon: Icons.history,
+                title: 'Exam History',
+                subtitle: 'View your past exam results',
+                iconBackgroundColor: Colors.teal[50]!,
+                iconColor: Colors.teal,
+                onTap: () async {
+                  Analytics().logEvent("CHECK_EXAM_HISTORY", {
+                    "subject_name": subjectName,
+                    "video": tutorialTitle,
+                  });
+                  _navigateWithVideoPause(
+                    ExamHistory(tutorialID: tutorialID),
+                  );
+                },
+              ),
             ],
           ),
         );
@@ -1220,8 +1307,8 @@ class _SubjectState extends State<Subject> {
                     : _buildAndroidVideoPlayer(),
               ),
             ),
-            // Only show the Start Exam button if is_exam is 1
-            if (currentTutorial != null && currentTutorial['is_exam'] == 1)
+            // Show the Start Exam button for tutorials
+            if (currentTutorial != null)
               Material(
                 elevation: 4,
                 color: AppTheme.primaryColor,
