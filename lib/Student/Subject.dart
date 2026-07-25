@@ -782,12 +782,26 @@ class _SubjectState extends State<Subject> {
     }
   }
 
-  videoOption(videoURL, tutorialID) async {
+  videoOption(videoURL, tutorialID, {Map<String, dynamic>? tutorial}) async {
     final isCached = await isUrlCached(videoURL);
-    videoOptionModal(isCached, videoURL, tutorialID);
+    videoOptionModal(isCached, videoURL, tutorialID, tutorial: tutorial);
   }
 
-  Future<void> videoOptionModal(bool isCached, videoURL, tutorialID) {
+  Future<void> videoOptionModal(bool isCached, videoURL, tutorialID, {Map<String, dynamic>? tutorial}) {
+    final Map<String, dynamic> targetTutorial = (tutorial != null && tutorial.isNotEmpty)
+        ? Map<String, dynamic>.from(tutorial)
+        : (cachedSubjectList != null && cachedSubjectList is List)
+            ? Map<String, dynamic>.from((cachedSubjectList as List).firstWhere(
+                (item) =>
+                    item['id']?.toString() == tutorialID?.toString() ||
+                    item['video_url'] == videoURL,
+                orElse: () => currentTutorial ?? {},
+              ))
+            : Map<String, dynamic>.from(currentTutorial ?? {});
+
+    final String tutorialTitle = targetTutorial['title']?.toString() ?? 'Video Tutorial';
+    final String subjectName = targetTutorial['subject_name']?.toString() ?? widget.course.title;
+
     return showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -842,17 +856,15 @@ class _SubjectState extends State<Subject> {
                               color: AppTheme.textPrimaryColor,
                             ),
                           ),
-                          if (currentTutorial != null &&
-                              currentTutorial['title'] != null)
-                            Text(
-                              currentTutorial['title'].toString(),
-                              style: GoogleFonts.lato(
-                                fontSize: 14,
-                                color: AppTheme.textSecondaryColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            tutorialTitle,
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
+                              color: AppTheme.textSecondaryColor,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
                     ),
@@ -880,9 +892,8 @@ class _SubjectState extends State<Subject> {
                   iconColor: Colors.red,
                   onTap: () async {
                     Analytics().logEvent("REMOVE_OFFLINE_VIDEO", {
-                      "subject_name":
-                          currentTutorial['subject_name'].toString(),
-                      "video": currentTutorial['title'].toString()
+                      "subject_name": subjectName,
+                      "video": tutorialTitle,
                     });
                     Navigator.pop(context);
                     DownloadManager().removeCompletedVideo(videoURL);
@@ -906,9 +917,8 @@ class _SubjectState extends State<Subject> {
                   iconColor: Colors.purple,
                   onTap: () async {
                     Analytics().logEvent("SAVE_VIDEO_OFFLINE", {
-                      "subject_name":
-                          currentTutorial['subject_name'].toString(),
-                      "video": currentTutorial['title'].toString()
+                      "subject_name": subjectName,
+                      "video": tutorialTitle,
                     });
                     Navigator.pop(context);
                     if (cachedSubjectList != null) {
@@ -921,106 +931,103 @@ class _SubjectState extends State<Subject> {
                     setState(() {});
                     DownloadManager().startDownload(
                       videoURL,
-                      currentTutorial['title']?.toString() ?? 'Video Tutorial',
+                      tutorialTitle,
                       widget.course.title,
                     );
                   },
                 ),
               ],
-              // Show Resource Guide for tutorials regardless of is_exam status
-              if (currentTutorial != null)
-                _buildOptionTile(
-                  icon: Icons.book_outlined,
-                  title: 'Resource Guide',
-                  subtitle: 'Access learning resources',
-                  iconBackgroundColor: Colors.amber[50]!,
-                  iconColor: Colors.amber[800]!,
-                  onTap: () async {
-                    final isOnline =
-                        await RestClient().checkInternetConnection();
+              // Resource Guide option tile always visible for every video
+              _buildOptionTile(
+                icon: Icons.book_outlined,
+                title: 'Resource Guide',
+                subtitle: 'Access learning resources',
+                iconBackgroundColor: Colors.amber[50]!,
+                iconColor: Colors.amber[800]!,
+                onTap: () async {
+                  final isOnline =
+                      await RestClient().checkInternetConnection();
+                  if (!mounted || !context.mounted) return;
+                  if (!isOnline) {
+                    Navigator.pop(context);
+                    RestClient().error(
+                        "No Internet. Unable to load Resource Guide. Connect to the Internet to Continue.");
+                    return;
+                  }
+                  Analytics().logEvent("DOCUMENT_DOWNLOAD", {
+                    "subject_name": subjectName,
+                    "video": tutorialTitle,
+                  });
+                  final document = targetTutorial['resource_guide']?.toString() ?? '';
+                  debugPrint('=== RESOURCE GUIDE ===');
+                  debugPrint('Document URL: $document');
+                  if (document != "null" && document.isNotEmpty) {
                     if (!mounted || !context.mounted) return;
-                    if (!isOnline) {
-                      Navigator.pop(context);
-                      RestClient().error(
-                          "No Internet. Unable to load Resource Guide. Connect to the Internet to Continue.");
-                      return;
-                    }
-                    Analytics().logEvent("DOCUMENT_DOWNLOAD", {
-                      "subject_name":
-                          currentTutorial['subject_name'].toString(),
-                      "video": currentTutorial['title'].toString()
-                    });
-                    final document =
-                        currentTutorial['resource_guide'].toString();
-                    debugPrint('=== RESOURCE GUIDE ===');
-                    debugPrint('Document URL: $document');
-                    if (document != "null" && document.isNotEmpty) {
-                      if (!mounted || !context.mounted) return;
-                      Navigator.pop(context);
-                      globalScaffoldContext.loaderOverlay.show();
-                      try {
-                        final file = await createFileOfPdfUrl(document);
-                        if (mounted) {
-                          globalScaffoldContext.loaderOverlay.hide();
-                        }
-                        debugPrint('Resource Guide file created: ${file.path}');
-                        debugPrint('File exists: ${await file.exists()}');
-                        debugPrint('File size: ${await file.length()} bytes');
-                        viewPDF(file.path);
-                      } catch (e) {
-                        if (mounted) {
-                          globalScaffoldContext.loaderOverlay.hide();
-                        }
-                        debugPrint('Error with Resource Guide: $e');
-                        RestClient().error('Error loading document: $e');
+                    Navigator.pop(context);
+                    globalScaffoldContext.loaderOverlay.show();
+                    try {
+                      final file = await createFileOfPdfUrl(document);
+                      if (mounted) {
+                        globalScaffoldContext.loaderOverlay.hide();
                       }
-                    } else {
-                      if (!mounted || !context.mounted) return;
-                      Navigator.pop(context);
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          title: Row(
-                            children: [
-                              const Icon(Icons.info_outline,
-                                  color: AppTheme.primaryColor),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Resource Guide',
-                                style: GoogleFonts.lato(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.textPrimaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          content: Text(
-                            'The resource guide is not available for this tutorial at this time. Please check back later or contact support if you need assistance.',
-                            style: GoogleFonts.lato(
-                              fontSize: 14,
-                              color: AppTheme.textSecondaryColor,
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(
-                                'UNDERSTOOD',
-                                style: GoogleFonts.lato(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryColor,
-                                ),
+                      debugPrint('Resource Guide file created: ${file.path}');
+                      debugPrint('File exists: ${await file.exists()}');
+                      debugPrint('File size: ${await file.length()} bytes');
+                      viewPDF(file.path);
+                    } catch (e) {
+                      if (mounted) {
+                        globalScaffoldContext.loaderOverlay.hide();
+                      }
+                      debugPrint('Error with Resource Guide: $e');
+                      RestClient().error('Error loading document: $e');
+                    }
+                  } else {
+                    if (!mounted || !context.mounted) return;
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        title: Row(
+                          children: [
+                            const Icon(Icons.info_outline,
+                                color: AppTheme.primaryColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Resource Guide',
+                              style: GoogleFonts.lato(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textPrimaryColor,
                               ),
                             ),
                           ],
                         ),
-                      );
-                    }
-                  },
-                ),
+                        content: Text(
+                          'The resource guide is not available for this tutorial at this time. Please check back later or contact support if you need assistance.',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: AppTheme.textSecondaryColor,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'UNDERSTOOD',
+                              style: GoogleFonts.lato(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
               // Only show Exam History if is_exam is 1
               if (currentTutorial != null && currentTutorial['is_exam'] == 1)
                 _buildOptionTile(
