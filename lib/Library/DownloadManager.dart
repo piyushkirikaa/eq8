@@ -143,6 +143,21 @@ class DownloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearFromDeleted(String? id, String? videoUrl) {
+    bool changed = false;
+    if (id != null && id.isNotEmpty && _deletedVideoIds.contains(id)) {
+      _deletedVideoIds.remove(id);
+      changed = true;
+    }
+    if (videoUrl != null && videoUrl.isNotEmpty && _deletedVideoIds.contains(videoUrl)) {
+      _deletedVideoIds.remove(videoUrl);
+      changed = true;
+    }
+    if (changed) {
+      _savePersistedCompletedVideos();
+    }
+  }
+
   void registerCachedVideo({
     required String id,
     required String title,
@@ -151,7 +166,8 @@ class DownloadManager extends ChangeNotifier {
     String duration = '15:00',
     String size = '15.0 MB',
   }) {
-    if (videoUrl.isEmpty || isVideoDeleted(id, videoUrl)) return;
+    if (videoUrl.isEmpty) return;
+    clearFromDeleted(id, videoUrl);
 
     if (!_completedVideos.any((v) => v['video_url'] == videoUrl || (id.isNotEmpty && v['id'] == id))) {
       _completedVideos.insert(0, {
@@ -172,6 +188,7 @@ class DownloadManager extends ChangeNotifier {
   }
 
   void startDownload(String videoUrl, String title, String subject) {
+    clearFromDeleted(null, videoUrl);
     // Prevent duplicate downloads if already downloaded or in progress
     if (isVideoDownloaded(videoUrl)) {
       try {
@@ -264,6 +281,7 @@ class DownloadManager extends ChangeNotifier {
     task.subscription?.cancel();
     task.mockTimer?.cancel();
 
+    clearFromDeleted(task.id, task.videoUrl);
     _downloadedUrls.add(task.videoUrl);
     _activeDownloads.removeWhere((t) => t.id == task.id);
     _completedVideos.insert(0, {
