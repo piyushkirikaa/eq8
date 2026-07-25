@@ -165,7 +165,9 @@ class DownloadManager extends ChangeNotifier {
       });
       _downloadedUrls.add(videoUrl);
       _savePersistedCompletedVideos();
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
