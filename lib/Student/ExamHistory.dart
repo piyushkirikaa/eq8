@@ -795,7 +795,7 @@ class _ExamHistoryState extends State<ExamHistory> {
                         return const SizedBox.shrink();
                       }
                       return SideTitleWidget(
-                        axisSide: meta.axisSide,
+                        meta: meta,
                         child: Text(
                           meta.formattedValue,
                           style: GoogleFonts.lato(fontSize: 12),
