@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -223,35 +224,39 @@ class RestClient {
   // Function to check internet connection
   Future<bool> checkInternetConnection() async {
     try {
+      // 1. Primary Check: Perform socket DNS lookup (lightweight, fast, reliable)
+      try {
+        final result = await InternetAddress.lookup('google.com')
+            .timeout(const Duration(seconds: 3));
+        if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+          return true;
+        }
+      } catch (e) {
+        debugPrint('DNS lookup failed/timed out: $e');
+      }
+
+      // 2. Fallback Check: Check hardware connectivity status
       final List<ConnectivityResult> connectivityResult =
           await (Connectivity().checkConnectivity());
 
-      // Check for any type of connection (mobile, wifi, ethernet, etc.)
-      if (connectivityResult.contains(ConnectivityResult.mobile) ||
-          connectivityResult.contains(ConnectivityResult.wifi) ||
-          connectivityResult.contains(ConnectivityResult.ethernet) ||
-          connectivityResult.contains(ConnectivityResult.other)) {
-        // Additional check: Try to make a simple HTTP request to verify actual internet access
+      if (connectivityResult.contains(ConnectivityResult.none) &&
+          connectivityResult.length == 1) {
+        // Double-check with a quick 1.5s fallback HTTP ping before concluding offline
         try {
-          final response = await http.get(
+          final response = await http.head(
             Uri.parse('https://www.google.com'),
-            headers: {'Accept': 'text/html'},
-          ).timeout(const Duration(seconds: 5));
-
-          return response.statusCode == 200;
-        } catch (e) {
-          debugPrint('Internet connectivity test failed: $e');
-          // If the connectivity test fails but we have a connection, return true anyway
-          // as the issue might be with the test URL rather than actual connectivity
-          return true;
+          ).timeout(const Duration(milliseconds: 1500));
+          return response.statusCode < 500;
+        } catch (_) {
+          return false;
         }
-      } else {
-        // No network available
-        return false;
       }
+
+      // Hardware reports an interface (wifi, mobile, ethernet, other, etc.)
+      return true;
     } catch (e) {
       debugPrint('Error checking connectivity: $e');
-      // If connectivity check fails, assume we have internet and let the actual requests fail gracefully
+      // Graceful fallback to true if check errors out
       return true;
     }
   }
