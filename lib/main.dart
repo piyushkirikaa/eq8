@@ -61,7 +61,8 @@ class MyApp extends StatelessWidget {
             behavior: HitTestBehavior.translucent,
             onPointerDown: (_) {
               OverlayToastManager().dismissActiveToast();
-              RestClient.scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+              RestClient.scaffoldMessengerKey.currentState
+                  ?.hideCurrentSnackBar();
             },
             child: child ?? const SizedBox.shrink(),
           );
