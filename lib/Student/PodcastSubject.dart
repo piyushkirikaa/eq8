@@ -517,7 +517,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
   }
 
   // Rest of your existing methods here
-  submitYourFeedback() {
+  void submitYourFeedback() {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -554,7 +554,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
     }
   }
 
-  playAudio(audio) async {
+  Future<void> playAudio(audio) async {
     if (await RestClient().checkInternetConnection()) {
       final fileInfo = await DefaultCacheManager().getFileFromCache(audio);
       if (fileInfo != null) {
@@ -573,7 +573,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
     }
   }
 
-  audioOption(audioURL, tutorialID) async {
+  Future<void> audioOption(audioURL, tutorialID) async {
     final isCached = await isUrlCached(audioURL);
     audioOptionModal(isCached, audioURL, tutorialID);
   }
@@ -754,7 +754,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
     );
   }
 
-  viewPDF(url) async {
+  Future<dynamic> viewPDF(url) async {
     return await Navigator.push(
       context,
       MaterialPageRoute(
@@ -823,7 +823,7 @@ class _PodcastSubjectState extends State<PodcastSubject> {
     }
   }
 
-  startExam() {
+  void startExam() {
     Analytics().logEvent("START_EXAM", {
       "subject_name": currentTutorial['subject_name'].toString(),
       "audio": currentTutorial['title'].toString()

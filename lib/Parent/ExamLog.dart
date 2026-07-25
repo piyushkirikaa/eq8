@@ -81,7 +81,7 @@ class _ExamHistoryState extends State<ExamLog> {
     }
   }
 
-  getExamList() async {
+  Future<dynamic> getExamList() async {
     final response =
         await RestClient().authGet('/parent/exams/${widget.tutorialID}', {});
     if (response["status"] == 'success') {

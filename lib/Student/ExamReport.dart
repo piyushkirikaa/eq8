@@ -527,7 +527,7 @@ class _ExamReportState extends State<ExamReport>
 
 
 
-  _checkDeviceStatus() async {
+  Future<void> _checkDeviceStatus() async {
     if (mounted) {
       context.loaderOverlay.show();
     }

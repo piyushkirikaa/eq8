@@ -58,7 +58,7 @@ class _PaymentSuccessfulState extends State<PaymentSuccessful> {
     );
   }
 
-  redirectToDashboard() async {
+  Future<void> redirectToDashboard() async {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const ParentDashboard()),

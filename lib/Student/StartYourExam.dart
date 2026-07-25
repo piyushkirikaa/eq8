@@ -197,7 +197,7 @@ class _StartYourExamState extends State<StartYourExam> {
     );
   }
 
-  selectExamType() {
+  void selectExamType() {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
@@ -270,7 +270,7 @@ class _StartYourExamState extends State<StartYourExam> {
     );
   }
 
-  createExam() async {
+  Future<void> createExam() async {
     globalScaffoldContext.loaderOverlay.show();
     final response = await RestClient().authPost('/student/exam/create', {
       'tutorial_id': widget.tutorial['id'].toString(),
@@ -288,7 +288,7 @@ class _StartYourExamState extends State<StartYourExam> {
     }
   }
 
-  startExam(response) {
+  void startExam(response) {
     Navigator.push(
       context,
       MaterialPageRoute(

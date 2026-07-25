@@ -397,7 +397,7 @@ class _TestState extends State<Test> {
     }
   }
 
-  _examComplete() async {
+  Future<void> _examComplete() async {
     _examTimer?.cancel();
     int timeTaken = 300 - _secondsRemaining;
     showLoadingIndicator();
@@ -480,7 +480,7 @@ class _TestState extends State<Test> {
     }
   }
 
-  finishExam(response, int timeTaken) {
+  void finishExam(response, int timeTaken) {
     // Navigate to ExamComplete without popping back to Subject
     // This keeps the video paused while viewing results
     // When user clicks "Continue Study", we'll pop back to Subject and resume video

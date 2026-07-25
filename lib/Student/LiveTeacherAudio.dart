@@ -856,7 +856,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
                   ),
                 ),
                 builders: {
-                  'latex': LatexElementBuilder(),
+                  'latex': LatexElementBuilder() as dynamic,
                 },
                 extensionSet: md.ExtensionSet(
                   [LatexBlockSyntax()],

@@ -19,7 +19,7 @@ class StyleConfig {
     ),
   );
 
-  static inputStyle(String label, IconData icon) {
+  static InputDecoration inputStyle(String label, IconData icon) {
     return InputDecoration(
       contentPadding: const EdgeInsets.all(0),
       prefixIcon: Icon(icon),

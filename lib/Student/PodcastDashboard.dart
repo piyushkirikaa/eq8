@@ -221,7 +221,7 @@ class _PodcastDashboardState extends State<PodcastDashboard> {
 
 
 
-  _checkDeviceStatus() async {
+  Future<void> _checkDeviceStatus() async {
     if (mounted) {
       context.loaderOverlay.show();
     }

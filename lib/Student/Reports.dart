@@ -129,7 +129,7 @@ class _ReportsState extends State<Reports> {
     }
   }
 
-  Log() async {
+  Future<dynamic> Log() async {
     final response = await RestClient().authGet('/student/activity', {});
     if (response["status"] == 'success') {
       return response["data"];
@@ -141,7 +141,7 @@ class _ReportsState extends State<Reports> {
 
 
 
-  _checkDeviceStatus() async {
+  Future<void> _checkDeviceStatus() async {
     if (mounted) {
       context.loaderOverlay.show();
     }

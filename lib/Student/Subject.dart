@@ -639,13 +639,13 @@ class _SubjectState extends State<Subject> {
     return result;
   }
 
-  submitYourFeedback() {
+  void submitYourFeedback() {
     _navigateWithVideoPause(
       FeedbackController(tutorial: currentTutorial),
     );
   }
 
-  getSubjectList() async {
+  Future<List<dynamic>?> getSubjectList() async {
     _isOnline = await RestClient().checkInternetConnection();
     // Return cached list if available to prevent reloading
     if (cachedSubjectList != null && cachedSubjectList!.isNotEmpty) {
@@ -726,7 +726,7 @@ class _SubjectState extends State<Subject> {
     return videoList;
   }
 
-  playVideo(video) async {
+  Future<void> playVideo(video) async {
     final fileInfo = await DefaultCacheManager().getFileFromCache(video);
     if (fileInfo != null) {
       changeVideo(fileInfo.file.path);
@@ -782,7 +782,7 @@ class _SubjectState extends State<Subject> {
     }
   }
 
-  videoOption(videoURL, tutorialID, {Map<String, dynamic>? tutorial}) async {
+  Future<void> videoOption(videoURL, tutorialID, {Map<String, dynamic>? tutorial}) async {
     final isCached = await isUrlCached(videoURL);
     videoOptionModal(isCached, videoURL, tutorialID, tutorial: tutorial);
   }
@@ -1195,7 +1195,7 @@ class _SubjectState extends State<Subject> {
     );
   }
 
-  viewPDF(url) async {
+  Future<dynamic> viewPDF(url) async {
     debugPrint('viewPDF called with URL: $url');
     return await _navigateWithVideoPause(
       PDFScreen(path: url),
@@ -1883,7 +1883,7 @@ class _SubjectState extends State<Subject> {
     }
   }
 
-  startExam() {
+  void startExam() {
     // Check if exam is available for this tutorial
     if (currentTutorial == null || currentTutorial['is_exam'] != 1) {
       showDialog(

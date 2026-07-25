@@ -141,7 +141,7 @@ class _DashboardState extends State<Dashboard> {
 
 
 
-  _checkDeviceStatus() async {
+  Future<void> _checkDeviceStatus() async {
     if (mounted) {
       context.loaderOverlay.show();
     }

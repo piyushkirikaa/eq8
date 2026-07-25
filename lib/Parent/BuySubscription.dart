@@ -225,7 +225,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
     );
   }
 
-  purchaseSubscription() async {
+  Future<void> purchaseSubscription() async {
     if (_firstName.isEmpty) {
       RestClient().error("Please enter your First Name.");
       return;
@@ -312,7 +312,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
     }
   }
 
-  handelPayment(data) async {
+  Future<void> handelPayment(data) async {
     final totalAmount = data['total_amount'].toString();
     showCupertinoModalPopup<void>(
       context: context,
@@ -347,7 +347,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
     );
   }
 
-  reTryPayment(data) async {
+  Future<void> reTryPayment(data) async {
     final totalAmount = data['total_amount'].toString();
     showCupertinoModalPopup<void>(
       context: context,
@@ -382,7 +382,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
     );
   }
 
-  handelSuccess() async {
+  Future<void> handelSuccess() async {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -400,14 +400,14 @@ class _BuySubscriptionState extends State<BuySubscription> {
     context.loaderOverlay.hide();
   }
 
-  paypalWeb(amount) async {}
+  Future<void> paypalWeb(amount) async {}
 
-  showResult(String text) {
+  void showResult(String text) {
     logQueue.add(text);
     setState(() {});
   }
 
-  updateOrderStatus() async {
+  Future<void> updateOrderStatus() async {
     debugPrint(membershipInfo.toString());
     final orderID = membershipInfo['id'];
     final data = {
@@ -417,7 +417,7 @@ class _BuySubscriptionState extends State<BuySubscription> {
         .authPost("/parent/subscription-status/update/$orderID", data);
   }
 
-  redirectToDashboard() async {
+  Future<void> redirectToDashboard() async {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const ParentDashboard()),

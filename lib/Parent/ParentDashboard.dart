@@ -220,7 +220,7 @@ class _ParentDashboardState extends State<ParentDashboard> {
     );
   }
 
-  getSubscriptionsList() async {
+  Future<dynamic> getSubscriptionsList() async {
     try {
       final response = await RestClient().authGet('/parent/subscriptions', {});
       if (response["status"] == 'success') {
