@@ -668,7 +668,7 @@ class _SubjectState extends State<Subject> {
             final videoUrl = video['video_url'].toString();
             final isCached = await isUrlCached(videoUrl);
             video['isCached'] = isCached;
-            if (isCached && !DownloadManager().isVideoDeleted(video['id']?.toString(), videoUrl)) {
+            if (isCached) {
               DownloadManager().registerCachedVideo(
                 id: video['id']?.toString() ?? '',
                 title: video['title']?.toString() ?? 'Video Tutorial',

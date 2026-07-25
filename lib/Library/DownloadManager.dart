@@ -79,8 +79,8 @@ class DownloadManager extends ChangeNotifier {
             };
 
             if (videoUrl.isNotEmpty &&
-                !_completedVideos.any((v) => v['video_url'] == videoUrl) &&
-                !isVideoDeleted(videoId, videoUrl)) {
+                !_completedVideos.any((v) => v['video_url'] == videoUrl)) {
+              clearFromDeleted(videoId, videoUrl);
               _completedVideos.add(map);
               _downloadedUrls.add(videoUrl);
             }
