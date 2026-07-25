@@ -103,6 +103,7 @@ class _ExamReportState extends State<ExamReport>
     final bool isIPad = MediaQuery.of(context).size.shortestSide >= 600;
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Progress Tracking'),
         actions: [
           IconButton(
@@ -119,13 +120,6 @@ class _ExamReportState extends State<ExamReport>
                 context,
                 MaterialPageRoute(builder: (context) => const StudentProfile()),
               );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.login),
-            tooltip: 'log',
-            onPressed: () async {
-              alertOption();
             },
           ),
         ],
