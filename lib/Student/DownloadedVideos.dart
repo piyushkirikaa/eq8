@@ -34,64 +34,12 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
   late List<String> _tempSelectedSubjects;
   late bool _tempSelectAll;
 
-  // Initial cached offline videos list
-  final List<Map<String, dynamic>> _initialDownloadedVideos = [
-    {
-      'id': '101',
-      'title': 'Algebraic Equations & Functions Overview',
-      'subject': 'Mathematics',
-      'duration': '14:20',
-      'size': '45 MB',
-      'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_math.mp4',
-      'downloaded_at': DateTime.now().subtract(const Duration(minutes: 5)),
-    },
-    {
-      'id': '102',
-      'title': 'Newton Laws of Motion & Momentum',
-      'subject': 'Physical Sciences',
-      'duration': '18:45',
-      'size': '62 MB',
-      'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_physics.mp4',
-      'downloaded_at': DateTime.now().subtract(const Duration(minutes: 45)),
-    },
-    {
-      'id': '103',
-      'title': 'Cellular Respiration & Photosynthesis',
-      'subject': 'Life Sciences',
-      'duration': '12:10',
-      'size': '38 MB',
-      'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_bio.mp4',
-      'downloaded_at': DateTime.now().subtract(const Duration(hours: 3)),
-    },
-    {
-      'id': '104',
-      'title': 'Financial Statements & Balance Sheets',
-      'subject': 'Accounting',
-      'duration': '22:05',
-      'size': '70 MB',
-      'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_acc.mp4',
-      'downloaded_at': DateTime.now().subtract(const Duration(days: 1)),
-    },
-    {
-      'id': '105',
-      'title': 'Shakespeare Literature Analysis',
-      'subject': 'English',
-      'duration': '15:30',
-      'size': '50 MB',
-      'video_url': 'https://www.mydigitalcollege.co.za/crm/api/sample_eng.mp4',
-      'downloaded_at': DateTime.now().subtract(const Duration(days: 2)),
-    },
-  ];
-
-  late List<Map<String, dynamic>> _localVideos;
-
   @override
   void initState() {
     super.initState();
     _selectedSubjects = List<String>.from(_availableSubjects);
     _tempSelectedSubjects = List<String>.from(_selectedSubjects);
     _tempSelectAll = true;
-    _localVideos = List<Map<String, dynamic>>.from(_initialDownloadedVideos);
     _downloadManager.addListener(_onDownloadManagerChanged);
   }
 
@@ -118,12 +66,7 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
 
   // Combined downloaded videos sorted by most recently downloaded first (descending by date)
   List<Map<String, dynamic>> get _allDownloadedVideos {
-    final list = List<Map<String, dynamic>>.from(_localVideos);
-    for (var completed in _downloadManager.completedVideos) {
-      if (!list.any((v) => v['id'] == completed['id'])) {
-        list.add(completed);
-      }
-    }
+    final list = List<Map<String, dynamic>>.from(_downloadManager.completedVideos);
 
     // Exclude any videos that have been persistently deleted
     list.removeWhere((v) => _downloadManager.isVideoDeleted(
@@ -310,9 +253,6 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
                 final videoUrl = video['video_url']?.toString() ?? '';
                 final videoId = video['id']?.toString();
                 _downloadManager.removeCompletedVideo(videoUrl, videoId: videoId);
-                setState(() {
-                  _localVideos.removeWhere((v) => v['id'] == video['id'] || v['video_url'] == videoUrl);
-                });
                 RestClient().success('Offline Video Deleted');
               },
               child: const Text('DELETE', style: TextStyle(color: Colors.red)),

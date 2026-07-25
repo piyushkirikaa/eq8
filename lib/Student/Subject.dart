@@ -690,6 +690,10 @@ class _SubjectState extends State<Subject> {
 
     // Include completed offline videos from DownloadManager
     for (var completed in DownloadManager().completedVideos) {
+      final String videoUrl = completed['video_url']?.toString() ?? '';
+      final String videoId = completed['id']?.toString() ?? '';
+      if (DownloadManager().isVideoDeleted(videoId, videoUrl)) continue;
+
       final String completedSub = completed['subject']?.toString().toLowerCase() ?? '';
       if (completedSub == currentCourse.title.toLowerCase()) {
         if (!videoList.any((v) => v['video_url'] == completed['video_url'])) {
@@ -1886,6 +1890,8 @@ class _SubjectState extends State<Subject> {
 
   void _onDownloadManagerChanged() {
     if (mounted) {
+      cachedSubjectList = null;
+      _subjectListFuture = getSubjectList();
       setState(() {});
     }
   }
