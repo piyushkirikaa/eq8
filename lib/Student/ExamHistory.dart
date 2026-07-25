@@ -102,7 +102,7 @@ class _ExamHistoryState extends State<ExamHistory> {
     }
   }
 
-  Future<dynamic> getExamList() async {
+  getExamList() async {
     final dynamic response;
     if (widget.tutorialID != "") {
       response = await RestClient()
@@ -118,7 +118,7 @@ class _ExamHistoryState extends State<ExamHistory> {
     }
   }
 
-  Future<void> getExamDetail(tutorialID) async {
+  getExamDetail(tutorialID) async {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -263,7 +263,9 @@ class _ExamHistoryState extends State<ExamHistory> {
     );
   }
 
-  Future<void> _checkDeviceStatus() async {
+
+
+  _checkDeviceStatus() async {
     if (mounted) {
       context.loaderOverlay.show();
     }
@@ -815,11 +817,10 @@ class _ExamHistoryState extends State<ExamHistory> {
                     interval: 1,
                     getTitlesWidget: (value, meta) {
                       final int index = value.toInt();
-                      if (value == index.toDouble() &&
-                          index >= 0 &&
-                          index < sortedExams.length) {
+                      if (value == index.toDouble() && index >= 0 && index < sortedExams.length) {
                         String label = 'Exam ${index + 1}';
-                        String? dateString = sortedExams[index]['created_at'];
+                        String? dateString =
+                            sortedExams[index]['created_at'];
                         if (dateString != null && dateString.isNotEmpty) {
                           try {
                             final DateTime date = DateTime.parse(dateString);

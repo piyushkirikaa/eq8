@@ -542,16 +542,14 @@ class _SignInState extends State<SignIn> {
 
   void navigateToDashboard(role) {
     if (role == "student") {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MainNav()),
-        (route) => false,
       );
     } else {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const ParentDashboard()),
-        (route) => false,
       );
     }
   }

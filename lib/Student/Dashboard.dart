@@ -39,7 +39,6 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[50],
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const ConnectivityIcon(),
@@ -55,6 +54,13 @@ class _DashboardState extends State<Dashboard> {
                 context,
                 MaterialPageRoute(builder: (context) => const StudentProfile()),
               );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.login),
+            tooltip: 'log',
+            onPressed: () async {
+              alertOption();
             },
           ),
         ],

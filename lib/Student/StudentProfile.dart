@@ -36,6 +36,13 @@ class _StudentProfileState extends State<StudentProfile> {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.login),
+            tooltip: 'log',
+            onPressed: () async {
+              alertOption();
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(

@@ -277,7 +277,6 @@ class _DownloadedVideosState extends State<DownloadedVideos> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
         title: Text(
