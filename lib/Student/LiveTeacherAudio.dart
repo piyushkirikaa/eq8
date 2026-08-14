@@ -157,8 +157,7 @@ class _LiveTeacherAudioState extends State<LiveTeacherAudio>
 
   Future<void> _initializeChatGPT() async {
     _openAI = OpenAI.instance.build(
-      token:
-          "OPENAI_API_KEY_PLACEHOLDER",
+      token: const String.fromEnvironment('OPENAI_API_KEY', defaultValue: ''),
       baseOption: HttpSetup(receiveTimeout: const Duration(seconds: 20)),
     );
   }
