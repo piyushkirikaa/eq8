@@ -16,7 +16,7 @@ class RestClient {
       GlobalKey<NavigatorState>();
   static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  final String baseUrl = "https://www.mydigitalcollege.co.za/crm/api";
+  final String baseUrl = "https://dev.midigitalacademy.com--/crm/api";
   static DateTime? _lastOfflineToastTime;
 
   Future<dynamic> guestPost(dynamic endpoint, dynamic param) async {
@@ -363,7 +363,8 @@ class RestClient {
     }
   }
 
-  Future<void> storeUser(dynamic email, dynamic userId, dynamic token, dynamic role) async {
+  Future<void> storeUser(
+      dynamic email, dynamic userId, dynamic token, dynamic role) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token.toString());
     await prefs.setString('email', email.toString());
