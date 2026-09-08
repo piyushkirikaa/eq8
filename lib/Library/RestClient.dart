@@ -16,7 +16,7 @@ class RestClient {
       GlobalKey<NavigatorState>();
   static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
-  final String baseUrl = "https://dev.midigitalacademy.com--/crm/api";
+  final String baseUrl = "https://dev.midigitalacademy.com/crm/api";
   static DateTime? _lastOfflineToastTime;
 
   Future<dynamic> guestPost(dynamic endpoint, dynamic param) async {
